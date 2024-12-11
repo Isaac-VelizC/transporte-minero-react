@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -183,7 +184,7 @@ class UsersController extends Controller
         } catch (ModelNotFoundException $e) {
             // Manejar el caso de que no se encuentre la persona
             DB::rollBack();
-            
+
             return redirect()->route('user.list')->with('error', 'Persona no encontrado.');
         } catch (\Throwable $th) {
             // Revertir la transacción en caso de error
@@ -198,27 +199,28 @@ class UsersController extends Controller
     public function destroy(string $id)
     {
         try {
-            // Intentar encontrar el usuario por ID
-            $user = User::findOrFail($id); // Esto lanzará una excepción si no se encuentra
-            if ($user->persona) {
-                // Cambiar el estado de la relación `persona`
-                $user->persona->estado = !$user->persona->estado; // Alterna entre true y false
-                $user->persona->save(); // Guardar los cambios en la relación `persona`
-            } else {
-                // Manejar el caso en que `persona` no exista
+            $user = User::with('persona')->findOrFail($id);
+
+            if (!$user->persona) {
                 return redirect()->back()->with('error', 'La relación persona no existe para este usuario.');
             }
-            // Opcional: Puedes eliminar el usuario si es necesario
-            // $user->delete();
 
-            // Retornar a la vista o redirigir con un mensaje de éxito
-            return redirect()->back()->with('success', 'Usuario desactivado correctamente.');
+            // Alternar el estado usando toggle o negación
+            $user->persona->estado = !$user->persona->estado;
+            $user->persona->save();
+
+            // Mensaje dinámico basado en el nuevo estado
+            $message = $user->persona->estado
+                ? 'Usuario reactivado correctamente'
+                : 'Usuario desactivado correctamente';
+
+            return redirect()->back()->with('success', $message);
         } catch (ModelNotFoundException $e) {
-            // Manejar el caso en que no se encuentra el usuario
             return redirect()->back()->with('error', 'Usuario no encontrado.');
         } catch (\Exception $e) {
-            // Manejo de otros errores
-            return redirect()->back()->with('error', 'Ocurrió un error al desactivar el usuario.');
+            Log::error('Error al modificar estado del usuario: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Ocurrió un error al modificar el estado del usuario.');
         }
     }
 }

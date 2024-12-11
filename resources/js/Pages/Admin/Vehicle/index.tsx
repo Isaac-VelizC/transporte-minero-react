@@ -3,11 +3,10 @@ import LinkButton from "@/Components/Buttons/LinkButton";
 import FlashMessages from "@/Components/FlashMessages";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import customStyles from "@/styles/StylesTable";
 import { Head, Link, usePage } from "@inertiajs/react";
 import React from "react";
-import DataTable from "react-data-table-component";
 import { FlashMessages as FlashMessagesType } from "@/interfaces/FlashMessages";
+import DataTableComponent from "@/Components/Table";
 
 type Props = {
     vehicles: VehicleInterface[];
@@ -15,12 +14,9 @@ type Props = {
 
 const index: React.FC<Props> = ({ vehicles }) => {
     const { props } = usePage();
-
-    // Asegúrate de que props.flash esté definido
     const flash: FlashMessagesType = props.flash || {};
-
     const { error, success } = flash;
-
+    
     const columns = [
         {
             name: "#",
@@ -70,12 +66,16 @@ const index: React.FC<Props> = ({ vehicles }) => {
                     <Link href={route("vehicle.show", row.id)}>
                         <i className="bi bi-eye"></i>
                     </Link>
+                    <Link href={route("vehicle.edit", row.id)}>
+                        <i className="bi bi-pencil"></i>
+                    </Link>
                 </div>
             ),
             ignoreRowClick: true,
             width: "90px",
         },
     ];
+
     return (
         <Authenticated>
             <Head title="Vehiculos" />
@@ -84,16 +84,7 @@ const index: React.FC<Props> = ({ vehicles }) => {
             <div className="flex justify-end my-10">
                 <LinkButton href={"vehicle.create"}>Nuevo</LinkButton>
             </div>
-            <div className="">
-                <DataTable
-                    columns={columns}
-                    data={vehicles}
-                    pagination
-                    paginationPerPage={10} // Número de filas por página
-                    paginationRowsPerPageOptions={[5, 10, 20]}
-                    customStyles={customStyles}
-                />
-            </div>
+            <DataTableComponent columns={columns} data={vehicles} />
         </Authenticated>
     );
 };

@@ -111,21 +111,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         </li>
                         <li>
                             <NavLink
-                                href="user.list"
+                                href="envios.index"
                                 icon={<i className="bi bi-truck"></i>}
                                 label="Envios"
                             />
                         </li>
                         <li>
                             <NavLink
-                                href="user.list"
+                                href="geocerca.list"
                                 icon={<i className="bi bi-geo-alt"></i>}
                                 label="Geocercas"
                             />
                         </li>
                         <li>
                             <NavLink
-                                href="user.list"
+                                href="view.map"
                                 icon={<i className="bi bi-geo-fill"></i>}
                                 label="Monitoreo"
                             />

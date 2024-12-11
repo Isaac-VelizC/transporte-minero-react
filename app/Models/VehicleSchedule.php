@@ -15,10 +15,8 @@ class VehicleSchedule extends Model
         'car_id',
         'start_time',
         'end_time',
-        'route',
         'driver_id',
         'status',
-        'notes'
     ];
 
     public function vehicle()

@@ -23,6 +23,11 @@ class Persona extends Model
         'rol'
     ];
 
+    public function driver()
+    {
+        return $this->belongsTo(Driver::class, 'persona_id');
+    }
+
     public function user()
     {
         return $this->hasOne(User::class, 'user_id');

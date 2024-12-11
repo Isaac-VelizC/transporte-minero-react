@@ -52,8 +52,8 @@ class User extends Authenticatable
         return $this->hasOne(Persona::class);
     }
 
-    /*public function creator()
+    public function geocercas()
     {
-        return $this->belongsTo(Persona::class, 'user_id');
-    }*/
+        return $this->hasMany(Geocerca::class, 'created_by');
+    }
 }

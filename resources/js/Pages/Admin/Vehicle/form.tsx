@@ -1,12 +1,12 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import LinkButton from "@/Components/Buttons/LinkButton";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
-import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
 import { MarksInterface, TypeInterface } from "@/interfaces/Modelo";
+import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import React from "react";
@@ -14,6 +14,8 @@ import React from "react";
 type Props = {
     marcas: MarksInterface[];
     typesVehicle: TypeInterface[];
+    vehicle: VehicleInterface;
+    isEditing: boolean; // Indica si se está editando un usuario o creando uno nuevo
 };
 
 const estadosVehiculos = [
@@ -22,8 +24,9 @@ const estadosVehiculos = [
     { value: "inactivo", name: "Inactivo" },
 ];
 
-const showVehicle: React.FC<Props> = ({ marcas, typesVehicle }) => {
-    const initialData = {
+const showVehicle: React.FC<Props> = ({ marcas, typesVehicle, vehicle, isEditing }) => {
+    const initialData = vehicle || {
+        id: null,
         matricula: "",
         mark_id: "",
         color: "",
@@ -34,20 +37,24 @@ const showVehicle: React.FC<Props> = ({ marcas, typesVehicle }) => {
         capacidad_carga: "",
     };
 
-    const { data, setData, post, errors, processing } = useForm(initialData);
+    const { data, setData, post, patch, errors, processing } = useForm(initialData);
+    
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log("dentro create", data);
-        post(route("vehicle.store"))
+        if (isEditing && data?.id) {
+            patch(route("vehicle.update", data.id));
+        } else {
+            post(route("vehicle.store"))
+        }
     };
     return (
         <Authenticated>
-            <Head title="create" />
-            <Breadcrumb pageName="Nuevo Vehiculo" />
+            <Head title={isEditing ? 'Editar' : 'Crear'} />
+            <Breadcrumb pageName={isEditing ? 'Editar info' : 'Crear nuevo Vehiculo'} />
             <div className="bg-gray-600 rounded-xl">
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-200 mb-2">
-                        Create New Vehicle
+                    {isEditing ? "Edit Vehicle Information" : "Create New Vehicle"}
                     </h2>
                     <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
@@ -239,7 +246,11 @@ const showVehicle: React.FC<Props> = ({ marcas, typesVehicle }) => {
                             className="ms-3"
                             disabled={processing}
                         >
-                            {processing ? "Processing..." : "Create Vehicle"}
+                            {processing
+                            ? "Processing..."
+                            : isEditing
+                            ? "Save Changes"
+                            : "Create Vehicle"}
                         </PrimaryButton>
                     </div>
                 </form>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ShipmentsController extends Controller
 {
@@ -12,7 +13,8 @@ class ShipmentsController extends Controller
      */
     public function index()
     {
-        //
+        // Retornar la vista utilizando Inertia
+        return Inertia::render('Admin/Shipments/index', []);
     }
 
     /**

@@ -13,9 +13,13 @@ class Geocerca extends Model
 
     protected $fillable = [
         'name',
-        'coordinates',
-        'description',
+        'polygon_coordinates',
+        'latitude',
+        'longitude',
+        'radius',
         'type',
+        'description',
+        'is_active',
         'created_by'
     ];
 

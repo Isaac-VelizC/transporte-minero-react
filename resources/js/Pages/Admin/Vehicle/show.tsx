@@ -1,46 +1,101 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
-import LinkButton from "@/Components/Buttons/LinkButton";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
-import InputError from "@/Components/Forms/InputError";
-import InputLabel from "@/Components/Forms/InputLabel";
-import SelectInput from "@/Components/Forms/SelectInput";
-import TextInput from "@/Components/Forms/TextInput";
-import { MarksInterface, TypeInterface } from "@/interfaces/Modelo";
+import DataTableComponent from "@/Components/Table";
+import { ScheduleInterface } from "@/interfaces/schedule";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, useForm } from "@inertiajs/react";
-import React from "react";
+import { Head, Link } from "@inertiajs/react";
+import React, { useState } from "react";
+import ModalFormSchedule from "./Programming/ModalFormSchedule";
+import { DriverInterface } from "@/interfaces/Driver";
 
 type Props = {
-    marcas: MarksInterface[];
-    typesVehicle: TypeInterface[];
     vehicle: VehicleInterface;
+    schedules: ScheduleInterface[];
+    drivers: DriverInterface[];
 };
 
-const estadosVehiculos = [
-    { value: "activo", name: "Activo" },
-    { value: "mantenimiento", name: "Mantenimiento" },
-    { value: "inactivo", name: "Inactivo" },
-];
+const showVehicle: React.FC<Props> = ({ vehicle, schedules, drivers }) => {
+    const [openModal, setOpenModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [scheduleData, setScheduleData] = useState<ScheduleInterface | null>(null);
+    const columns = [
+        {
+            name: "#",
+            cell: (row: ScheduleInterface, index: number) => index + 1, // Enumerar filas
+            width: "50px", // Ajustar el ancho de la columna si es necesario
+        },
+        {
+            name: "Matricula Vehiculo",
+            cell: (row: ScheduleInterface) => row.matricula_car,
+            sortable: true,
+        },
+        {
+            name: "Conductor Designado",
+            cell: (row: ScheduleInterface) => row.conductor_name,
+            sortable: true,
+        },
+        {
+            name: "Inicio",
+            cell: (row: ScheduleInterface) => row.start_time,
+            sortable: true,
+        },
+        {
+            name: "Fin",
+            cell: (row: ScheduleInterface) => row.end_time,
+            sortable: true,
+        },
+        {
+            name: "Estado",
+            cell: (row: ScheduleInterface) => (
+                <span
+                    className={`rounded-lg px-2 font-semibold py-1 border border-gray-600 bg-gray-800/5`}
+                >
+                    {row.status}
+                </span>
+            ),
+            width: "150px",
+        },
+        {
+            name: "Acciones",
+            cell: (row: ScheduleInterface) => (
+                <button onClick={() => handleEdit(row)}>
+                <i className="bi bi-pencil"></i>
+            </button>
+            ),
+            ignoreRowClick: true,
+            width: "90px",
+        },
+    ];
 
-const showVehicle: React.FC<Props> = ({ vehicle, marcas, typesVehicle }) => {
-    const { data, setData, patch, errors, processing } = useForm(vehicle);
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (data.id) {
-            patch(route("vehicle.update", data.id));
-        } else {
-            console.log("error no hay id del vehiculo");
-        }
+    const handleEdit = (row: ScheduleInterface) => {
+        setIsEditing(true);
+        setScheduleData(row);
+        setOpenModal(true);
     };
+
+    const handleCreate = () => {
+        setIsEditing(false);
+        setScheduleData(null);
+        setOpenModal(true);
+    };
+
+    const closeModal = () => {
+        //setConfirmingUserDeletion(false);
+        setOpenModal(false);
+        //setUserIdToSelect(null);
+        setScheduleData(null); // Reinicia los datos del usuario al cerrar
+        //clearErrors();
+        //reset();
+    };
+
     return (
         <Authenticated>
             <Head title="Show" />
             <Breadcrumb pageName="Show Vehicle" />
 
             <div className="bg-gray-600 rounded-xl mb-10 p-8 shadow-lg">
-                <div className="flex justify-between text-white">
+                <div className="flex flex-col lg:flex-row lg:justify-between text-white">
                     <div className="flex-1">
                         <h3 className="font-bold text-lg">
                             Información General
@@ -48,24 +103,30 @@ const showVehicle: React.FC<Props> = ({ vehicle, marcas, typesVehicle }) => {
                         <p className="text-sm">
                             Matricula:{" "}
                             <span className="font-medium">
-                                {data.matricula}
+                                {vehicle.matricula}
                             </span>
                         </p>
                         <p className="text-sm">
                             Color:{" "}
-                            <span className="font-medium">{data.color}</span>
+                            <span className="font-medium">{vehicle.color}</span>
                         </p>
                         <p className="text-sm">
                             Marca ID:{" "}
-                            <span className="font-medium">{data.mark_id}</span>
+                            <span className="font-medium">
+                                {vehicle.mark_id}
+                            </span>
                         </p>
                         <p className="text-sm">
                             Modelo:{" "}
-                            <span className="font-medium">{data.modelo}</span>
+                            <span className="font-medium">
+                                {vehicle.modelo}
+                            </span>
                         </p>
                         <p className="text-sm">
                             Tipo ID:{" "}
-                            <span className="font-medium">{data.type_id}</span>
+                            <span className="font-medium">
+                                {vehicle.type_id}
+                            </span>
                         </p>
                     </div>
 
@@ -74,12 +135,14 @@ const showVehicle: React.FC<Props> = ({ vehicle, marcas, typesVehicle }) => {
                         <p className="text-sm">
                             Capacidad de Carga:{" "}
                             <span className="font-medium">
-                                {data.capacidad_carga}
+                                {vehicle.capacidad_carga}
                             </span>
                         </p>
                         <p className="text-sm">
                             Estado:{" "}
-                            <span className="font-medium">{data.status}</span>
+                            <span className="font-medium">
+                                {vehicle.status}
+                            </span>
                         </p>
                     </div>
 
@@ -90,212 +153,36 @@ const showVehicle: React.FC<Props> = ({ vehicle, marcas, typesVehicle }) => {
                         <p className="text-sm">
                             Fecha de Compra:{" "}
                             <span className="font-medium">
-                                {data.fecha_compra}
+                                {vehicle.fecha_compra}
                             </span>
                         </p>
                         <p className="text-sm">
                             Última Revisión:{" "}
                             <span className="font-medium">
-                                {data.fecha_ultima_revision}
+                                {vehicle.fecha_ultima_revision}
                             </span>
                         </p>
                     </div>
                 </div>
             </div>
 
+            <ModalFormSchedule
+                show={openModal}
+                onClose={closeModal}
+                drivers={drivers}
+                cardId={vehicle.id}
+                schecule={scheduleData || undefined} // Pasa datos del usuario si existen
+                isEditing={isEditing}
+            />
+
             <div className="bg-gray-600 rounded-xl">
-                <form className="p-6" onSubmit={handleSubmit}>
-                    <h2 className="text-lg font-bold text-gray-200 mb-2">
-                        Actualizar datos del vehiculo
-                    </h2>
-                    <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <InputLabel htmlFor="matricula" value="Matricula" />
-                            <TextInput
-                                id="matricula"
-                                className="mt-1 block w-full"
-                                value={data.matricula}
-                                onChange={(e) =>
-                                    setData("matricula", e.target.value)
-                                }
-                                required
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.matricula}
-                            />
-                        </div>
-
-                        <div>
-                            <InputLabel
-                                htmlFor="mark_id"
-                                value="Marca de Vehiculo"
-                            />
-                            <SelectInput
-                                isFocused
-                                className="mt-1 block w-full"
-                                required
-                                value={data.mark_id}
-                                onChange={(e) =>
-                                    setData("mark_id", e.target.value)
-                                }
-                            >
-                                {marcas?.map((item, index) => (
-                                    <option key={index} value={item.id}>
-                                        {item.name}
-                                    </option>
-                                ))}
-                            </SelectInput>
-                            <InputError
-                                className="mt-2"
-                                message={errors.mark_id}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="type_id"
-                                value="Tipo de Vehiculo"
-                            />
-                            <SelectInput
-                                isFocused
-                                className="mt-1 block w-full"
-                                required
-                                value={data.type_id} // Usa value aquí
-                                onChange={(e) =>
-                                    setData("type_id", e.target.value)
-                                }
-                            >
-                                {typesVehicle.map((item, index) => (
-                                    <option key={index} value={item.name}>
-                                        {item.name}
-                                    </option>
-                                ))}
-                            </SelectInput>
-                            <InputError
-                                className="mt-2"
-                                message={errors.type_id}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="modelo"
-                                value="Modelo de Vehiculo"
-                            />
-                            <TextInput
-                                id="modelo"
-                                className="mt-1 block w-full"
-                                value={data.modelo} // Cambia esto a 'data.modelo'
-                                onChange={(e) =>
-                                    setData("modelo", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.modelo}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="color"
-                                value="Color de Vehiculo"
-                            />
-                            <TextInput
-                                id="color"
-                                className="mt-1 block w-full"
-                                value={data.color} // Cambia esto a 'data.color'
-                                onChange={(e) =>
-                                    setData("color", e.target.value)
-                                }
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.color}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="capacidad_carga"
-                                value="Capacidad de Carga"
-                            />
-                            <TextInput
-                                id="capacidad_carga"
-                                className="mt-1 block w-full"
-                                value={data.capacidad_carga} // Cambia esto a 'data.capacidad_carga'
-                                onChange={(e) =>
-                                    setData("capacidad_carga", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.capacidad_carga}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="fecha_compra"
-                                value="Fecha de Compra"
-                            />
-                            <TextInput
-                                id="fecha_compra"
-                                type="date"
-                                className="mt-1 block w-full"
-                                value={data.fecha_compra}
-                                onChange={(e) =>
-                                    setData("fecha_compra", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.fecha_compra}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel htmlFor="status" value="Estado" />
-                            <SelectInput
-                                isFocused
-                                className="mt-1 block w-full"
-                                required
-                                value={data.status}
-                                onChange={(e) =>
-                                    setData("status", e.target.value)
-                                } // Añade esta línea para manejar el cambio
-                            >
-                                {estadosVehiculos.map((item, index) => (
-                                    <option key={index} value={item.value}>
-                                        {item.name}
-                                    </option>
-                                ))}
-                            </SelectInput>
-                            <InputError
-                                className="mt-2"
-                                message={errors.status}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="mt-6 flex justify-end">
-                        <LinkButton href={"vehicle.list"}>
-                            Cancelar
-                        </LinkButton>
-
-                        <PrimaryButton
-                            type="submit"
-                            className="ms-3"
-                            disabled={processing}
-                        >
-                            {processing
-                                ? "Processing..."
-                                : "Actualizando Vehicle"}
-                        </PrimaryButton>
-                    </div>
-                </form>
+                <div className="p-4 flex justify-between">
+                    <h1 className="text-xl font-semibold">
+                        Lista de Programaciones
+                    </h1>
+                    <PrimaryButton onClick={handleCreate}>Nuevo</PrimaryButton>
+                </div>
+                <DataTableComponent columns={columns} data={schedules} />
             </div>
         </Authenticated>
     );

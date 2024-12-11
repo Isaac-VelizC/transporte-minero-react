@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Driver;
 use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -25,7 +26,7 @@ class UsersSeeder extends Seeder
                     'ap_pat' => 'Veliz',
                     'ci' => '8513987',
                     'genero' => 'Hombre',
-                    'rol' => 'A'
+                    'rol' => 'admin'
                 ],
                 'role' => 'Admin',
             ],
@@ -38,7 +39,7 @@ class UsersSeeder extends Seeder
                     'ap_pat' => 'Croft',
                     'ci' => '9828472',
                     'genero' => 'Mujer',
-                    'rol' => 'S'
+                    'rol' => 'secretario/a'
                 ],
                 'role' => 'Secretario/a',
             ],
@@ -51,7 +52,7 @@ class UsersSeeder extends Seeder
                     'ap_pat' => 'Starr',
                     'ci' => '9813742',
                     'genero' => 'Mujer',
-                    'rol' => 'E'
+                    'rol' => 'encargado de control'
                 ],
                 'role' => 'Encargado de control',
             ],
@@ -64,7 +65,7 @@ class UsersSeeder extends Seeder
                     'ap_pat' => 'List',
                     'ci' => '2938343',
                     'genero' => 'Mujer',
-                    'rol' => 'C'
+                    'rol' => 'cliente'
                 ],
                 'role' => 'Cliente',
             ],
@@ -77,7 +78,7 @@ class UsersSeeder extends Seeder
                     'ap_pat' => 'Park',
                     'ci' => '2843921',
                     'genero' => 'Mujer',
-                    'rol' => 'D'
+                    'rol' => 'conductor'
                 ],
                 // Asignar rol directamente en el array
             ]
@@ -94,5 +95,10 @@ class UsersSeeder extends Seeder
             // Crear la persona asociada al usuario
             Persona::create(array_merge($data['persona'], ['user_id' => $user->id]));
         }
+
+        Driver::create([
+            'persona_id' => 5,
+            'license_number' => '9833345',
+        ]);
     }
 }

@@ -16,7 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('persona_id')->nullable();
             $table->foreign('persona_id')->references('id')->on('personas')->onDelete('cascade');
             $table->string('license_number')->unique();
-            $table->date('hiring_date')->nullable();
+            $table->boolean('status')->default(true);
+            $table->date('hiring_date')->default(now());
             $table->timestamps();
         });
     }

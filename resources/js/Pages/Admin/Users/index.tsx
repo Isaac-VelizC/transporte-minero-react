@@ -2,8 +2,7 @@ import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import customStyles from "@/styles/StylesTable";
-import React, { FormEventHandler, useState } from "react";
-import DataTable from "react-data-table-component";
+import React, { useState } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
 import ModalDelete from "@/Components/Modal/ModalDelete";
 import ModalFormUser from "@/Components/Modal/ModalFormUser";
@@ -11,6 +10,7 @@ import { RolesInterface } from "@/interfaces/Roles";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import { FlashMessages as FlashMessagesType } from "@/interfaces/FlashMessages";
 import FlashMessages from "@/Components/FlashMessages";
+import DataTableComponent from "@/Components/Table";
 
 type Props = {
     users: UserInterface[];
@@ -21,10 +21,10 @@ const Index: React.FC<Props> = ({ users, roles }) => {
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
     const [userIdToSelect, setUserIdToSelect] = useState<number | null>(null);
     const [confirmingUserShow, setConfirmingUserShow] = useState(false);
-    const [isEditing, setIsEditing] = useState(false); // Indica si se está editando o creando
+    const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState<UserInterface | null>(null);
     const { props } = usePage();
-    
+
     // Asegúrate de que props.flash esté definido
     const flash: FlashMessagesType = props.flash || {};
     const { error, success } = flash;
@@ -58,7 +58,7 @@ const Index: React.FC<Props> = ({ users, roles }) => {
         },
         {
             name: "Rol",
-            cell: (row: UserInterface) => (row.rol),
+            cell: (row: UserInterface) => row.rol,
             sortable: true,
         },
         {
@@ -138,34 +138,35 @@ const Index: React.FC<Props> = ({ users, roles }) => {
 
     return (
         <Authenticated>
-            
             <Head title="Users" />
             <Breadcrumb pageName="Users" />
-                <FlashMessages error={error} success={success} />
+            <FlashMessages error={error} success={success} />
             <div className="flex justify-end my-10">
-                <PrimaryButton type="button" onClick={handleCreate} className="h-10">
+                <PrimaryButton
+                    type="button"
+                    onClick={handleCreate}
+                    className="h-10"
+                >
                     Nuevo
                 </PrimaryButton>
             </div>
             <div>
-                <DataTable
-                    columns={columns}
-                    data={users} // Usar los datos de usuarios pasados como props
-                    pagination // Habilitar paginación
-                    //selectableRows // Habilitar selección de filas
-                    //highlightOnHover // Resaltar fila al pasar el ratón
-                    //pointerOnHover // Cambiar el cursor al pasar sobre la fila
-                    paginationPerPage={10} // Número de filas por página
-                    paginationRowsPerPageOptions={[5, 10, 20]} // Opciones para filas por página
-                    customStyles={customStyles}
-                    //progressPending={loanding}
-                    theme="dark"
-                />
+                <DataTableComponent columns={columns} data={users} />
             </div>
             <ModalDelete
+                title="Are you sure you want to delete your account?"
+                titleButton="Delete User"
                 show={confirmingUserDeletion}
                 onClose={closeModal}
-                onDelete={deleteUser} // Esto pasa una función que retorna `deleteUser` en lugar de ejecutarla.
+                onDelete={deleteUser}
+                children={
+                    <p className="mt-1 text-sm text-gray-600">
+                        Once your account is deleted, all of its resources and
+                        data will be permanently deleted. Please enter your
+                        password to confirm you would like to permanently delete
+                        your account.
+                    </p>
+                }
             />
 
             <ModalFormUser

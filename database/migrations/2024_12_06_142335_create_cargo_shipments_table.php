@@ -17,6 +17,9 @@ return new class extends Migration
             // Relación con vehículos
             $table->unsignedBigInteger('car_id')->nullable();
             $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
+
+            $table->unsignedBigInteger('programming')->nullable();
+            $table->foreign('programming')->references('id')->on('vehicle_schedules')->onDelete('cascade');
             
             // Relación con clientes
             $table->unsignedBigInteger('client_id')->nullable();
@@ -26,11 +29,13 @@ return new class extends Migration
             $table->decimal('peso', 10, 2); // Peso de la carga (en toneladas o kg)
             $table->string('destino'); // Destino del envío
             $table->enum('status', ['pendiente', 'en_transito', 'entregado', 'cancelado']); // Estado del envío
+            $table->decimal('distance', 10, 2)->nullable(); // Distancia recorrida en kilómetros o metros
             
             // Información adicional
             $table->timestamp('fecha_envio')->nullable(); // Fecha y hora del envío
             $table->timestamp('fecha_entrega')->nullable(); // Fecha y hora de entrega
             $table->text('notas')->nullable(); // Notas adicionales sobre el envío
+            $table->json('route');
             
             // Timestamps
             $table->timestamps();
