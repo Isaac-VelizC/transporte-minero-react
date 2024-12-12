@@ -111,7 +111,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         </li>
                         <li>
                             <NavLink
-                                href="envios.index"
+                                href="envios.list"
                                 icon={<i className="bi bi-truck"></i>}
                                 label="Envios"
                             />

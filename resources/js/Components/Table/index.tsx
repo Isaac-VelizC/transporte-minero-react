@@ -31,7 +31,7 @@ const DataTableComponent = <T,>({ columns, data }: Props<T>) => {
         // Simulamos una carga de datos
         const timer = setTimeout(() => {
             setLoading(false); // Cambiamos el estado a false después de 2 segundos
-        }, 2000);
+        }, 1000);
 
         return () => clearTimeout(timer); // Limpiamos el timer si el componente se desmonta
     }, []);

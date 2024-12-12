@@ -112,13 +112,13 @@ const showVehicle: React.FC<Props> = ({ marcas, typesVehicle, vehicle, isEditing
                                 required
                                 onChange={(e) =>
                                     setData("type_id", e.target.value)
-                                } // Añade esta línea para manejar el cambio
+                                }
+                                //onSelect={`${data.type_id}`}
                             >
                                 {typesVehicle.map((item, index) => (
                                     <option
                                         key={index}
                                         value={item.id}
-                                        selected={item.name === data.type_id}
                                     >
                                         {item.name}
                                     </option>

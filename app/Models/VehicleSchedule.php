@@ -28,4 +28,9 @@ class VehicleSchedule extends Model
     {
         return $this->belongsTo(Driver::class, 'driver_id'); // Asegúrate de que el modelo Driver exista
     }
+
+    public function cargas()
+    {
+        return $this->hasMany(CargoShipment::class, 'programming');
+    }
 }

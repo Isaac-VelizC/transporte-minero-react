@@ -13,13 +13,17 @@ class CargoShipment extends Model
 
     protected $fillable = [
         'car_id',
+        'programming',
         'client_id',
+        'geofence_id',
         'peso',
         'destino',
         'status',
         'fecha_envio',
         'fecha_entrega',
-        'notas'
+        'client_latitude',
+        'client_longitude',
+        'notas',
     ];
 
     public function vehicle()
@@ -29,6 +33,16 @@ class CargoShipment extends Model
 
     public function client()
     {
-        return $this->belongsTo(User::class, 'client_id');
+        return $this->belongsTo(Persona::class, 'client_id');
+    }
+
+    public function schedule()
+    {
+        return $this->belongsTo(VehicleSchedule::class, 'programming');
+    }
+
+    public function geocerca()
+    {
+        return $this->belongsTo(Geocerca::class, 'geofence_id');
     }
 }

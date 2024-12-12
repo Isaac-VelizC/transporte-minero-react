@@ -27,4 +27,9 @@ class Geocerca extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function envios()
+    {
+        return $this->hasMany(CargoShipment::class, 'geofence_id');
+    }
 }

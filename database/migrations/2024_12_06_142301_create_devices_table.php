@@ -13,20 +13,18 @@ return new class extends Migration
     {
         Schema::create('devices', function (Blueprint $table) {
             $table->id();
-            
-            // Número de serie del dispositivo
-            $table->string('num_serial')->unique(); // Aseguramos que el número de serie sea único
-            
-            // Relación con vehículos
+            $table->string('num_serial')->unique();
             $table->unsignedBigInteger('car_id')->nullable();
             $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
-            
-            // Nuevos campos relevantes
-            $table->enum('status', ['activo', 'inactivo', 'en_mantenimiento']); // Estado del dispositivo
-            $table->string('type')->nullable(); // Tipo de dispositivo (ej. GPS, sensor, etc.)
-            $table->text('description')->nullable(); // Descripción del dispositivo
-            
-            // Timestamps
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->enum('status', ['activo', 'inactivo', 'en_mantenimiento']);
+            //$table->string('type')->nullable();
+            $table->text('description')->nullable();
+            $table->decimal('last_latitude', 10, 8)->nullable();
+            $table->decimal('last_longitude', 11, 8)->nullable();
+            $table->timestamp('last_updated_at')->nullable();
+            $table->integer('update_interval')->default(60);
             $table->timestamps();
         });
     }

@@ -38,7 +38,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/vehicle/programming', [VehiclesController::class, 'registerConductorVehicle'])->name('vehicle.programming');
     Route::patch('/vehicle/programming/{id}', [VehiclesController::class, 'updateConductorVehicle'])->name('vehicle.programming.update');
     //envios
-    Route::get('/envios', [ShipmentsController::class, 'index'])->name('envios.index');
+    Route::get('/envios', [ShipmentsController::class, 'index'])->name('envios.list');
+    Route::get('/envios/{id}', [ShipmentsController::class, 'show'])->name('envios.show');
+    Route::get('/envios/form/shipments', [ShipmentsController::class, 'create'])->name('envios.create.form');
+    Route::post('/envios/store/shipments', [ShipmentsController::class, 'store'])->name('envios.store.form');
+    Route::get('/envios/edit/{id}', [ShipmentsController::class, 'edit'])->name('envios.edit');
+    Route::patch('/envios/update/{id}', [ShipmentsController::class, 'update'])->name('envios.update.form');
+    Route::delete('/envios/delete/{id}', [ShipmentsController::class, 'destroy'])->name('envios.delete');
     ///Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
