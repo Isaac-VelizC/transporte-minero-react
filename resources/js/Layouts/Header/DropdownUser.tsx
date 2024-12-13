@@ -27,7 +27,7 @@ const DropdownUser = () => {
                     className="h-12 w-12 rounded-full bg-cover bg-no-repeat"
                     style={{
                         backgroundImage:
-                            "url(https://img.ecartelera.com/personas/mini/21600/21689_th.jpg)",
+                            "url(https://freepngimg.com/download/bugs/117617-bugs-bunny-free-clipart-hq.png",
                         backgroundPosition: "center",
                     }}
                 />
