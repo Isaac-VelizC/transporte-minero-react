@@ -8,53 +8,54 @@ use App\Http\Requests\Users\UserUpdateResquest;
 use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
-use function PHPSTORM_META\map;
-
 class UsersController extends Controller
 {
+    public function formatFullName(): string
+    {
+        return trim(
+            ($this->persona->nombre ?? '') . ' ' .
+                ($this->persona->ap_pat ?? '') . ' ' .
+                ($this->persona->ap_mat ?? '')
+        );
+    }
     /**
      * Display a listing of the resource.
      */
-
     public function index()
     {
-        // Obtener todos los usuarios que no tienen el rol 'Admin'
-        $items = User::whereDoesntHave('roles', function ($query) {
-            $query->where('name', 'Admin');
-        })->get();
+        $users = User::with(['persona', 'roles'])
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'Admin');
+            })
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->persona->id,
+                    'user_id' => $user->id,
+                    'full_name' => $user->persona ?
+                        trim("{$user->persona->nombre} {$user->persona->ap_pat} {$user->persona->ap_mat}") :
+                        '',
+                    'nombre' => optional($user->persona)->nombre ?? '',
+                    'ap_pat' => optional($user->persona)->ap_pat ?? '',
+                    'ap_mat' => optional($user->persona)->ap_mat ?? '',
+                    'ci' => optional($user->persona)->ci ?? '',
+                    'email' => $user->email ?? '',
+                    'genero' => optional($user->persona)->genero ?? '',
+                    'numero' => optional($user->persona)->numero ?? '',
+                    'estado' => optional($user->persona)->estado ?? '',
+                    'rol' => optional($user->persona)->rol ?? '',
+                ];
+            });
 
-        // Mapear los datos de los usuarios a la estructura deseada
-        $users = $items->map(function ($item) {
-            return [
-                'user_id' => $item->id,
-                'nombre' => $item->persona->nombre ?? '', // Asegúrate de tener la relación definida
-                'ap_pat' => $item->persona->ap_pat ?? '',
-                'ap_mat' => $item->persona->ap_mat ?? '',
-                'ci' => $item->persona->ci ?? '',
-                'email' => $item->email ?? '',
-                'genero' => $item->persona->genero ?? '',
-                'numero' => $item->persona->numero ?? '',
-                'avatar' => $item->persona->avatar ?? '',
-                'estado' => $item->persona->estado ?? '',
-                'rol' => $item->persona->rol ?? '',
-            ];
-        });
-        $roles = Role::where('name', '!=', 'Admin')->get();
+        $roles = Role::whereNotIn('name', ['Admin', 'Conductor', 'Secretaria'])->get();
 
-        // Retornar la vista utilizando Inertia
-        return Inertia::render('Admin/Users/index', [
-            'users' => $users,
-            'roles' => $roles
-        ]);
+        return Inertia::render('Admin/Users/index', compact('users', 'roles'));
     }
 
     /**
@@ -62,81 +63,56 @@ class UsersController extends Controller
      */
     public function store(UserCreateResquest $request)
     {
+        DB::beginTransaction();
         try {
-            // Iniciar una transacción
-            DB::beginTransaction();
-
-            // Validar los datos
             $data = $request->validated();
 
-            // Crear o buscar el usuario
-            $user = User::firstOrCreate(
-                ['email' => $data['email']], // Condición para buscar
+            // Validate role existence more efficiently
+            $role = Role::where('name', $request->rol)->first();
+            if (!$role) {
+                throw new \InvalidArgumentException('El rol especificado no existe.');
+            }
+
+            // Create user with a more robust approach
+            $user = User::updateOrCreate(
+                ['email' => $data['email']],
                 [
-                    'name' => $data['ci'], // Datos para crear
+                    'name' => $data['ci'],
                     'password' => Hash::make('TM.' . $data['ci']),
                 ]
             );
+            // Sync roles instead of assign (more reliable)
+            $user->syncRoles([$request->rol]);
+            // Create or update persona
+            Persona::updateOrCreate(
+                ['user_id' => $user->id],
+                array_merge($data, [
+                    'rol' => $request->rol,
+                    'user_id' => $user->id
+                ])
+            );
 
-            // Verificar y asignar el rol
-            if (!Role::where('name', $request->rol)->exists()) {
-                throw new \Exception('El rol especificado no existe.');
-            }
-            $user->assignRole($request->rol);
-
-            // Crear la persona y asociarla al usuario
-            $persona = new Persona($data);
-            $persona->user_id = $user->id; // Relacionar con el usuario
-            $persona->save();
-
-            // Confirmar la transacción
             DB::commit();
 
-            // Retornar respuesta exitosa
-            return redirect()->route('user.list')->with('success', 'Persona registrada con éxito.');
-        } catch (\Throwable $th) {
-            // Revertir la transacción en caso de error
+            // Use a more specific success message
+            return redirect()->route('user.list')
+                ->with('success', "Usuario {$user->name} registrado exitosamente.");
+        } catch (\Exception $exception) {
             DB::rollBack();
-
-            // Manejar excepciones y retornar un error
-            return redirect()->route('user.list')->with('error', 'No se pudo registrar la persona. Inténtalo nuevamente.');
+            // Log the actual error for debugging
+            Log::error('User creation error: ' . $exception->getMessage());
+            return redirect()->route('user.list')
+                ->with('error', 'No se pudo registrar el usuario. ' . $exception->getMessage());
         }
     }
-
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        // Verificar si el usuario tiene permiso para ver la información
-        /*if (!Auth::user()->can('view persona')) {
-            abort(403, 'No tienes permiso para acceder a esta página.');
-        }*/
-
         try {
-            // Obtener la persona con Eager Loading para evitar N+1
-            $item = Persona::with('user')->findOrFail($id); // Esto lanzará una excepción si no se encuentra
-
-            // Mapear los datos de la persona a la estructura deseada
-            $user = [
-                'user_id' => $item->id,
-                'nombre' => $item->nombre ?? '',
-                'ap_pat' => $item->ap_pat ?? '',
-                'ap_mat' => $item->ap_mat ?? '',
-                'ci' => $item->ci ?? '',
-                'email' => $item->user->email ?? '', // Asegúrate de que la relación esté definida
-                'genero' => $item->genero ?? '',
-                'numero' => $item->numero ?? '',
-                'avatar' => $item->avatar ?? '',
-                'estado' => $item->estado ?? '',
-                'rol' => $item->rol ?? '',
-            ];
-
-            // Retornar la vista utilizando Inertia
-            return Inertia::render('Admin/Users/show', [
-                'user' => $user,
-            ]);
+            dd('No tiene Funcioanlaidad ' . $id);
         } catch (ModelNotFoundException $e) {
             // Manejo de error si no se encuentra el modelo
             return redirect()->route('users.index')->with('error', 'Usuario no encontrado.');
@@ -151,45 +127,38 @@ class UsersController extends Controller
      */
     public function update(UserUpdateResquest $request, $id)
     {
+        DB::beginTransaction();
         try {
-            // Iniciar una transacción
-            DB::beginTransaction();
-
-            // Obtener los datos validados
             $data = $request->validated();
-            // Buscar la instancia de Persona
-            $persona = Persona::where('user_id', $id)->firstOrFail();
-            // Buscar la instancia de User asociada
-            $user = User::findOrFail($id);
-            $user->email = $data['email'];
-            $user->update();
-
-            // Verificar si el nuevo rol existe
-            $role = Role::where('name', $request->rol)->first();
-            if (!$role) {
-                return redirect()->route('user.list')->with('error', 'El rol especificado no existe.');
-            }
-
-            // Actualizar el rol del usuario
+            $user = User::with('persona')->findOrFail($id);
+            // Update user details
+            $user->fill([
+                'email' => $data['email']
+            ])->save();
+            // Sync user roles
             $user->syncRoles([$request->rol]);
-
-            // Actualizar datos del modelo Persona
-            $persona->update($data);
-
-            // Confirmar la transacción
+            // Update persona details
+            $user->persona->fill($data + ['rol' => $request->rol])->save();
             DB::commit();
 
-            // Retornar una respuesta exitosa
-            return redirect()->route('user.list')->with('success', 'Persona actualizada con éxito.');
+            return redirect()
+                ->route('user.list')
+                ->with('success', "Usuario {$user->name} actualizado exitosamente.");
         } catch (ModelNotFoundException $e) {
-            // Manejar el caso de que no se encuentre la persona
             DB::rollBack();
 
-            return redirect()->route('user.list')->with('error', 'Persona no encontrado.');
-        } catch (\Throwable $th) {
-            // Revertir la transacción en caso de error
+            return redirect()
+                ->route('user.list')
+                ->with('error', 'Usuario o rol no encontrado.');
+        } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('user.list')->with('error', 'No se pudo actualizar la persona. Inténtalo nuevamente.');
+
+            // Log the actual error for debugging
+            Log::error('User update error: ' . $e->getMessage());
+
+            return redirect()
+                ->route('user.list')
+                ->with('error', 'No se pudo actualizar el usuario. ' . $e->getMessage());
         }
     }
 
@@ -204,11 +173,9 @@ class UsersController extends Controller
             if (!$user->persona) {
                 return redirect()->back()->with('error', 'La relación persona no existe para este usuario.');
             }
-
             // Alternar el estado usando toggle o negación
             $user->persona->estado = !$user->persona->estado;
             $user->persona->save();
-
             // Mensaje dinámico basado en el nuevo estado
             $message = $user->persona->estado
                 ? 'Usuario reactivado correctamente'

@@ -25,7 +25,12 @@ class Persona extends Model
 
     public function driver()
     {
-        return $this->belongsTo(Driver::class, 'persona_id');
+        return $this->hasOne(Driver::class, 'persona_id');
+    }
+
+    public function envios()
+    {
+        return $this->hasMany(CargoShipment::class, 'conductor_id');
     }
 
     public function user()

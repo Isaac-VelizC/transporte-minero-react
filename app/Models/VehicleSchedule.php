@@ -17,6 +17,7 @@ class VehicleSchedule extends Model
         'end_time',
         'driver_id',
         'status',
+        'status_time'
     ];
 
     public function vehicle()
@@ -26,7 +27,7 @@ class VehicleSchedule extends Model
 
     public function driver()
     {
-        return $this->belongsTo(Driver::class, 'driver_id'); // Asegúrate de que el modelo Driver exista
+        return $this->belongsTo(Driver::class, 'driver_id');
     }
 
     public function cargas()

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ConductorController;
 use App\Http\Controllers\Admin\GeocercasController;
 use App\Http\Controllers\Admin\ShipmentsController;
 use App\Http\Controllers\Admin\UsersController;
@@ -26,8 +27,13 @@ Route::middleware('auth')->group(function () {
     ///Users
     Route::get('/users', [UsersController::class, 'index'])->name('user.list');
     Route::post('/users', [UsersController::class, 'store'])->name('user.create');
-    Route::patch('/users/{id}', [UsersController::class, 'update'])->name('user.update');
+    Route::patch('/users/{id}/{id_persona}', [UsersController::class, 'update'])->name('user.update');
     Route::delete('/users/{id}', [UsersController::class, 'destroy'])->name('user.destroy');
+    ///Conductor
+    Route::get('/driver/form', [ConductorController::class, 'create'])->name('driver.create');
+    Route::post('/driver/store', [ConductorController::class, 'store'])->name('driver.store');
+    Route::get('/driver/form/edit/{id}', [ConductorController::class, 'edit'])->name('driver.edit');
+    Route::patch('/driver/form/update/{id}/{id_persona}/{id_driver}', [ConductorController::class, 'update'])->name('driver.update');
     //Vehicle
     Route::get('/vehicle', [VehiclesController::class, 'index'])->name('vehicle.list');
     Route::get('/vehicle/form', [VehiclesController::class, 'create'])->name('vehicle.create');
@@ -35,6 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehicle/show/{id}', [VehiclesController::class, 'show'])->name('vehicle.show');
     Route::get('/vehicle/form/{id}', [VehiclesController::class, 'edit'])->name('vehicle.edit');
     Route::patch('/vehicle/update/{id}', [VehiclesController::class, 'update'])->name('vehicle.update');
+    Route::delete('/vehicle/{id}', [VehiclesController::class, 'destroy'])->name('vehicle.destroy');
     Route::post('/vehicle/programming', [VehiclesController::class, 'registerConductorVehicle'])->name('vehicle.programming');
     Route::patch('/vehicle/programming/{id}', [VehiclesController::class, 'updateConductorVehicle'])->name('vehicle.programming.update');
     //envios

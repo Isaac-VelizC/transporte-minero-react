@@ -7,13 +7,8 @@ import {
     useRef,
 } from "react";
 
-/*interface Option {
-    value: string | number; // El valor que tendrá cada opción
-    label: string; // El texto visible para cada opción
-}*/
-
 interface SelectInputProps extends InputHTMLAttributes<HTMLSelectElement> {
-    isFocused?: boolean; // Prop para manejar el autoenfoque
+    isFocused?: boolean;
     children: ReactNode,
 }
 
@@ -45,11 +40,6 @@ export default forwardRef(function SelectInput(
             ref={localRef}
         >
             {children}
-            {/*{opciones.map((item, index) => (
-                <option key={index} value={item.value}>
-                    {item.label}
-                </option>
-            ))}*/}
         </select>
     );
 });

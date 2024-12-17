@@ -39,9 +39,9 @@ class UsersSeeder extends Seeder
                     'ap_pat' => 'Croft',
                     'ci' => '9828472',
                     'genero' => 'Mujer',
-                    'rol' => 'secretario/a'
+                    'rol' => 'secretaria'
                 ],
-                'role' => 'Secretario/a',
+                'role' => 'Secretaria',
             ],
             [
                 'name' => 'Rachel Starr',
@@ -52,9 +52,9 @@ class UsersSeeder extends Seeder
                     'ap_pat' => 'Starr',
                     'ci' => '9813742',
                     'genero' => 'Mujer',
-                    'rol' => 'encargado de control'
+                    'rol' => 'encargado_Control'
                 ],
-                'role' => 'Encargado de control',
+                'role' => 'Encargado_Control',
             ],
             [
                 'name' => 'Peyton List',

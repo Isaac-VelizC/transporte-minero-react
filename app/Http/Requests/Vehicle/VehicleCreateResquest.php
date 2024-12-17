@@ -24,12 +24,12 @@ class VehicleCreateResquest extends FormRequest
         return [
             'matricula' => 'required|string|max:10|unique:vehicles,matricula',
             'mark_id' => 'required|exists:marks,id',
-            'color' => 'required|string|max:20',
+            'color' => 'required|string|max:15',
             'modelo' => 'required|string|max:50',
             'type_id' => 'required|exists:type_vehicles,id',
             'fecha_compra' => 'required|date',
             'status' => 'required|in:activo,mantenimiento,inactivo',
-            'capacidad_carga' => 'nullable|integer|min:0', // Puede ser nulo, pero si se proporciona debe ser mayor o igual a 0
+            'capacidad_carga' => 'nullable|integer|min:0',
         ];
     }
 }

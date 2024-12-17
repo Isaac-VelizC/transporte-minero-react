@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import NavLink from "@/Components/NavLink";
 import Logo from "@/assets/images/logo.png";
+import { roleNavItems } from "@/routes";
 
 interface SidebarProps {
     sidebarOpen: boolean;
@@ -11,9 +12,11 @@ interface SidebarProps {
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     const trigger = useRef<any>(null);
     const sidebar = useRef<any>(null);
+    const { auth } = usePage().props;
+    const navItems = roleNavItems[auth.rol!] || [];
 
     const storedSidebarExpanded = localStorage.getItem("sidebar-expanded");
-    const [sidebarExpanded, setSidebarExpanded] = useState(
+    const [sidebarExpanded] = useState(
         storedSidebarExpanded === null
             ? false
             : storedSidebarExpanded === "true"
@@ -66,7 +69,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             {/* Header del sidebar */}
             <div className="flex items-center justify-between gap-2 px-6 py-2 lg:py-4">
                 <Link href="/" className="flex items-center overflow-hidden">
-                    <img src={Logo} alt="Transporte Minero" className="h-16 w-16"  />
+                    <img
+                        src={Logo}
+                        alt="Transporte Minero"
+                        className="h-16 w-16"
+                    />
                     <h1 className="font-bold text-sm">Transporte Minero</h1>
                 </Link>
                 <button
@@ -87,60 +94,31 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         MENU
                     </h3>
                     <ul className="mb-6 flex flex-col gap-1.5">
-                        <li>
-                            <NavLink
-                                href="dashboard"
-                                icon={<i className="bi bi-columns-gap"></i>}
-                                label="Dashboard"
-                            />
-                        </li>
-                        <li>
-                            <NavLink
-                                href="user.list"
-                                icon={<i className="bi bi-people"></i>}
-                                label="Usuarios"
-                            />
-                        </li>
-
-                        <li>
-                            <NavLink
-                                href="vehicle.list"
-                                icon={<i className="bi bi-truck-front"></i>}
-                                label="Vehiculos"
-                            />
-                        </li>
-                        <li>
-                            <NavLink
-                                href="envios.list"
-                                icon={<i className="bi bi-truck"></i>}
-                                label="Envios"
-                            />
-                        </li>
-                        <li>
-                            <NavLink
-                                href="geocerca.list"
-                                icon={<i className="bi bi-geo-alt"></i>}
-                                label="Geocercas"
-                            />
-                        </li>
-                        <li>
-                            <NavLink
-                                href="view.map"
-                                icon={<i className="bi bi-geo-fill"></i>}
-                                label="Monitoreo"
-                            />
-                        </li>
-
-                        <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2">
-                            OTROS
-                        </h3>
-                        <li>
-                            <NavLink
-                                href="user.list"
-                                icon={<i className="bi bi-journals"></i>}
-                                label="Reportes"
-                            />
-                        </li>
+                        {navItems.map((item, index) => (
+                            <li key={index}>
+                                <NavLink
+                                    href={item.href}
+                                    icon={item.icon}
+                                    label={item.label}
+                                />
+                            </li>
+                        ))}
+                        {auth.rol == "Admin" ? (
+                            <>
+                                <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2">
+                                    OTROS
+                                </h3>
+                                <li>
+                                    <NavLink
+                                        href="user.list"
+                                        icon={
+                                            <i className="bi bi-journals"></i>
+                                        }
+                                        label="Reportes"
+                                    />
+                                </li>
+                            </>
+                        ) : null}
                     </ul>
                 </div>
             </nav>

@@ -5,7 +5,7 @@ import DataTableComponent from "@/Components/Table";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
-import React, { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 type Props = {
     geocercas: GeocercaInterface[];
@@ -14,14 +14,12 @@ type Props = {
 export default function Index({ geocercas }: Props) {
     const [openModal, setOpenModal] = useState(false);
     const [itemIdToSelect, setItemIdToSelect] = useState<number | null>(null);
-
-    // Memoize columns to prevent unnecessary re-renders
+    const [ status, setStatus ] = useState<boolean>(false);
     const columns = useMemo(
         () => [
             {
                 name: "#",
                 cell: (row: GeocercaInterface, index: number) => index + 1,
-                width: "50px",
             },
             {
                 name: "Nombre de la Geocerca",
@@ -34,11 +32,6 @@ export default function Index({ geocercas }: Props) {
                 sortable: true,
             },
             {
-                name: "Creado por ",
-                selector: (row: GeocercaInterface) => row.email, // Cambié created_by por created_at
-                sortable: true,
-            },
-            {
                 name: "Estado",
                 cell: (row: GeocercaInterface) => (
                     <span
@@ -48,30 +41,28 @@ export default function Index({ geocercas }: Props) {
                     >
                         {row.is_active ? "Activo" : "Inactivo"}
                     </span>
-                ),
-                width: "100px",
+                )
             },
             {
                 name: "Acciones",
                 cell: (row: GeocercaInterface) => (
-                    <div className="flex gap-2">
+                    <div className="flex gap-4">
                         <Link href={route("geocerca.edit", row.id)}>
                             <i className="bi bi-pencil"></i>
                         </Link>
-                        <button onClick={() => confirmDeletion(row.id)}>
+                        <button onClick={() => confirmDeletion(row.id, row.is_active)}>
                             <i className="bi bi-trash2"></i>
                         </button>
                     </div>
                 ),
                 ignoreRowClick: true,
-                width: "90px",
             },
         ],
         []
-    ); // Dependencias vacías ya que no cambian
+    );
 
-    // Usar useCallback para funciones que se pasan como props
-    const confirmDeletion = useCallback((id: number) => {
+    const confirmDeletion = useCallback((id: number, status: boolean) => {
+        setStatus(status);
         setItemIdToSelect(id);
         setOpenModal(true);
     }, []);
@@ -118,9 +109,12 @@ export default function Index({ geocercas }: Props) {
                 <DataTableComponent columns={columns} data={geocercas} />
             </div>
             <ModalDelete
-                title="Dar de baja Geocerca"
-                titleButton="Dar de baja"
+                title={`${ status ? 'Desactivar' : 'Activar' } Geocerca`}
+                titleButton={ status ? 'Desactivar' : 'Activar' }
                 show={openModal}
+                children={
+                    <p>Por favor, confirma tu decisión pulsando el botón de abajo.</p>
+                }
                 onClose={closeModal}
                 onDelete={handleDelete}
             />

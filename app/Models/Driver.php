@@ -15,8 +15,23 @@ class Driver extends Model
         'status'
     ];
 
+    public function formatFullName(): string
+    {
+        return trim(
+            ($this->persona->nombre ?? '') . ' ' .
+                ($this->persona->ap_pat ?? '') . ' ' .
+                ($this->persona->ap_mat ?? '')
+        );
+    }
+
     public function persona()
     {
         return $this->belongsTo(Persona::class, 'persona_id');
     }
+
+    public function envios()
+    {
+        return $this->hasMany(VehicleSchedule::class, 'driver_id');
+    }
+
 }

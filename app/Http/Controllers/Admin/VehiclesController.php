@@ -24,25 +24,10 @@ class VehiclesController extends Controller
      */
     public function index()
     {
-        // Obtener todos los usuarios que no tienen el rol 'Admin'
         $items = Vehicle::all();
-
-        // Mapear los datos de los usuarios a la estructura deseada
-        $vehicles = $items->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'matricula' => $item->matricula,
-                'color' => $item->color,
-                'modelo' => $item->modelo,
-                'fecha_compra' => $item->fecha_compra,
-                'status' => $item->status,
-                'capacidad_carga' => $item->capacidad_carga,
-            ];
-        });
-
         // Retornar la vista utilizando Inertia
         return Inertia::render('Admin/Vehicle/index', [
-            'vehicles' => $vehicles,
+            'vehicles' => $items,
         ]);
     }
     /**
@@ -63,17 +48,16 @@ class VehiclesController extends Controller
             VehicleSchedule::create([
                 'car_id' => $validatedData['car_id'],
                 'start_time' => $validatedData['start_time'],
-                'end_time' => $validatedData['end_time'], // Puede ser null si no se proporciona
+                'end_time' => $validatedData['end_time'],
                 'driver_id' => $validatedData['driver_id'],
             ]);
-
+            Driver::findOrFail($validatedData['driver_id'])->update(['status' => false]);
             return redirect()->back()->with(['success' => 'Vehículo asignado exitosamente.'], 201);
         } catch (\Throwable $th) {
             // Manejo de errores
             return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
         }
     }
-
     /**
      * Update Asigancion de conductor a vehiculo
      */
@@ -100,7 +84,6 @@ class VehiclesController extends Controller
             return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
         }
     }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -108,14 +91,12 @@ class VehiclesController extends Controller
     {
         $marks = Mark::all();
         $types = TypeVehicle::all();
-        // Retornar la vista utilizando Inertia
         return Inertia::render('Admin/Vehicle/form', [
             'marcas' => $marks,
             'typesVehicle' => $types,
             'isEditing' => false
         ]);
     }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -149,20 +130,7 @@ class VehiclesController extends Controller
     public function show(string $id)
     {
         try {
-            // Obtener el vehículo con Eager Loading para evitar N+1
             $vehicle = Vehicle::with('schedules.driver.persona')->findOrFail($id);
-            // Obtener la lista de conductores activos
-            $drivers = Driver::where('status', true)->with('persona')->get();
-            // Mapear los datos de los conductores a la estructura deseada
-            $driversList = $drivers->map(function ($driver) {
-                return [
-                    'id' => $driver->id,
-                    'full_name' => trim($driver->persona->nombre . ' ' . $driver->persona->ap_pat . ' ' . $driver->persona->ap_mat),
-                    'ci' => $driver->persona->ci ?? '',
-                    'numero' => $driver->persona->numero ?? '',
-                ];
-            });
-
             // Obtener las programaciones del vehículo
             $schedules = $vehicle->schedules()->with('driver.persona')->get()->map(function ($schedule) {
                 return [
@@ -172,22 +140,24 @@ class VehiclesController extends Controller
                     'start_time' => $schedule->start_time,
                     'end_time' => $schedule->end_time,
                     'driver_id' => $schedule->driver_id,
-                    'conductor_name' => trim($schedule->driver->persona->nombre . ' ' . $schedule->driver->persona->ap_pat . ' ' . $schedule->driver->persona->ap_mat),
+                    'conductor_name' => $schedule->driver ? $schedule->driver->formatFullName() : 'No asignado',
                     'status' => $schedule->status,
+                    'status_time' => $schedule->status_time,
                 ];
             });
-            // Retornar la vista utilizando Inertia
+            $statusTime = $schedules->contains(function ($schedule) {
+                return $schedule['status_time'] === 1;
+            });
             return Inertia::render('Admin/Vehicle/show', [
                 'vehicle' => $vehicle,
-                'drivers' => $driversList,
-                'schedules' => $schedules
+                'drivers' => $this->listDriversDisponibles(),
+                'schedules' => $schedules,
+                'statuSchedules' => $statusTime
             ]);
         } catch (ModelNotFoundException $e) {
-            // Manejo de error si no se encuentra el modelo
-            return redirect()->route('vehicle.index')->with('error', 'Vehículo no encontrado.');
+            return redirect()->route('vehicle.list')->with('error', 'Vehículo no encontrado.');
         } catch (\Exception $e) {
-            // Manejo de otros errores
-            return redirect()->route('vehicle.index')->with('error', 'Ocurrió un error al obtener los datos.');
+            return redirect()->route('vehicle.list')->with('error', 'Ocurrió un error al obtener los datos. ' . $e);
         }
     }
     /**
@@ -198,7 +168,6 @@ class VehiclesController extends Controller
         $marks = Mark::all();
         $types = TypeVehicle::all();
         $vehicle = Vehicle::find($id);
-        // Retornar la vista utilizando Inertia
         return Inertia::render('Admin/Vehicle/form', [
             'marcas' => $marks,
             'typesVehicle' => $types,
@@ -216,37 +185,52 @@ class VehiclesController extends Controller
         try {
             // Validar y obtener los datos del request
             $data = $request->validated();
-            // Buscar el vehículo por ID
             $vehicle = Vehicle::findOrFail($id);
-            // Actualizar los datos del vehículo
             $vehicle->update($data);
             // Confirmar la transacción
             DB::commit();
-            // Redirigir con un mensaje de éxito
             return redirect()->route('vehicle.list')->with('success', 'Vehículo actualizado con éxito.');
         } catch (\Throwable $th) {
             // Revertir la transacción en caso de error
             DB::rollBack();
-            // Registrar el error para depuración
             Log::error('Error al actualizar vehículo: ' . $th->getMessage());
-            // Redirigir con un mensaje de error
             return redirect()->route('vehicle.list')->with('error', 'No se pudo actualizar el vehículo. Inténtalo nuevamente.');
         }
     }
-
-    /**
-     * Register Programacion de viaje de Vehiculo
-     */
-    public function storeProgrammigVehicle()
-    {
-        //
-    }
-
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id, Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'status' => 'required|string|in:activo,mantenimiento,inactivo'
+        ]);
+        try {
+            $item = Vehicle::findOrFail($id);
+            $item->status = $validatedData['status'];
+            $item->update();
+            return redirect()->back()->with('success', 'Vehiculo cambio de estado correctamente');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->back()->with('error', 'Vehiculo no encontrado.');
+        } catch (\Exception $e) {
+            Log::error('Error al modificar estado del Vehiculo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Ocurrió un error al modificar el estado del usuario.');
+        }
+    }
+    /**
+     * Obtener a los conductores disponibles
+     */
+    public function listDriversDisponibles()
+    {
+        return Driver::with('persona')
+            ->where('status', true)
+            ->whereHas('persona', fn($query) => $query->where('estado', true))
+            ->get()
+            ->map(fn($driver) => [
+                'id' => $driver->id,
+                'full_name' => $driver->formatFullName(),
+                'ci' => optional($driver->persona)->ci ?? '',
+                'numero' => optional($driver->persona)->numero ?? '',
+            ]);
     }
 }

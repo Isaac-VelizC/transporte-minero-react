@@ -4,21 +4,31 @@ import DataTableComponent from "@/Components/Table";
 import { ScheduleInterface } from "@/interfaces/schedule";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import React, { useState } from "react";
 import ModalFormSchedule from "./Programming/ModalFormSchedule";
 import { DriverInterface } from "@/interfaces/Driver";
+import Card from "@/Components/Card";
 
 type Props = {
     vehicle: VehicleInterface;
     schedules: ScheduleInterface[];
     drivers: DriverInterface[];
+    statuSchedules: boolean;
 };
 
-const showVehicle: React.FC<Props> = ({ vehicle, schedules, drivers }) => {
+const showVehicle: React.FC<Props> = ({
+    vehicle,
+    schedules,
+    drivers,
+    statuSchedules,
+}) => {
     const [openModal, setOpenModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [scheduleData, setScheduleData] = useState<ScheduleInterface | null>(null);
+    const [scheduleData, setScheduleData] = useState<ScheduleInterface | null>(
+        null
+    );
+
     const columns = [
         {
             name: "#",
@@ -60,8 +70,8 @@ const showVehicle: React.FC<Props> = ({ vehicle, schedules, drivers }) => {
             name: "Acciones",
             cell: (row: ScheduleInterface) => (
                 <button onClick={() => handleEdit(row)}>
-                <i className="bi bi-pencil"></i>
-            </button>
+                    <i className="bi bi-pencil"></i>
+                </button>
             ),
             ignoreRowClick: true,
             width: "90px",
@@ -81,12 +91,8 @@ const showVehicle: React.FC<Props> = ({ vehicle, schedules, drivers }) => {
     };
 
     const closeModal = () => {
-        //setConfirmingUserDeletion(false);
         setOpenModal(false);
-        //setUserIdToSelect(null);
-        setScheduleData(null); // Reinicia los datos del usuario al cerrar
-        //clearErrors();
-        //reset();
+        setScheduleData(null);
     };
 
     return (
@@ -94,8 +100,8 @@ const showVehicle: React.FC<Props> = ({ vehicle, schedules, drivers }) => {
             <Head title="Show" />
             <Breadcrumb pageName="Show Vehicle" />
 
-            <div className="bg-gray-600 rounded-xl mb-10 p-8 shadow-lg">
-                <div className="flex flex-col lg:flex-row lg:justify-between text-white">
+            <Card classNames="mb-10">
+                <div className="flex flex-col lg:flex-row lg:justify-between text-gray-500">
                     <div className="flex-1">
                         <h3 className="font-bold text-lg">
                             Información General
@@ -111,21 +117,9 @@ const showVehicle: React.FC<Props> = ({ vehicle, schedules, drivers }) => {
                             <span className="font-medium">{vehicle.color}</span>
                         </p>
                         <p className="text-sm">
-                            Marca ID:{" "}
-                            <span className="font-medium">
-                                {vehicle.mark_id}
-                            </span>
-                        </p>
-                        <p className="text-sm">
                             Modelo:{" "}
                             <span className="font-medium">
                                 {vehicle.modelo}
-                            </span>
-                        </p>
-                        <p className="text-sm">
-                            Tipo ID:{" "}
-                            <span className="font-medium">
-                                {vehicle.type_id}
                             </span>
                         </p>
                     </div>
@@ -135,12 +129,18 @@ const showVehicle: React.FC<Props> = ({ vehicle, schedules, drivers }) => {
                         <p className="text-sm">
                             Capacidad de Carga:{" "}
                             <span className="font-medium">
-                                {vehicle.capacidad_carga}
+                                {vehicle.capacidad_carga} t.
                             </span>
                         </p>
                         <p className="text-sm">
                             Estado:{" "}
-                            <span className="font-medium">
+                            <span
+                                className={`font-medium ${
+                                    vehicle.status != "activo"
+                                        ? "text-red-600"
+                                        : ""
+                                }`}
+                            >
                                 {vehicle.status}
                             </span>
                         </p>
@@ -164,26 +164,26 @@ const showVehicle: React.FC<Props> = ({ vehicle, schedules, drivers }) => {
                         </p>
                     </div>
                 </div>
-            </div>
+            </Card>
 
             <ModalFormSchedule
                 show={openModal}
                 onClose={closeModal}
                 drivers={drivers}
                 cardId={vehicle.id}
-                schecule={scheduleData || undefined} // Pasa datos del usuario si existen
+                schecule={scheduleData || undefined}
                 isEditing={isEditing}
             />
 
-            <div className="bg-gray-600 rounded-xl">
-                <div className="p-4 flex justify-between">
-                    <h1 className="text-xl font-semibold">
-                        Lista de Programaciones
-                    </h1>
+            <div className="p-4 flex justify-between">
+                <h1 className="text-xl font-semibold">
+                    Historial de Programaciones
+                </h1>
+                {statuSchedules || vehicle.status != "activo" ? null : (
                     <PrimaryButton onClick={handleCreate}>Nuevo</PrimaryButton>
-                </div>
-                <DataTableComponent columns={columns} data={schedules} />
+                )}
             </div>
+            <DataTableComponent columns={columns} data={schedules} />
         </Authenticated>
     );
 };

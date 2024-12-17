@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests\Users;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UserCreateResquest extends FormRequest
 {
@@ -45,20 +43,20 @@ class UserCreateResquest extends FormRequest
             'ci' => [
                 'required',
                 'string',
-                'size:7', // Para asegurar que tenga al menos 7 caracteres y un carácter adicional
-                'regex:/^\d{7}[A-Za-z]*$/', // Los primeros 7 caracteres deben ser números, luego letras opcionales
+                'min:7',
+                'regex:/^\d{7,8}(?:-[0-9A-Z]{1,2})?$/',
                 'unique:personas,ci'
             ],
             'genero' => [
                 'required',
                 'string',
-                'in:Hombre,Mujer,Otro' // Asegura que el género sea uno de los valores permitidos
+                'in:Hombre,Mujer,Otro'
             ],
             'numero' => [
                 'required',
                 'string',
                 'min:8',
-                'regex:/^\d+$/', // Solo números
+                'regex:/^\d+$/',
                 'unique:personas,numero'
             ],
             'email' => [
@@ -67,8 +65,18 @@ class UserCreateResquest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
+                'unique:users,email'
             ],
+            'license_number' => [
+                'nullable',
+                'string',
+                'unique:drivers,license_number'
+            ],
+            'hiring_date' => [
+                'nullable',
+                'date_format:Y-m-d',
+            ],
+
         ];
     }
 }

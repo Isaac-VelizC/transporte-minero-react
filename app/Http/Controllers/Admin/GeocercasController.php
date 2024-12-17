@@ -19,26 +19,10 @@ class GeocercasController extends Controller
     public function index()
     {
         $items = Geocerca::all();
-
-        // Mapear los datos de los usuarios a la estructura deseada
-        $geocercas = $items->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'name' => $item->name,
-                'polygon_coordinates' => $item->polygon_coordinates,
-                'type' => $item->type,
-                'description' => $item->description,
-                'is_active' => $item->is_active,
-                'created_by' => $item->created_by,
-                'email' => $item->creator->email
-            ];
-        });
-
         return Inertia::render('Admin/Map/Geocercas/index', [
-            'geocercas' => $geocercas
+            'geocercas' => $items
         ]);
     }
-
     /**
      * Mostrar geocercas en el mapa
      */
@@ -49,7 +33,6 @@ class GeocercasController extends Controller
             'geocercas' => $geocercas
         ]);
     }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -64,18 +47,13 @@ class GeocercasController extends Controller
             'isEditing' => false
         ]);
     }
-
-
     /**
      * Store a newly created resource in storage.
      */
     public function store(GeocercaCreateResquest $request)
     {
-
         $validatedData = $request->validated();
-
         $validatedData['created_by'] = Auth::id();
-
         try {
             Geocerca::create($validatedData);
 
@@ -90,15 +68,6 @@ class GeocercasController extends Controller
                 ->with('error', 'No se pudo crear la geocerca. Intente nuevamente.');
         }
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -106,7 +75,6 @@ class GeocercasController extends Controller
     {
         try {
             $geocerca = Geocerca::findOrFail($id);
-
             return Inertia::render('Admin/Map/Geocercas/form', [
                 'geocerca' => $geocerca,
                 'types' => [
@@ -118,11 +86,9 @@ class GeocercasController extends Controller
             ]);
         } catch (ModelNotFoundException $e) {
             Log::warning("Intento de editar geocerca no existente: {$id}");
-
             return redirect()->back()->with('error', 'Geocerca no encontrada');
         }
     }
-
     /**
      * Update the specified resource in storage.
      */
@@ -130,34 +96,23 @@ class GeocercasController extends Controller
     {
         try {
             $geocerca = Geocerca::findOrFail($id);
-
-            // Obtener los datos validados
             $validatedData = $request->validated();
-
-            // Actualizar solo los campos que han cambiado
             $changes = collect($validatedData)
                 ->filter(function ($value, $key) use ($geocerca) {
                     return $geocerca->{$key} !== $value;
                 })
                 ->toArray();
-
             // Si hay cambios, actualizar
             if (!empty($changes)) {
                 $geocerca->fill($changes);
-
-                // Si no se proporciona explícitamente, mantener el usuario original
                 if (!isset($changes['created_by'])) {
                     $geocerca->created_by = $geocerca->created_by;
                 }
-
                 $geocerca->save();
-
                 return redirect()
                     ->route('geocerca.list')
                     ->with('success', 'Geocerca actualizada exitosamente');
             }
-
-            // Si no hay cambios, redirigir con un mensaje informativo
             return redirect()->back()->with('info', 'No se detectaron cambios en la geocerca');
         } catch (ModelNotFoundException $e) {
             return back()
@@ -170,7 +125,6 @@ class GeocercasController extends Controller
                 ->with('error', 'No se pudo actualizar la geocerca. Intente nuevamente.');
         }
     }
-
     /**
      * Remove the specified resource from storage.
      */

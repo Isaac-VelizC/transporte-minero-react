@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
-import Modal from "./Modal";
-import SecondaryButton from "../Buttons/SecondaryButton";
+import Modal from "../../../Components/Modal/Modal";
+import SecondaryButton from "../../../Components/Buttons/SecondaryButton";
 import { UserInterface } from "@/interfaces/User";
-import InputLabel from "../Forms/InputLabel";
-import TextInput from "../Forms/TextInput";
-import InputError from "../Forms/InputError";
+import InputLabel from "../../../Components/Forms/InputLabel";
+import TextInput from "../../../Components/Forms/TextInput";
+import InputError from "../../../Components/Forms/InputError";
 import { useForm } from "@inertiajs/react";
-import PrimaryButton from "../Buttons/PrimaryButton";
-import SelectInput from "../Forms/SelectInput";
+import PrimaryButton from "../../../Components/Buttons/PrimaryButton";
+import SelectInput from "../../../Components/Forms/SelectInput";
 import { RolesInterface } from "@/interfaces/Roles";
 
 const generos = [
@@ -19,9 +19,9 @@ const generos = [
 type Props = {
     show: boolean;
     onClose: () => void;
-    users?: UserInterface; // Datos del usuario a editar (opcional)
+    users?: UserInterface;
     roles: RolesInterface[];
-    isEditing: boolean; // Indica si se está editando un usuario o creando uno nuevo
+    isEditing: boolean;
 };
 
 const ModalFormUser: React.FC<Props> = ({
@@ -43,7 +43,7 @@ const ModalFormUser: React.FC<Props> = ({
         rol: "",
     };
 
-    const { data, setData, post, patch, errors, processing } =
+    const { data, setData, post, patch, errors, processing, reset } =
         useForm(initialData);
 
     useEffect(() => {
@@ -54,14 +54,16 @@ const ModalFormUser: React.FC<Props> = ({
         e.preventDefault();
 
         if (isEditing && data?.user_id) {
-            console.log("dentro update", data);
-            patch(`/users/${data.user_id}`, {
-                onSuccess: () => onClose(),
+            patch(`/users/${data.user_id}/${data.id}`, {
+                onSuccess: () => {
+                    onClose(), reset();
+                },
             });
         } else {
-            console.log("dentro create", data);
             post(route("user.create"), {
-                onSuccess: () => onClose(),
+                onSuccess: () => {
+                    onClose(), reset();
+                },
             });
         }
     };
@@ -72,13 +74,13 @@ const ModalFormUser: React.FC<Props> = ({
                 <h2 className="text-lg font-bold text-gray-900">
                     {isEditing ? "Edit User Information" : "Create New User"}
                 </h2>
-                <div className="flex flex-col lg:flex-row lg:gap-4 lg:mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
                     <div>
                         <InputLabel htmlFor="nombre" value="Nombre" />
                         <TextInput
                             id="nombre"
                             className="mt-1 block w-full"
-                            value={data.nombre} // Cambia esto a 'data.nombre' si usas 'data' directamente
+                            value={data.nombre}
                             onChange={(e) => setData("nombre", e.target.value)}
                             required
                         />
@@ -89,7 +91,7 @@ const ModalFormUser: React.FC<Props> = ({
                         <TextInput
                             id="ap_pat"
                             className="mt-1 block w-full"
-                            value={data.ap_pat} // Cambia esto a 'data.ap_pat'
+                            value={data.ap_pat}
                             onChange={(e) => setData("ap_pat", e.target.value)}
                             required
                             isFocused
@@ -100,15 +102,13 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputLabel htmlFor="ap_mat" value="Apellido Materno" />
                         <TextInput
                             id="ap_mat"
+                            value={data.ap_mat}
                             className="mt-1 block w-full"
-                            value={data.ap_mat} // Cambia esto a 'data.ap_mat'
                             onChange={(e) => setData("ap_mat", e.target.value)}
                             isFocused
                         />
                         <InputError className="mt-2" message={errors.ap_mat} />
                     </div>
-                </div>
-                <div className="flex flex-col lg:flex-row lg:gap-4 lg:mt-4">
                     <div>
                         <InputLabel
                             htmlFor="email"
@@ -116,8 +116,8 @@ const ModalFormUser: React.FC<Props> = ({
                         />
                         <TextInput
                             id="email"
+                            value={data.email}
                             className="mt-1 block w-full"
-                            value={data.email} // Cambia esto a 'data.email'
                             onChange={(e) => setData("email", e.target.value)}
                             required
                             isFocused
@@ -128,8 +128,8 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputLabel htmlFor="ci" value="Cedula de Identidad" />
                         <TextInput
                             id="ci"
+                            value={data.ci}
                             className="mt-1 block w-full"
-                            value={data.ci} // Cambia esto a 'data.ci'
                             onChange={(e) => setData("ci", e.target.value)}
                             required
                             isFocused
@@ -140,29 +140,36 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputLabel htmlFor="numero" value="Teléfono" />
                         <TextInput
                             id="numero"
+                            value={data.numero}
                             className="mt-1 block w-full"
-                            value={data.numero} // Cambia esto a 'data.numero'
                             onChange={(e) => setData("numero", e.target.value)}
                             required
                             isFocused
                         />
                         <InputError className="mt-2" message={errors.numero} />
                     </div>
-                </div>
-                <div className="flex flex-col lg:flex-row lg:gap-4 lg:mt-4">
                     <div>
                         <InputLabel htmlFor="genero" value="Genero" />
                         <SelectInput
                             isFocused
-                            className="mt-1 block w-full"
                             required
-                            onChange={(e) => setData("genero", e.target.value)} // Añade esta línea para manejar el cambio
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData("genero", e.target.value)}
+                            value={data.genero}
+                            defaultValue={""}
                         >
-                            {generos.map((item, index) => (
-                                <option key={index} value={item.value}  selected={item.value === data.genero}>
-                                    {item.label}
-                                </option>
-                            ))}
+                            <option value="" disabled>
+                                {generos && generos.length > 0
+                                    ? "Selecciona un genero"
+                                    : "No hay datos disponibles"}
+                            </option>
+                            {generos && generos.length > 0
+                                ? generos.map((item, index) => (
+                                      <option key={index} value={item.value}>
+                                          {item.label}
+                                      </option>
+                                  ))
+                                : null}
                         </SelectInput>
                         <InputError className="mt-2" message={errors.genero} />
                     </div>
@@ -170,15 +177,24 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputLabel htmlFor="rol" value="Rol" />
                         <SelectInput
                             isFocused
-                            className="mt-1 block w-full"
                             required
-                            onChange={(e) => setData("rol", e.target.value)} // Añade esta línea para manejar el cambio
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData("rol", e.target.value)}
+                            value={data.rol}
+                            defaultValue={""}
                         >
-                            {roles.map((item, index) => (
-                                <option key={index} value={item.name} selected={item.name === data.rol}>
-                                    {item.name}
-                                </option>
-                            ))}
+                            <option value="" disabled>
+                                {roles && roles.length > 0
+                                    ? "Selecciona un rol"
+                                    : "No hay datos disponibles"}
+                            </option>
+                            {roles && roles.length > 0
+                                ? roles.map((item, index) => (
+                                      <option key={index} value={item.name}>
+                                          {item.name}
+                                      </option>
+                                  ))
+                                : null}
                         </SelectInput>
                         <InputError className="mt-2" message={errors.rol} />
                     </div>

@@ -22,7 +22,7 @@ return new class extends Migration
             // Nuevos campos relevantes
             $table->string('modelo', 50); // Marca del vehículo
             $table->string('color', 30)->nullable(); // Color del vehículo
-            $table->dateTime('fecha_compra'); // Año de fabricación
+            $table->date('fecha_compra'); // Año de fabricación
             $table->enum('status', ['activo', 'mantenimiento', 'inactivo']); // Agregamos 'inactivo'
             
             // Información del responsable

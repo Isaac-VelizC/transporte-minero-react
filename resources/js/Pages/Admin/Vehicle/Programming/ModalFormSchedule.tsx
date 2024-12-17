@@ -91,7 +91,7 @@ function ModalFormSchedule({
                         />
                         <TextInput
                             id="start_time"
-                            type="date"
+                            type="datetime-local"
                             className="mt-1 block w-full"
                             value={data.start_time}
                             onChange={(e) =>
@@ -111,7 +111,7 @@ function ModalFormSchedule({
                         />
                         <TextInput
                             id="end_time"
-                            type="date"
+                            type="datetime-local"
                             className="mt-1 block w-full"
                             value={data.end_time}
                             onChange={(e) =>

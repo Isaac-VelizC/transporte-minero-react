@@ -98,8 +98,8 @@ export default function form({
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-200 mb-2">
                         {isEditing
-                            ? "Edit Vehicle Information"
-                            : "Create New Vehicle"}
+                            ? "Editar Información del envio"
+                            : "Registrar nuevo envio"}
                     </h2>
                     <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
@@ -117,8 +117,10 @@ export default function form({
                                         parseFloat(e.target.value)
                                     )
                                 }
+                                value={data.client_id}
+                                defaultValue={0}
                             >
-                                <option value="" disabled>
+                                <option value={0} disabled>
                                     {clientes && clientes.length > 0
                                         ? "Selecciona un cliente"
                                         : "No hay datos disponibles"}
@@ -148,15 +150,16 @@ export default function form({
                                 isFocused
                                 className="mt-1 block w-full"
                                 required
-                                value={data.programming || ""}
+                                value={data.programming}
                                 onChange={(e) =>
                                     setData(
                                         "programming",
                                         parseFloat(e.target.value)
                                     )
                                 }
+                                defaultValue={0}
                             >
-                                <option value="" disabled>
+                                <option value={0} disabled>
                                     {schedules && schedules.length > 0
                                         ? "Selecciona un programa"
                                         : "No hay datos disponibles"}
@@ -189,6 +192,8 @@ export default function form({
                                         parseFloat(e.target.value)
                                     )
                                 }
+                                value={data.geofence_id}
+                                defaultValue={""}
                             >
                                 <option value="" disabled>
                                     {geocercas && geocercas.length > 0
@@ -252,7 +257,7 @@ export default function form({
                             />
                             <TextInput
                                 id="fecha_entrega"
-                                type="date"
+                                type="datetime-local"
                                 className="mt-1 block w-full"
                                 value={data.fecha_entrega}
                                 onChange={(e) =>
@@ -286,6 +291,7 @@ export default function form({
                             latitud={data.client_latitude}
                             longitud={data.client_longitude}
                             onChange={handleMapChange}
+                            geocercas={geocercas}
                         />
                     </div>
 

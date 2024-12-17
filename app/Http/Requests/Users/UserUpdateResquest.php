@@ -45,9 +45,9 @@ class UserUpdateResquest extends FormRequest
             'ci' => [
                 'required',
                 'string',
-                'size:7',
-                'regex:/^\d{7}[A-Za-z]*$/',
-                Rule::unique('personas', 'ci')->ignore($this->route('id')), // Ignora el ID actual
+                'min:7',
+                'regex:/^\d{7,8}(?:-[0-9A-Z]{1,2})?$/',
+                Rule::unique('personas', 'ci')->ignore($this->route('id_persona')),
             ],
             'genero' => [
                 'required',
@@ -57,21 +57,25 @@ class UserUpdateResquest extends FormRequest
             'numero' => [
                 'required',
                 'string',
-                'min:8',
+                'size:8',
                 'regex:/^\d+$/',
-                Rule::unique('personas', 'numero')->ignore($this->route('id')), // Ignora el ID actual
-            ],
-            'rol' => [
-                'required',
-                'string',
+                Rule::unique('personas', 'numero')->ignore($this->route('id_persona')),
             ],
             'email' => [
                 'required',
                 'string',
-                'lowercase',
                 'email',
                 'max:255',
                 Rule::unique(User::class)->ignore($this->route('id')),
+            ],
+            'license_number' => [
+                'nullable',
+                'string',
+                Rule::unique('drivers', 'license_number')->ignore($this->route('id_driver')),
+            ],
+            'hiring_date' => [
+                'nullable',
+                'date_format:Y-m-d',
             ],
         ];
     }

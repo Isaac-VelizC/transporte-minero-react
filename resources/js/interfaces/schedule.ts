@@ -8,4 +8,5 @@ export interface ScheduleInterface {
     driver_id: string;
     conductor_name: string;
     status: string;
+    status_time: boolean;
 }

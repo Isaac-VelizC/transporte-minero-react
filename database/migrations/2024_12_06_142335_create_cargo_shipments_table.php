@@ -24,6 +24,8 @@ return new class extends Migration
             // Relación con clientes
             $table->unsignedBigInteger('client_id')->nullable();
             $table->foreign('client_id')->references('id')->on('personas')->onDelete('cascade');
+            $table->unsignedBigInteger('conductor_id')->nullable();
+            $table->foreign('conductor_id')->references('id')->on('personas')->onDelete('cascade');
             
             // Nuevos campos relevantes
             $table->decimal('peso', 10, 2); // Peso de la carga (en toneladas o kg)

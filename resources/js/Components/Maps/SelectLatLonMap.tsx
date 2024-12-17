@@ -1,14 +1,28 @@
 import React from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import {
+    MapContainer,
+    TileLayer,
+    Marker,
+    Polygon,
+    useMapEvents,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { GeocercaInterface } from "@/interfaces/Geocerca";
 
 type Props = {
     latitud: number | null;
     longitud: number | null;
+    geocercas: GeocercaInterface[]; // Añadir geocercas como prop
     onChange: (lat: number, lon: number) => void;
 };
 
-const SelectLatLonMap: React.FC<Props> = ({ latitud, longitud, onChange }) => {
+const SelectLatLonMap: React.FC<Props> = ({
+    latitud,
+    longitud,
+    geocercas,
+    onChange,
+}) => {
+    // Manejador de clics en el mapa
     const MapClickHandler = () => {
         useMapEvents({
             click: (e) => {
@@ -29,10 +43,23 @@ const SelectLatLonMap: React.FC<Props> = ({ latitud, longitud, onChange }) => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
+
+            {/* Manejador de clics en el mapa */}
             <MapClickHandler />
+
+            {/* Mostrar marcador */}
             {latitud !== null && longitud !== null && (
                 <Marker position={[latitud, longitud]} />
             )}
+
+            {/* Mostrar geocercas */}
+            {geocercas.map((geocerca) => (
+                <Polygon
+                    key={geocerca.id}
+                    positions={JSON.parse(geocerca.polygon_coordinates)}
+                    pathOptions={{ color: "blue", weight: 2 }}
+                />
+            ))}
         </MapContainer>
     );
 };

@@ -16,4 +16,5 @@ export interface ShipmentInterface {
     geocerca_name: string,
     client_latitude: number,
     client_longitude: number,
+    delete: boolean,
 }

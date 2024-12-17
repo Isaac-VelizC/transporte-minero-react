@@ -1,16 +1,14 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import customStyles from "@/styles/StylesTable";
 import React, { useState } from "react";
-import { Head, router, usePage } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import ModalDelete from "@/Components/Modal/ModalDelete";
-import ModalFormUser from "@/Components/Modal/ModalFormUser";
+import ModalFormUser from "@/Pages/Admin/Users/ModalFormUser";
 import { RolesInterface } from "@/interfaces/Roles";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
-import { FlashMessages as FlashMessagesType } from "@/interfaces/FlashMessages";
-import FlashMessages from "@/Components/FlashMessages";
 import DataTableComponent from "@/Components/Table";
+import LinkButton from "@/Components/Buttons/LinkButton";
 
 type Props = {
     users: UserInterface[];
@@ -21,24 +19,19 @@ const Index: React.FC<Props> = ({ users, roles }) => {
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
     const [userIdToSelect, setUserIdToSelect] = useState<number | null>(null);
     const [confirmingUserShow, setConfirmingUserShow] = useState(false);
+    const [status, setStatus] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState<UserInterface | null>(null);
-    const { props } = usePage();
-
-    // Asegúrate de que props.flash esté definido
-    const flash: FlashMessagesType = props.flash || {};
-    const { error, success } = flash;
 
     const columns = [
         {
-            name: "ID",
-            cell: (row: UserInterface, index: number) => index + 1, // Enumerar filas
-            width: "50px", // Ajustar el ancho de la columna si es necesario
+            name: "#",
+            cell: (row: UserInterface, index: number) => index + 1,
+            width: "50px",
         },
         {
             name: "Nombre Completo",
-            cell: (row: UserInterface) =>
-                row.nombre + " " + row.ap_pat + " " + row.ap_mat,
+            cell: (row: UserInterface) => row.full_name,
             sortable: true,
         },
         {
@@ -78,10 +71,20 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             name: "Acciones",
             cell: (row: UserInterface) => (
                 <div className="flex gap-2">
-                    <button onClick={() => handleEdit(row)}>
-                        <i className="bi bi-eye"></i>
-                    </button>
-                    <button onClick={() => confirmUserDeletion(row.user_id)}>
+                    {row.rol == "Conductor" ? (
+                        <Link href={route("driver.edit", row.user_id)}>
+                            <i className="bi bi-pencil"></i>
+                        </Link>
+                    ) : (
+                        <button onClick={() => handleEdit(row)}>
+                            <i className="bi bi-eye"></i>
+                        </button>
+                    )}
+                    <button
+                        onClick={() =>
+                            confirmUserDeletion(row.user_id, row.estado)
+                        }
+                    >
                         <i className="bi bi-trash2"></i>
                     </button>
                 </div>
@@ -103,7 +106,8 @@ const Index: React.FC<Props> = ({ users, roles }) => {
         setConfirmingUserShow(true);
     };
 
-    const confirmUserDeletion = (userId: number) => {
+    const confirmUserDeletion = (userId: number, estado: boolean) => {
+        setStatus(estado);
         setUserIdToSelect(userId);
         setConfirmingUserDeletion(true);
     };
@@ -112,25 +116,24 @@ const Index: React.FC<Props> = ({ users, roles }) => {
         setConfirmingUserDeletion(false);
         setConfirmingUserShow(false);
         setUserIdToSelect(null);
-        setUserData(null); // Reinicia los datos del usuario al cerrar
-        //clearErrors();
-        //reset();
+        setUserData(null);
     };
 
     const deleteUser = async () => {
         if (userIdToSelect !== null) {
             await router.delete(route("user.destroy", userIdToSelect), {
-                preserveScroll: true, // Mantiene la posición del scroll
+                preserveScroll: true,
                 onSuccess: () => {
-                    closeModal(); // Cierra el modal después de eliminar
+                    closeModal();
                 },
                 onError: (errors) => {
                     console.error("Error al eliminar el usuario:", errors);
                 },
                 onFinish: () => {
-                    setUserIdToSelect(null); // Limpia el estado de `userIdToSelect`
+                    setUserIdToSelect(null);
                 },
             });
+            setStatus(false);
         } else {
             console.warn("No hay un ID de usuario seleccionado para eliminar.");
         }
@@ -140,31 +143,31 @@ const Index: React.FC<Props> = ({ users, roles }) => {
         <Authenticated>
             <Head title="Users" />
             <Breadcrumb pageName="Users" />
-            <FlashMessages error={error} success={success} />
-            <div className="flex justify-end my-10">
-                <PrimaryButton
-                    type="button"
-                    onClick={handleCreate}
-                    className="h-10"
-                >
+            <div className="flex justify-end my-10 gap-3">
+                <LinkButton href="driver.create">
+                    <i className="bi bi-person-plus text-sm" />
+                    Conductor
+                </LinkButton>
+                <PrimaryButton type="button" onClick={handleCreate}>
                     Nuevo
                 </PrimaryButton>
             </div>
-            <div>
-                <DataTableComponent columns={columns} data={users} />
-            </div>
+            <DataTableComponent columns={columns} data={users} />
             <ModalDelete
-                title="Are you sure you want to delete your account?"
-                titleButton="Delete User"
+                title={`¿Estás seguro de que quieres ${
+                    !status ? "activar" : "desactivar"
+                } tu cuenta?`}
+                titleButton={!status ? "Activar" : "Desactivar"}
                 show={confirmingUserDeletion}
                 onClose={closeModal}
                 onDelete={deleteUser}
                 children={
                     <p className="mt-1 text-sm text-gray-600">
-                        Once your account is deleted, all of its resources and
-                        data will be permanently deleted. Please enter your
-                        password to confirm you would like to permanently delete
-                        your account.
+                        {!status
+                            ? "Al activar tu cuenta, tendrás acceso a todas las funciones y servicios disponibles. Asegúrate de que deseas continuar con este proceso. "
+                            : "Al desactivar tu cuenta, perderás el acceso a todas las funciones y servicios. Si decides continuar, podrás reactivarla en cualquier momento. "}
+                        Por favor, confirma tu decisión ingresando tu
+                        contraseña.
                     </p>
                 }
             />

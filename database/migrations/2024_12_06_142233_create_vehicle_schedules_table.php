@@ -20,11 +20,10 @@ return new class extends Migration
             $table->timestamp('start_time'); // Hora de inicio del horario
             $table->timestamp('end_time')->nullable(); // Hora de fin del horario
             $table->unsignedBigInteger('driver_id')->nullable(); // ID del conductor asignado
-            $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null'); // Relación con la tabla de conductores
-            
+            $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null');
             // Información adicional
             $table->enum('status', ['pendiente', 'asignado', 'libre'])->default('libre');
-            
+            $table->boolean('status_time')->default(true);
             // Timestamps
             $table->timestamps();
         });

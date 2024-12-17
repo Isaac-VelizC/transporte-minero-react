@@ -20,8 +20,8 @@ const index: React.FC<Props> = ({ vehicles }) => {
     const columns = [
         {
             name: "#",
-            cell: (row: VehicleInterface, index: number) => index + 1, // Enumerar filas
-            width: "50px", // Ajustar el ancho de la columna si es necesario
+            cell: (row: VehicleInterface, index: number) => index + 1,
+            width: "50px",
         },
         {
             name: "Matricula",
@@ -45,7 +45,7 @@ const index: React.FC<Props> = ({ vehicles }) => {
         },
         {
             name: "Capacidad de Carga",
-            cell: (row: VehicleInterface) => row.capacidad_carga,
+            cell: (row: VehicleInterface) => row.capacidad_carga + ' t.',
             sortable: true,
         },
         {

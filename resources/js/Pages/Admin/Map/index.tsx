@@ -9,8 +9,6 @@ import {
     Marker,
     Popup,
     Polygon,
-    Circle,
-    Polyline,
 } from "react-leaflet";
 
 type Props = {
@@ -18,18 +16,13 @@ type Props = {
 };
 
 const Index: React.FC<Props> = ({ geocercas }) => {
-    const pathCoordinates: [number, number][] = [
-        [-19.572297, -65.769080], // Punto de inicio
-        [-19.570911, -65.763407], // Punto intermedio
-        [-19.574173, -65.754901], // Punto final
-    ];    
     return (
         <Authenticated>
             <Head title="Map" />
             <Breadcrumb pageName="Map" />
             <div className=" h-150 w-full">
                 <MapContainer
-                    center={[51.505, -0.09]} // Coordenadas iniciales del mapa
+                    center={[-19.58361, -65.75306]} // Coordenadas iniciales del mapa
                     zoom={13} // Nivel de zoom
                     style={{ height: "100%", width: "100%" }} // Tamaño del mapa
                 >
@@ -81,34 +74,9 @@ const Index: React.FC<Props> = ({ geocercas }) => {
                                 )}
                             </React.Fragment>
                         ) : (
-                            // Geocerca circular
-                            <Circle
-                                key={index}
-                                center={[geocerca.latitude, geocerca.longitude]}
-                                radius={geocerca.radius}
-                                pathOptions={{ color: "#FF0000" }}
-                            >
-                                <Popup>{geocerca.name}</Popup>
-                            </Circle>
+                            <div>No hay mapa</div>
                         );
                     })}
-
-
-        <Polyline
-            key={`route`}
-            positions={pathCoordinates}
-            pathOptions={{ color: "red", weight: 4 }}
-        >
-            <Popup>Ruta #{'index' + 1}</Popup>
-        </Polyline>
-
-                    {/* Agregar un marcador con un popup */}
-                    {/*<Marker position={[51.505, -0.09]}>
-                        <Popup>
-                            Un marcador en Londres.
-                            <br /> ¡Puedes hacer clic aquí!
-                        </Popup>
-                    </Marker>*/}
                 </MapContainer>
             </div>
         </Authenticated>
@@ -116,3 +84,15 @@ const Index: React.FC<Props> = ({ geocercas }) => {
 };
 
 export default Index;
+
+{
+    /**
+    <Circle
+        key={index}
+        center={[geocerca.latitude, geocerca.longitude]}
+        radius={geocerca.radius}
+        pathOptions={{ color: "#FF0000" }}
+    >
+        <Popup>{geocerca.name}</Popup>
+    </Circle> */
+}

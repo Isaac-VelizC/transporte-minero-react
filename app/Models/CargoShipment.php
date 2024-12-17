@@ -15,6 +15,7 @@ class CargoShipment extends Model
         'car_id',
         'programming',
         'client_id',
+        'conductor_id',
         'geofence_id',
         'peso',
         'destino',
@@ -24,6 +25,7 @@ class CargoShipment extends Model
         'client_latitude',
         'client_longitude',
         'notas',
+        'delete'
     ];
 
     public function vehicle()
@@ -34,6 +36,11 @@ class CargoShipment extends Model
     public function client()
     {
         return $this->belongsTo(Persona::class, 'client_id');
+    }
+
+    public function conductor()
+    {
+        return $this->belongsTo(Persona::class, 'conductor_id');
     }
 
     public function schedule()

@@ -27,7 +27,7 @@ class VehicleUpdateResquest extends FormRequest
                 'required',
                 'string',
                 'max:10',
-                Rule::unique('vehicles', 'matricula')->ignore($this->route('id')), // Ignora el ID actual
+                Rule::unique('vehicles', 'matricula')->ignore($this->route('id')),
             ],
             'mark_id' => ['required', 'exists:marks,id'],
             'type_id' => ['required', 'exists:type_vehicles,id'],

@@ -18,7 +18,7 @@ type TypesGeocerca = {
 type Props = {
     types: TypesGeocerca[];
     geocerca: GeocercaInterface;
-    isEditing: boolean; // Indica si se está editando un usuario o creando uno nuevo
+    isEditing: boolean;
 };
 
 export default function form({ isEditing, geocerca, types }: Props) {
@@ -91,13 +91,24 @@ export default function form({ isEditing, geocerca, types }: Props) {
                                 onChange={(e) =>
                                     setData("type", e.target.value)
                                 }
-                                onSelect={data.type.toString}
+                                value={data.type}
+                                defaultValue={""}
                             >
-                                {types.map((item, index) => (
-                                    <option key={index} value={item.value}>
-                                        {item.value}
-                                    </option>
-                                ))}
+                                <option value="" disabled>
+                                    {types && types.length > 0
+                                        ? "Selecciona tipo de geocerca"
+                                        : "No hay datos disponibles"}
+                                </option>
+                                {types && types.length > 0
+                                    ? types.map((item, index) => (
+                                          <option
+                                              key={index}
+                                              value={item.value}
+                                          >
+                                              {item.value}
+                                          </option>
+                                      ))
+                                    : null}
                             </SelectInput>
                             <InputError
                                 className="mt-2"

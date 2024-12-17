@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -18,8 +17,8 @@ class RolesAndPermissionsSeeder extends Seeder
         
         // Crear roles
         Role::create(['name' => 'Admin']);
-        Role::create(['name' => 'Secretario/a']);
-        Role::create(['name' => 'Encargado de control']);
+        Role::create(['name' => 'Secretaria']);
+        Role::create(['name' => 'Encargado_Control']);
         Role::create(['name' => 'Cliente']);
         Role::create(['name' => 'Conductor']);
 
@@ -43,7 +42,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'ProgramacionVehiculo',
             'Monitoreo'
         ]);
-        $secretaryRole = Role::findByName('Secretario/a');
+        $secretaryRole = Role::findByName('Secretaria');
         $secretaryRole->givePermissionTo([
             'GestionUsers',
             'GestionVehiculos',
@@ -54,9 +53,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $userAdmin = User::find(1);
         $userAdmin->assignRole('Admin');
         $userSecretary = User::find(2);
-        $userSecretary->assignRole('Secretario/a');
+        $userSecretary->assignRole('Secretaria');
         $userSecretary = User::find(3);
-        $userSecretary->assignRole('Encargado de control');
+        $userSecretary->assignRole('Encargado_Control');
         $userSecretary = User::find(4);
         $userSecretary->assignRole('Cliente');
         $userSecretary = User::find(5);

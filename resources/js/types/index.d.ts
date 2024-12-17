@@ -10,6 +10,7 @@ export type PageProps<
 > = T & {
     auth: {
         user: User;
+        rol?: string
     };
     flash: FlashMessagesType;
 };
