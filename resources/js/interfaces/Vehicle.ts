@@ -11,4 +11,5 @@ export interface VehicleInterface {
     responsable?: string;
     capacidad_carga: string;
     fecha_ultima_revision?: string;
+    [key: string]: unknown;
 }

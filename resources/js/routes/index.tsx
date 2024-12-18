@@ -69,11 +69,6 @@ export const roleNavItems: Record<
         },
         {
             href: "view.map",
-            icon: <i className="bi bi-geo-fill"></i>,
-            label: "Monitoreo",
-        },
-        {
-            href: "view.map",
             icon: <i className="bi bi-journals"></i>,
             label: "Reporte de Cambios",
         },
@@ -85,15 +80,10 @@ export const roleNavItems: Record<
             label: "Dashboard",
         },
         {
-            href: "envios.list",
+            href: "driver.envios.list",
             icon: <i className="bi bi-truck"></i>,
             label: "Envios",
-        },
-        {
-            href: "view.map",
-            icon: <i className="bi bi-geo-fill"></i>,
-            label: "Monitoreo",
-        },
+        }
     ],
     Cliente: [
         {
@@ -102,9 +92,9 @@ export const roleNavItems: Record<
             label: "Dashboard",
         },
         {
-            href: "envios.list",
+            href: "client.pedido.list",
             icon: <i className="bi bi-truck"></i>,
-            label: "Envios",
+            label: "Pedidos",
         },
     ],
 };

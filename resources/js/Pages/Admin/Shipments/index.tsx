@@ -6,6 +6,7 @@ import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import { useState } from "react";
+import { TableColumn } from "react-data-table-component";
 
 type Props = {
     envios: ShipmentInterface[];
@@ -15,7 +16,7 @@ function index({ envios }: Props) {
     const [confirmingDeletion, setConfirmingDeletion] = useState(false);
     const [idToSelect, setIdToSelect] = useState<number | null>(null);
     const [status, setStatus] = useState(false);
-    const columns = [
+    const columns: TableColumn<ShipmentInterface>[] = [
         {
             name: "#",
             cell: (row: ShipmentInterface, index: number) => index + 1,
@@ -57,7 +58,7 @@ function index({ envios }: Props) {
             cell: (row: ShipmentInterface) => (
                 <div className="flex gap-2">
                     <Link href={route("envios.show", row.id)}>
-                        <i className="bi bi-eye"></i>
+                        <i className="bi bi-geo-fill"></i>
                     </Link>
                     {!row.delete ? (
                         <i className="bi bi-x-lg text-red"></i>
@@ -114,15 +115,14 @@ function index({ envios }: Props) {
         <Authenticated>
             <Head title="Envios" />
             <Breadcrumb pageName="Envios list" />
-            <div>
-                <div className="flex flex-col lg:flex-row items-center justify-between my-4">
-                    <h1 className="text-lg font-semibold">
-                        Lista de envios registrados
-                    </h1>
-                    <LinkButton href={"envios.create.form"}>Nuevo</LinkButton>
-                </div>
-                <DataTableComponent columns={columns} data={envios} />
+            <div className="flex justify-end my-4">
+                <LinkButton href={"envios.create.form"}>Nuevo</LinkButton>
             </div>
+            <DataTableComponent
+                title="Lista de envios registrados"
+                columns={columns}
+                data={envios}
+            />
             <ModalDelete
                 title={`¿Estás seguro de que quieres ${
                     status ? "cancelar" : "reactivar"

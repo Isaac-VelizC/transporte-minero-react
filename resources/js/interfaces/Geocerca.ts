@@ -8,4 +8,5 @@ export interface GeocercaInterface {
     is_active: boolean;
     created_by: string;
     email: string;
+    [key: string]: unknown;
 }

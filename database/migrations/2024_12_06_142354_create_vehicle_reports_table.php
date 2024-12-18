@@ -18,10 +18,10 @@ return new class extends Migration
             $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
             // Nuevos campos relevantes
             $table->enum('status', ['operativo', 'en_mantenimiento', 'fuera_de_servicio']);
-            $table->dateTime('change_time'); // Fecha y hora del cambio de estado
+            $table->dateTime('change_time');
             $table->text('description')->nullable();
             // Información adicional
-            $table->unsignedBigInteger('reported_by')->nullable(); // ID del usuario que reporta
+            $table->unsignedBigInteger('reported_by')->nullable();
             $table->foreign('reported_by')->references('id')->on('users')->onDelete('set null');
             // Timestamps
             $table->timestamps();

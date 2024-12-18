@@ -30,8 +30,7 @@ return new class extends Migration
             // Nuevos campos relevantes
             $table->decimal('peso', 10, 2); // Peso de la carga (en toneladas o kg)
             $table->string('destino'); // Destino del envío
-            $table->enum('status', ['pendiente', 'en_transito', 'entregado', 'cancelado'])->default('pendiente'); // Estado del envío
-            //$table->decimal('distance', 10, 2)->nullable(); // Distancia recorrida en kilómetros o metros
+            $table->enum('status', ['pendiente', 'en_transito', 'entregado', 'cancelado'])->default('pendiente');
             $table->boolean('delete')->default(true);
 
             // Información adicional

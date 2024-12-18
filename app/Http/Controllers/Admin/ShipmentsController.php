@@ -53,8 +53,9 @@ class ShipmentsController extends Controller
                     $query->where('user_id', $idAuth);
                 })
                 ->get()
-                ->map([$this, 'transformEnvio']);
-
+                ->map(function ($envio) {
+                    return $this->transformEnvio($envio);
+                });
             return Inertia::render('Client/listEnvios', [
                 'envios' => $envios
             ]);
@@ -86,7 +87,7 @@ class ShipmentsController extends Controller
             'vehicle:id,matricula',
             'client:id,nombre,ap_pat,ap_mat'
         ])
-            ->where('user_id', $userId)
+            ->where('conductor_id', $userId)
             ->get()
             ->map(function ($envio) {
                 return $this->transformEnvio($envio);

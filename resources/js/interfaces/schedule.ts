@@ -9,4 +9,5 @@ export interface ScheduleInterface {
     conductor_name: string;
     status: string;
     status_time: boolean;
+    [key: string]: unknown;
 }

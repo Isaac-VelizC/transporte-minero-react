@@ -12,4 +12,5 @@ export interface UserInterface {
     numero: string;
     estado: boolean;
     rol: string;
+    [key: string]: unknown;
 }
