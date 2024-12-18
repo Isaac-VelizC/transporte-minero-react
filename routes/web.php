@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\GeocercasController;
 use App\Http\Controllers\Admin\ShipmentsController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\VehiclesController;
+use App\Http\Controllers\ClientDriverController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -51,7 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/envios/store/shipments', [ShipmentsController::class, 'store'])->name('envios.store.form');
     Route::get('/envios/edit/{id}', [ShipmentsController::class, 'edit'])->name('envios.edit');
     Route::patch('/envios/update/{id}', [ShipmentsController::class, 'update'])->name('envios.update.form');
-    Route::delete('/envios/delete/{id}', [ShipmentsController::class, 'destroy'])->name('envios.delete');
+    Route::patch('/envios/delete/{id}', [ShipmentsController::class, 'changeStatus'])->name('envios.delete');
     ///Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -67,6 +68,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/driver/envios/', [ShipmentsController::class, 'listEnviosConductor'])->name('driver.envios.list');
+Route::get('/driver/envios/{id}/status', [ClientDriverController::class, 'changeStatusShipment'])->name('driver.envios.status');
+Route::get('/driver/envio/show/{id}', [ClientDriverController::class, 'showEnvio'])->name('driver.envio.show');
+
+Route::patch('/cliente/envios/{id}/confirm', [ClientDriverController::class, 'confirmEntrega'])->name('client.envios.status');
 Route::get('/client/pedidos/', [ShipmentsController::class, 'listEnviosCliente'])->name('client.pedido.list');
 
 require __DIR__.'/auth.php';

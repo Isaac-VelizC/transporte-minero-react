@@ -42,11 +42,6 @@ class Vehicle extends Model
         return $this->hasMany(VehicleReport::class, 'car_id');
     }
 
-    /*public function trajectories()
-    {
-        return $this->hasMany(VehicleTrajectorie::class, 'car_id');
-    }*/
-
     public function devices()
     {
         return $this->hasMany(Device::class, 'car_id');

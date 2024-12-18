@@ -16,5 +16,5 @@ export interface ShipmentInterface {
     client_latitude: number;
     client_longitude: number;
     delete: boolean;
-    [key: string]: unknown; // Signatura de índice para cumplir con Record<string, unknown>
+    [key: string]: unknown;
 }

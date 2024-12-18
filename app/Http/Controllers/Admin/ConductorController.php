@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\UserCreateResquest;
 use App\Http\Requests\Users\UserUpdateResquest;
+use App\Models\CargoShipment;
 use App\Models\Driver;
 use App\Models\Persona;
 use App\Models\User;
@@ -123,5 +124,4 @@ class ConductorController extends Controller
             return redirect()->route('user.list')->with('error', 'No se pudo actualizar la persona. Inténtalo nuevamente.');
         }
     }
-
 }

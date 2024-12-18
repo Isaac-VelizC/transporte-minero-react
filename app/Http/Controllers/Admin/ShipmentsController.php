@@ -88,6 +88,7 @@ class ShipmentsController extends Controller
             'client:id,nombre,ap_pat,ap_mat'
         ])
             ->where('conductor_id', $userId)
+            ->where('delete', true)
             ->get()
             ->map(function ($envio) {
                 return $this->transformEnvio($envio);
@@ -104,14 +105,14 @@ class ShipmentsController extends Controller
             'programming' => $envio->programming,
             'matricula' => optional($envio->vehicle)->matricula,
             'client_id' => $envio->client_id,
-            'full_name' => optional($envio->client)
-                ? "{$envio->client->nombre} {$envio->client->ap_pat} {$envio->client->ap_mat}"
-                : null,
+            'full_name' => $envio->formatFullName(),
             'destino' => $envio->destino,
             'status' => $envio->status,
             'delete' => $envio->delete,
             'fecha_envio' => $envio->fecha_envio,
             'fecha_entrega' => $envio->fecha_entrega,
+            'peso' => $envio->peso,
+            'notas' => $envio->notas,
         ];
     }
 
@@ -265,10 +266,11 @@ class ShipmentsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function changeStatus(string $id)
     {
         try {
             $item = CargoShipment::findOrFail($id);
+            $item->status = $item->delete ? 'cancelado' : 'pendiente';
             $item->delete = !$item->delete;
             $item->save();
             // Mensaje dinámico basado en el nuevo estado

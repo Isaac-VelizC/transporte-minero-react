@@ -26,7 +26,7 @@ const Index: React.FC<Props> = ({ users, roles }) => {
     const columns = [
         {
             name: "#",
-            cell: (row: UserInterface, index: number) => index + 1,
+            cell: (_: UserInterface, index: number) => index + 1,
             width: "50px",
         },
         {

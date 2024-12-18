@@ -28,6 +28,15 @@ class CargoShipment extends Model
         'delete'
     ];
 
+    public function formatFullName(): string
+    {
+        return trim(
+            ($this->client->nombre ?? '') . ' ' .
+                ($this->client->ap_pat ?? '') . ' ' .
+                ($this->client->ap_mat ?? '')
+        );
+    }
+
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class, 'car_id');

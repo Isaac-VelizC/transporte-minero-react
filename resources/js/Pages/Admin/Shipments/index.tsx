@@ -60,19 +60,21 @@ function index({ envios }: Props) {
                     <Link href={route("envios.show", row.id)}>
                         <i className="bi bi-geo-fill"></i>
                     </Link>
-                    {!row.delete ? (
-                        <i className="bi bi-x-lg text-red"></i>
-                    ) : (
-                        <Link href={route("envios.edit", row.id)}>
-                            <i className="bi bi-pencil"></i>
-                        </Link>
+                    {row.status === "entregado" ? null : (
+                        <>
+                            <Link href={route("envios.edit", row.id)}>
+                                <i className="bi bi-pencil"></i>
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    confirmUserDeletion(row.id, row.delete)
+                                }
+                            >
+                                <i className="bi bi-trash2"></i>
+                            </button>
+                        </>
                     )}
-                    <button
-                        type="button"
-                        onClick={() => confirmUserDeletion(row.id, row.delete)}
-                    >
-                        <i className="bi bi-trash2"></i>
-                    </button>
                 </div>
             ),
             ignoreRowClick: true,
@@ -93,21 +95,19 @@ function index({ envios }: Props) {
 
     const cancelarEnvio = async () => {
         if (idToSelect !== null) {
-            await router.delete(route("envios.delete", idToSelect), {
-                preserveScroll: true,
-                onSuccess: () => {
-                    closeModal();
-                },
-                onError: (errors) => {
-                    console.error("Error al eliminar el usuario:", errors);
-                },
-                onFinish: () => {
-                    setIdToSelect(null);
-                },
-            });
-            setStatus(false);
+            try {
+                await router.patch(route("envios.delete", idToSelect), {
+                    preserveScroll: true,
+                });
+                setStatus(false);
+                closeModal();
+                setIdToSelect(null);
+            } catch (error) {
+                console.error("Error al cancelar el envío:", error);
+                // Aquí puedes mostrar un mensaje al usuario si es necesario
+            }
         } else {
-            console.warn("No hay un ID de usuario seleccionado para eliminar.");
+            console.warn("No hay un ID de envío seleccionado para cancelar.");
         }
     };
 

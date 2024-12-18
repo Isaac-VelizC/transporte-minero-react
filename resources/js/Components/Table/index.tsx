@@ -64,7 +64,7 @@ const DataTableComponent = <T extends Record<string, unknown>>({
     useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 1000);
+        }, 600);
 
         return () => clearTimeout(timer);
     }, []);
