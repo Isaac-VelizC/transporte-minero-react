@@ -7,7 +7,7 @@ type Props = {
 
 const Card: React.FC<Props> = ({ children, classNames = '' }) => {
     return (
-        <div className={`bg-gray-300 rounded-lg p-4 shadow-md ${classNames}`}>
+        <div className={`bg-gray-300 rounded-lg p-4 shadow-md text-gray-500 ${classNames}`}>
             {children}
         </div>
     );

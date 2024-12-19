@@ -80,16 +80,6 @@ export default function form({
         [isEditing, data, post, patch]
     );
 
-    // Validación adicional con opcional chaining
-    const isSubmitDisabled = useMemo(() => {
-        return (
-            processing ||
-            !data?.client_id ||
-            !data?.destino ||
-            !data?.fecha_entrega
-        );
-    }, [processing, data]);
-
     return (
         <Authenticated>
             <Head title="Form" />

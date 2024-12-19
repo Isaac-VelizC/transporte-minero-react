@@ -60,7 +60,7 @@ export default function listEnviosConducto({ envios }: Props) {
                         <i className="bi bi-info-circle"></i>
                     </button>
                     {row.status === "entregado" ? null : (
-                        <Link href={route("envios.show", row.id)}>
+                        <Link href={route("driver.envio.show", row.id)}>
                             <i className="bi bi-geo-fill"></i>
                         </Link>
                     )}

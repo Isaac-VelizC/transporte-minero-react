@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CargoShipment;
+use App\Models\Geocerca;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +31,6 @@ class ClientDriverController extends Controller
             'client_longitude' => $envio->client_longitude,
         ];
     }
-    
     /**
      * Funciones para el Rol Conductor
      */
@@ -48,17 +48,16 @@ class ClientDriverController extends Controller
 
             // Renderiza la vista con los datos del envío
             return Inertia::render('Conductor/showEnvio', [
-                'data' => $response
+                'dataCarga' => $response
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
-            return redirect()->route('driver.envios.list')->with('error', 'Envio no encontrado.');
+            return redirect()->back()->with('error', 'Envio no encontrado.');
         } catch (\Exception $e) {
             Log::error('Error retrieving shipment data: ', ['error' => $e]);
-            return redirect()->route('driver.envios.list')->with('error', 'Ocurrió un error al obtener los datos.');
+            return redirect()->back()->with('error', 'Ocurrió un error al obtener los datos.');
         }
     }
-
     public function changeStatusShipment($id) {
         try {
             $item = CargoShipment::findOrFail($id);
@@ -78,6 +77,30 @@ class ClientDriverController extends Controller
         } catch (\Exception $e) {
             Log::error('Error updating shipment status: ', ['error' => $e]);
             return redirect()->route('driver.envios.list')->with('error', 'Ocurrió un error al actualizar el estado.');
+        }
+    }
+    public function showMapMonitoreo($id) {
+        try {
+            $envio = CargoShipment::with([
+                'vehicle:id,matricula',
+                'client:id,nombre,ap_pat,ap_mat',
+                'geocerca:id,name'
+            ])->findOrFail($id);
+
+            // Estructura los datos de respuesta
+            $response = $this->formatResponse($envio);
+            $geocerca = Geocerca::findOrFail($envio->geofence_id);
+
+            return Inertia::render('Conductor/showMapa', [
+                'geocerca' => $geocerca,
+                'envio' => $response
+            ]);
+        } catch (ModelNotFoundException $e) {
+            Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
+            return redirect()->back()->with('error', 'Envio no encontrado.');
+        } catch (\Exception $e) {
+            Log::error('Error retrieving shipment data: ', ['error' => $e]);
+            return redirect()->back()->with('error', 'Ocurrió un error al obtener los datos.');
         }
     }
 
