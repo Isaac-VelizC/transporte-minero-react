@@ -8,6 +8,7 @@ use App\Http\Requests\Users\UserUpdateResquest;
 use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -35,27 +36,29 @@ class UsersController extends Controller
             })
             ->get()
             ->map(function ($user) {
+                $persona = $user->persona;
                 return [
-                    'id' => $user->persona->id,
+                    'id' => $persona->id ?? null,
                     'user_id' => $user->id,
-                    'full_name' => $user->persona ?
-                        trim("{$user->persona->nombre} {$user->persona->ap_pat} {$user->persona->ap_mat}") :
-                        '',
-                    'nombre' => optional($user->persona)->nombre ?? '',
-                    'ap_pat' => optional($user->persona)->ap_pat ?? '',
-                    'ap_mat' => optional($user->persona)->ap_mat ?? '',
-                    'ci' => optional($user->persona)->ci ?? '',
+                    'full_name' => $persona ? trim("{$persona->nombre} {$persona->ap_pat} {$persona->ap_mat}") : '',
+                    'nombre' => $persona->nombre ?? '',
+                    'ap_pat' => $persona->ap_pat ?? '',
+                    'ap_mat' => $persona->ap_mat ?? '',
+                    'ci' => $persona->ci ?? '',
                     'email' => $user->email ?? '',
-                    'genero' => optional($user->persona)->genero ?? '',
-                    'numero' => optional($user->persona)->numero ?? '',
-                    'estado' => optional($user->persona)->estado ?? '',
-                    'rol' => optional($user->persona)->rol ?? '',
+                    'genero' => $persona->genero ?? '',
+                    'numero' => $persona->numero ?? '',
+                    'estado' => $persona->estado ?? '',
+                    'rol' => $persona->rol ?? '',
                 ];
             });
 
         $roles = Role::whereNotIn('name', ['Admin', 'Conductor', 'Secretaria'])->get();
 
-        return Inertia::render('Admin/Users/index', compact('users', 'roles'));
+        return Inertia::render('Admin/Users/index', [
+            'users' => $users,
+            'roles' => $roles
+        ]);
     }
 
     /**

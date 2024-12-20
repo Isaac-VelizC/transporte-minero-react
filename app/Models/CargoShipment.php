@@ -61,4 +61,8 @@ class CargoShipment extends Model
     {
         return $this->belongsTo(Geocerca::class, 'geofence_id');
     }
+
+    public function altercadoReports() {
+        return $this->hasMany(AltercationRecport::class, 'envio_id');
+    }
 }

@@ -16,7 +16,7 @@ const index: React.FC<Props> = ({ vehicles }) => {
     const { props } = usePage();
     const flash: FlashMessagesType = props.flash || {};
     const { error, success } = flash;
-    
+
     const columns = [
         {
             name: "#",
@@ -45,7 +45,7 @@ const index: React.FC<Props> = ({ vehicles }) => {
         },
         {
             name: "Capacidad de Carga",
-            cell: (row: VehicleInterface) => row.capacidad_carga + ' t.',
+            cell: (row: VehicleInterface) => row.capacidad_carga + " t.",
             sortable: true,
         },
         {
@@ -81,8 +81,16 @@ const index: React.FC<Props> = ({ vehicles }) => {
             <Head title="Vehiculos" />
             <Breadcrumb pageName="Vehiculos" />
             <FlashMessages error={error} success={success} />
-            <div className="flex justify-end my-10">
-                <LinkButton href={"vehicle.create"}>Nuevo</LinkButton>
+            <div className="flex justify-between items-center my-10">
+                <h2 className="text-xl font-semibold">Gestión de Vehículos</h2>
+                <div className="flex gap-4">
+                    <LinkButton href="devices.list" className="flex items-center gap-2">
+                        <i className="bi bi-phone"></i> Dispositivos
+                    </LinkButton>
+                    <LinkButton href="vehicle.create" className="flex items-center gap-2">
+                        <i className="bi bi-plus"></i> Nuevo Vehículo
+                    </LinkButton>
+                </div>
             </div>
             <DataTableComponent columns={columns} data={vehicles} />
         </Authenticated>

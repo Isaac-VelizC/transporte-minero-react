@@ -34,4 +34,8 @@ class Driver extends Model
         return $this->hasMany(VehicleSchedule::class, 'driver_id');
     }
 
+    public function altercadosReports() {
+        return $this->hasMany(AltercationRecport::class, 'driver_id');
+    }
+
 }

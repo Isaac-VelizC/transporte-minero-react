@@ -13,10 +13,14 @@ class Device extends Model
 
     protected $fillable = [
         'num_serial',
+        'name_device',
+        'type',
         'car_id',
         'status',
-        'type',
-        'description'
+        'last_latitude',
+        'last_longitude',
+        'last_updated_at',
+        'update_interval'
     ];
 
     public function vehicle()

@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\ConductorController;
+use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\GeocercasController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ShipmentsController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\VehiclesController;
@@ -24,7 +26,8 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+
+Route::middleware(['auth', 'checkRole:Admin|Secretaria'])->group(function () {
     ///Users
     Route::get('/users', [UsersController::class, 'index'])->name('user.list');
     Route::post('/users', [UsersController::class, 'store'])->name('user.create');
@@ -65,6 +68,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/geocerca/edit/{id}', [GeocercasController::class, 'edit'])->name('geocerca.edit');
     Route::patch('/geocerca/edit/update/{id}', [GeocercasController::class, 'update'])->name('geocerca.update');
     Route::delete('/geocerca/delete/{id}', [GeocercasController::class, 'destroy'])->name('geocerca.delete');
+    //devices
+    Route::get('/devices', [DeviceController::class, 'index'])->name('devices.list');
+    Route::post('/devices', [DeviceController::class, 'store'])->name('devices.create');
+    Route::patch('/devices/{id}', [DeviceController::class, 'update'])->name('devices.update');
+    //Route::get('/devices/locations', [DeviceController::class, 'getLocations']);
+    //Reports
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.view');
 });
 
 Route::get('/driver/envios/', [ShipmentsController::class, 'listEnviosConductor'])->name('driver.envios.list');

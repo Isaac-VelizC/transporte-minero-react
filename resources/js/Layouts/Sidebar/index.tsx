@@ -110,7 +110,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 </h3>
                                 <li>
                                     <NavLink
-                                        href="user.list"
+                                        href="reports.view"
                                         icon={
                                             <i className="bi bi-journals"></i>
                                         }
