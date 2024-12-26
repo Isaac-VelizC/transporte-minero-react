@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\CargoShipment;
+use App\Models\Device;
 use App\Models\Geocerca;
+use App\Models\VehicleSchedule;
+use App\Models\VehiculoMantenimiento;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
@@ -31,9 +35,7 @@ class ClientDriverController extends Controller
             'client_longitude' => $envio->client_longitude,
         ];
     }
-    /**
-     * Funciones para el Rol Conductor
-     */
+    
     public function showEnvio($id)
     {
         try {
@@ -42,11 +44,7 @@ class ClientDriverController extends Controller
                 'client:id,nombre,ap_pat,ap_mat',
                 'geocerca:id,name'
             ])->findOrFail($id);
-
-            // Estructura los datos de respuesta
             $response = $this->formatResponse($envio);
-
-            // Renderiza la vista con los datos del envío
             return Inertia::render('Conductor/showEnvio', [
                 'dataCarga' => $response
             ]);
@@ -86,14 +84,15 @@ class ClientDriverController extends Controller
                 'client:id,nombre,ap_pat,ap_mat',
                 'geocerca:id,name'
             ])->findOrFail($id);
-
-            // Estructura los datos de respuesta
+            
             $response = $this->formatResponse($envio);
             $geocerca = Geocerca::findOrFail($envio->geofence_id);
+            $device = Device::where('car_id', $envio->car_id)->first();
 
             return Inertia::render('Conductor/showMapa', [
                 'geocerca' => $geocerca,
-                'envio' => $response
+                'envio' => $response,
+                'device' => $device,
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
@@ -116,6 +115,55 @@ class ClientDriverController extends Controller
         } catch (\Exception $e) {
             Log::error('Error updating shipment status: ', ['error' => $e]);
             return redirect()->back()->with('error', 'Ocurrió un error al actualizar el estado.');
+        }
+    }
+
+    public function mantenimientosVehiculosList()
+    {
+        $user = Auth::user();
+        if (!$user || !$user->persona || !$user->persona->driver) {
+            return Inertia::render('Conductor/listMantenimiento', [
+                'list' => [],
+                'error' => 'No se encontró información del conductor.'
+            ]);
+        }
+        $idDriver = $user->persona->driver->id;
+        $vehicleSchedule = VehicleSchedule::where('end_time', '>', now())
+            ->where('driver_id', $idDriver)
+            ->first();
+        $list = collect();
+
+        if ($vehicleSchedule) {
+            $carId = $vehicleSchedule->car_id;
+            $list = VehiculoMantenimiento::where('vehicle_id', $carId)->get();
+        }
+        
+        return Inertia::render('Conductor/listMantenimiento', [
+            'list' => $list,
+            'message' => $list->isEmpty() ? 'No hay mantenimientos disponibles.' : null
+        ]);
+    }
+
+    public function updateLocationDevice(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
+            ]);
+            $device = Device::findOrFail($id);
+            $device->last_latitude = $validated['latitude'];
+            $device->last_longitude = $validated['longitude'];
+            $device->save();
+
+            return response()->json([
+                'success' => true,
+                'latitude' => $device->last_latitude,
+                'longitude' => $device->last_longitude
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error actualizando la ubicación: ', ['error' => $e]);
+            return response()->json(['error' => 'Error actualizando la ubicación'], 500);
         }
     }
 }

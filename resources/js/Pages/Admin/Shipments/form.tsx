@@ -65,16 +65,15 @@ export default function form({
     const handleSubmit = useCallback(
         (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
-
-            // Simplificación de la lógica de submit
+            if (!data.client_latitude || !data.client_longitude) {
+                alert("Debe seleccionar una ubicación");
+                return;
+            }
             const submitRoute =
                 isEditing && data?.id
                     ? route("envios.update.form", data.id)
                     : route("envios.store.form");
-
-            // Uso condicional de post o patch
             const submitMethod = isEditing && data?.id ? patch : post;
-
             submitMethod(submitRoute);
         },
         [isEditing, data, post, patch]

@@ -16,12 +16,14 @@ const generos = [
     { value: "Otro", label: "Otro" },
 ];
 
+
 type Props = {
     show: boolean;
     onClose: () => void;
     users?: UserInterface;
-    roles: RolesInterface[];
+    roles?: RolesInterface[];
     isEditing: boolean;
+    rutaName: string;
 };
 
 const ModalFormUser: React.FC<Props> = ({
@@ -30,8 +32,10 @@ const ModalFormUser: React.FC<Props> = ({
     users,
     roles,
     isEditing,
+    rutaName,
 }) => {
     const initialData = users || {
+        id: null,
         user_id: null,
         nombre: "",
         ap_pat: "",
@@ -53,19 +57,18 @@ const ModalFormUser: React.FC<Props> = ({
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (isEditing && data?.user_id) {
-            patch(`/users/${data.user_id}/${data.id}`, {
-                onSuccess: () => {
-                    onClose(), reset();
-                },
-            });
-        } else {
-            post(route("user.create"), {
-                onSuccess: () => {
-                    onClose(), reset();
-                },
-            });
-        }
+        const routeName =
+            isEditing && data?.user_id
+                ? `${rutaName}.update`
+                : `${rutaName}.create`;
+        const method = isEditing && data?.user_id ? patch : post;
+
+        method(route(routeName, [data.user_id, data.id]), {
+            onSuccess: () => {
+                onClose();
+                reset();
+            },
+        });
     };
 
     return (
@@ -173,31 +176,33 @@ const ModalFormUser: React.FC<Props> = ({
                         </SelectInput>
                         <InputError className="mt-2" message={errors.genero} />
                     </div>
-                    <div>
-                        <InputLabel htmlFor="rol" value="Rol" />
-                        <SelectInput
-                            isFocused
-                            required
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData("rol", e.target.value)}
-                            value={data.rol}
-                            defaultValue={""}
-                        >
-                            <option value="" disabled>
+                    {roles && roles.length > 0 ? (
+                        <div>
+                            <InputLabel htmlFor="rol" value="Rol" />
+                            <SelectInput
+                                isFocused
+                                required
+                                className="mt-1 block w-full"
+                                onChange={(e) => setData("rol", e.target.value)}
+                                value={data.rol}
+                                defaultValue={""}
+                            >
+                                <option value="" disabled>
+                                    {roles && roles.length > 0
+                                        ? "Selecciona un rol"
+                                        : "No hay datos disponibles"}
+                                </option>
                                 {roles && roles.length > 0
-                                    ? "Selecciona un rol"
-                                    : "No hay datos disponibles"}
-                            </option>
-                            {roles && roles.length > 0
-                                ? roles.map((item, index) => (
-                                      <option key={index} value={item.name}>
-                                          {item.name}
-                                      </option>
-                                  ))
-                                : null}
-                        </SelectInput>
-                        <InputError className="mt-2" message={errors.rol} />
-                    </div>
+                                    ? roles.map((item, index) => (
+                                          <option key={index} value={item.name}>
+                                              {item.name}
+                                          </option>
+                                      ))
+                                    : null}
+                            </SelectInput>
+                            <InputError className="mt-2" message={errors.rol} />
+                        </div>
+                    ) : null}
                 </div>
 
                 <div className="mt-6 flex justify-end">
@@ -221,5 +226,4 @@ const ModalFormUser: React.FC<Props> = ({
         </Modal>
     );
 };
-
 export default ModalFormUser;

@@ -68,7 +68,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <TextInput
                                 id="nombre"
                                 className="mt-1 block w-full"
-                                value={data.nombre} // Cambia esto a 'data.nombre' si usas 'data' directamente
+                                value={data.nombre}
                                 onChange={(e) =>
                                     setData("nombre", e.target.value)
                                 }
@@ -126,7 +126,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <TextInput
                                 id="email"
                                 className="mt-1 block w-full"
-                                value={data.email} // Cambia esto a 'data.email'
+                                value={data.email}
                                 onChange={(e) =>
                                     setData("email", e.target.value)
                                 }
@@ -146,7 +146,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <TextInput
                                 id="ci"
                                 className="mt-1 block w-full"
-                                value={data.ci} // Cambia esto a 'data.ci'
+                                value={data.ci}
                                 onChange={(e) => setData("ci", e.target.value)}
                                 required
                                 isFocused
@@ -158,7 +158,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <TextInput
                                 id="numero"
                                 className="mt-1 block w-full"
-                                value={data.numero} // Cambia esto a 'data.numero'
+                                value={data.numero}
                                 onChange={(e) =>
                                     setData("numero", e.target.value)
                                 }
@@ -246,7 +246,7 @@ export default function drivers({ isEditing, driver }: Props) {
                     </div>
 
                     <div className="mt-6 flex justify-end">
-                        <LinkButton href="user.list">Cancelar</LinkButton>
+                        <LinkButton href="drivers.list">Cancelar</LinkButton>
                         <PrimaryButton
                             type="submit"
                             className="ms-3"
@@ -256,7 +256,7 @@ export default function drivers({ isEditing, driver }: Props) {
                                 ? "Processing..."
                                 : isEditing
                                 ? "Save Changes"
-                                : "Create User"}
+                                : "Registar Conductor"}
                         </PrimaryButton>
                     </div>
                 </form>

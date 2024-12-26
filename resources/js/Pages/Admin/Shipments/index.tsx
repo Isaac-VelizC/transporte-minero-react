@@ -4,7 +4,7 @@ import ModalDelete from "@/Components/Modal/ModalDelete";
 import DataTableComponent from "@/Components/Table";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 import { TableColumn } from "react-data-table-component";
 
@@ -16,10 +16,11 @@ function index({ envios }: Props) {
     const [confirmingDeletion, setConfirmingDeletion] = useState(false);
     const [idToSelect, setIdToSelect] = useState<number | null>(null);
     const [status, setStatus] = useState(false);
+    const rol = usePage().props.auth.rol;
     const columns: TableColumn<ShipmentInterface>[] = [
         {
             name: "#",
-            cell: (row: ShipmentInterface, index: number) => index + 1,
+            cell: (_: ShipmentInterface, index: number) => index + 1,
             width: "50px",
         },
         {
@@ -60,7 +61,8 @@ function index({ envios }: Props) {
                     <Link href={route("envios.show", row.id)}>
                         <i className="bi bi-geo-fill"></i>
                     </Link>
-                    {row.status === "entregado" ? null : (
+                    {row.status === "entregado" ||
+                    rol == "Encargado_Control" ? null : (
                         <>
                             <Link href={route("envios.edit", row.id)}>
                                 <i className="bi bi-pencil"></i>
@@ -115,9 +117,11 @@ function index({ envios }: Props) {
         <Authenticated>
             <Head title="Envios" />
             <Breadcrumb pageName="Envios list" />
-            <div className="flex justify-end my-4">
-                <LinkButton href={"envios.create.form"}>Nuevo</LinkButton>
-            </div>
+            {rol === "Encargado_Control" ? null : (
+                <div className="flex justify-end my-4">
+                    <LinkButton href={"envios.create.form"}>Nuevo</LinkButton>
+                </div>
+            )}
             <DataTableComponent
                 title="Lista de envios registrados"
                 columns={columns}

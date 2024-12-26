@@ -47,17 +47,17 @@ function show({ datos }: Props) {
                             <span
                                 className={
                                     datos.status === "Delivered"
-                                        ? "text-green-600"
-                                        : "text-red-600"
+                                        ? "text-green-600 capitalize"
+                                        : "text-red-600 capitalize"
                                 }
                             >
-                                {datos.status}
+                                {" "}{datos.status}
                             </span>
                         </p>
                     </div>
                 </div>
                 <div className="bg-gray-400 rounded-lg p-6 text-gray-600 shadow-md hover:shadow-lg transition-shadow duration-300 lg:col-span-2">
-                    Mapa
+                    Listado de Reportes
                 </div>
             </div>
         </Authenticated>

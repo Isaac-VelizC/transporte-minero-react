@@ -31,15 +31,14 @@ export default function showEnvio({ dataCarga }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                     <div className="flex items-center justify-between px-4 py-2 border-b">
-                        <h1 className="font-semibold text-lg pb-3">
+                        <h1 className="font-semibold text-sm md:text-lg pb-3">
                             Información del envio de carga
                         </h1>
                         <Link
                             href={route("driver.show.map", dataCarga.id)}
-                            className="flex items-center space-x-2 border border-gray-200 p-2 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 hover:text-gray-700"
+                            className="flex items-center space-x-2 border border-gray-200 p-3 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 hover:text-gray-700"
                         >
                             <i className="bi bi-map"></i>
-                            <span>Ver Mapa</span>
                         </Link>
                     </div>
                     <div className="pl-4 space-y-1">

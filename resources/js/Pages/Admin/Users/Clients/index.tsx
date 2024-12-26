@@ -1,27 +1,71 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
+import PrimaryButton from "@/Components/Buttons/PrimaryButton";
+import ModalDelete from "@/Components/Modal/ModalDelete";
+import DataTableComponent from "@/Components/Table";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import React, { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
-import ModalDelete from "@/Components/Modal/ModalDelete";
-import ModalFormUser from "@/Pages/Admin/Users/ModalFormUser";
-import { RolesInterface } from "@/interfaces/Roles";
-import PrimaryButton from "@/Components/Buttons/PrimaryButton";
-import DataTableComponent from "@/Components/Table";
-import LinkButton from "@/Components/Buttons/LinkButton";
+import React, { useCallback, useState } from "react";
+import ModalFormUser from "../ModalFormUser";
 
 type Props = {
-    users: UserInterface[];
-    roles: RolesInterface[];
+    clientes: UserInterface[];
 };
 
-const Index: React.FC<Props> = ({ users, roles }) => {
-    const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
+const Index = ({ clientes }: Props) => {
+    const [confirmClientStatus, setConfirmClientStatus] = useState(false);
     const [userIdToSelect, setUserIdToSelect] = useState<number | null>(null);
-    const [confirmingUserShow, setConfirmingUserShow] = useState(false);
+    const [showModalForm, setShowModalForm] = useState(false);
     const [status, setStatus] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState<UserInterface | null>(null);
+
+    const handleEdit = useCallback((row: UserInterface) => {
+        setIsEditing(true);
+        setUserData(row);
+        setShowModalForm(true);
+    }, []);
+
+    const handleCreate = useCallback(() => {
+        setIsEditing(false);
+        setUserData(null);
+        setShowModalForm(true);
+    }, []);
+
+    const confirmUserDeletion = useCallback(
+        (userId: number, estado: boolean) => {
+            setConfirmClientStatus(true);
+            setUserIdToSelect(userId);
+            setStatus(estado);
+        },
+        []
+    );
+
+    const renderEstado = (estado: boolean) => (
+        <span
+            className={`rounded-lg px-2 font-semibold py-1 text-white ${
+                estado ? "bg-green-400" : "bg-red-400"
+            }`}
+        >
+            {estado ? "Activo" : "Inactivo"}
+        </span>
+    );
+
+    const renderAcciones = (row: UserInterface) => (
+        <div className="flex gap-2">
+            <Link href={route("client.history.list", row.id)}>
+                <i className="bi bi-card-checklist"></i>
+            </Link>
+            <button onClick={() => handleEdit(row)}>
+                <i className="bi bi-eye"></i>
+            </button>
+            <button
+                onClick={() => confirmUserDeletion(row.user_id, row.estado)}
+            >
+                <i className="bi bi-trash2"></i>
+            </button>
+        </div>
+    );
 
     const columns = [
         {
@@ -50,65 +94,21 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             sortable: true,
         },
         {
-            name: "Rol",
-            cell: (row: UserInterface) => row.rol,
-            sortable: true,
-        },
-        {
             name: "Estado",
-            cell: (row: UserInterface) => (
-                <span
-                    className={`rounded-lg px-2 font-semibold py-1 text-white ${
-                        row.estado ? "bg-green-400" : "bg-red-400"
-                    }`}
-                >
-                    {row.estado ? "Activo" : "Inactivo"}
-                </span>
-            ),
+            cell: (row: UserInterface) => renderEstado(row.estado),
             width: "100px",
         },
         {
             name: "Acciones",
-            cell: (row: UserInterface) => (
-                <div className="flex gap-2">
-                    {/*<button onClick={() => handleEdit(row)}>
-                            <i className="bi bi-eye"></i>
-                        </button>*/}
-                    <button
-                        onClick={() =>
-                            confirmUserDeletion(row.user_id, row.estado)
-                        }
-                    >
-                        <i className="bi bi-trash2"></i>
-                    </button>
-                </div>
-            ),
+            cell: (row: UserInterface) => renderAcciones(row),
             ignoreRowClick: true,
             width: "90px",
         },
     ];
 
-    const handleEdit = (row: UserInterface) => {
-        setIsEditing(true);
-        setUserData(row);
-        setConfirmingUserShow(true);
-    };
-
-    const handleCreate = () => {
-        setIsEditing(false);
-        setUserData(null);
-        setConfirmingUserShow(true);
-    };
-
-    const confirmUserDeletion = (userId: number, estado: boolean) => {
-        setStatus(estado);
-        setUserIdToSelect(userId);
-        setConfirmingUserDeletion(true);
-    };
-
     const closeModal = () => {
-        setConfirmingUserDeletion(false);
-        setConfirmingUserShow(false);
+        setConfirmClientStatus(false);
+        setShowModalForm(false);
         setUserIdToSelect(null);
         setUserData(null);
     };
@@ -133,30 +133,20 @@ const Index: React.FC<Props> = ({ users, roles }) => {
 
     return (
         <Authenticated>
-            <Head title="Users" />
-            <Breadcrumb pageName="Users" />
-            <div className="flex justify-between my-10">
-                <div className="flex gap-3">
-                    <LinkButton href="clients.list">
-                        <i className="bi bi-person-plus text-sm" />
-                        Clientes
-                    </LinkButton>
-                    <LinkButton href="drivers.list">
-                        <i className="bi bi-person-plus text-sm" />
-                        Conductor
-                    </LinkButton>
-                </div>
+            <Head title="Cientes" />
+            <Breadcrumb pageName="List Clientes" />
+            <div className="flex justify-end my-10 gap-3">
                 <PrimaryButton type="button" onClick={handleCreate}>
-                    Nuevo Personal
+                    Nuevo
                 </PrimaryButton>
             </div>
-            <DataTableComponent columns={columns} data={users} />
+            <DataTableComponent columns={columns} data={clientes} />
             <ModalDelete
                 title={`¿Estás seguro de que quieres ${
                     !status ? "activar" : "desactivar"
                 } tu cuenta?`}
                 titleButton={!status ? "Activar" : "Desactivar"}
-                show={confirmingUserDeletion}
+                show={confirmClientStatus}
                 onClose={closeModal}
                 onDelete={deleteUser}
                 children={
@@ -171,16 +161,14 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             />
 
             <ModalFormUser
-                rutaName="user"
-                show={confirmingUserShow}
+                rutaName="client"
+                show={showModalForm}
                 onClose={closeModal}
-                users={userData || undefined} // Pasa datos del usuario si existen
+                users={userData || undefined}
                 isEditing={isEditing}
-                roles={roles}
             />
         </Authenticated>
     );
 };
-
 
 export default Index;

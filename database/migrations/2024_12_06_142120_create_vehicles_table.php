@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('color', 30)->nullable(); // Color del vehículo
             $table->date('fecha_compra'); // Año de fabricación
             $table->enum('status', ['activo', 'mantenimiento', 'inactivo']); // Agregamos 'inactivo'
+            $table->string('kilometrage')->nullable();
             
             // Información del responsable
             $table->unsignedBigInteger('responsable_id')->nullable();

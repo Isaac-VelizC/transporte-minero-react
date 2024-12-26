@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\UserCreateResquest;
 use App\Http\Requests\Users\UserUpdateResquest;
-use App\Models\CargoShipment;
 use App\Models\Driver;
 use App\Models\Persona;
 use App\Models\User;
@@ -19,18 +18,14 @@ class ConductorController extends Controller
 {
     public function create()
     {
-        return Inertia::render('Admin/Users/drivers', [
+        return Inertia::render('Admin/Users/Conductor/drivers', [
             'isEditing' => false
         ]);
     }
 
-    public function store(UserCreateResquest $request)
-    {
+    public function store(UserCreateResquest $request) {
         $data = $request->validated();
-
-        // Usar una transacción para asegurar la integridad de los datos
-        DB::transaction(function () use ($data, $request) {
-            // Crear o actualizar el usuario, asegurando que la contraseña sea segura
+        DB::transaction(function () use ($data) {
             $user = User::updateOrCreate(
                 ['email' => $data['email']], // Busca por email
                 [
@@ -38,20 +33,15 @@ class ConductorController extends Controller
                     'password' => Hash::make('TM.' . $data['ci']), // Generación segura de la contraseña
                 ]
             );
-
-            // Asignar el rol 'Conductor' solo si no lo tiene
             if (!$user->hasRole('Conductor')) {
                 $user->assignRole('Conductor');
             }
-
-            // Crear la persona asociada, solo si no existe
             $persona = Persona::updateOrCreate(
-                ['user_id' => $user->id], // Asegurarse de que la persona esté asociada al usuario
+                ['user_id' => $user->id],
                 array_merge($data, [
-                    'rol' => 'Conductor', // Asignar rol directamente al crear la persona
+                    'rol' => 'Conductor',
                 ])
             );
-
             // Crear el conductor solo si no existe
             Driver::updateOrCreate(
                 ['persona_id' => $persona->id], // Relacionar con la persona
@@ -63,12 +53,11 @@ class ConductorController extends Controller
         });
 
         // Retornar un mensaje de éxito más descriptivo
-        return redirect()->route('user.list')
+        return redirect()->route('drivers.list')
             ->with('success', 'El conductor ha sido registrado y asignado correctamente.');
     }
 
-    public function edit($id)
-    {
+    public function edit($id) {
         $item = User::with(['persona'])->findOrFail($id);
         $driver = [
             'id' => $item->persona->id,
@@ -84,14 +73,13 @@ class ConductorController extends Controller
             'license_number' => $item->persona->driver->license_number ?? null,
             'hiring_date' => $item->persona->driver->hiring_date ?? null,
         ];
-        return Inertia::render('Admin/Users/drivers', [
+        return Inertia::render('Admin/Users/Conductor/drivers', [
             'driver' => $driver,
             'isEditing' => true,
         ]);
     }
 
-    public function update(UserUpdateResquest $request, $id)
-    {
+    public function update(UserUpdateResquest $request, $id) {
         try {
             $data = $request->validated();
             $user = User::findOrFail($id);
@@ -115,13 +103,13 @@ class ConductorController extends Controller
             );
 
             // Retornar un mensaje de éxito
-            return redirect()->route('user.list')->with('success', 'Persona actualizada con éxito.');
+            return redirect()->route('drivers.list')->with('success', 'Persona actualizada con éxito.');
         } catch (ModelNotFoundException $e) {
             // Si no se encuentra el usuario o la persona
-            return redirect()->route('user.list')->with('error', 'Persona no encontrada.');
+            return redirect()->route('drivers.list')->with('error', 'Persona no encontrada.');
         } catch (\Throwable $th) {
             // Si ocurre cualquier otro error
-            return redirect()->route('user.list')->with('error', 'No se pudo actualizar la persona. Inténtalo nuevamente.');
+            return redirect()->route('drivers.list')->with('error', 'No se pudo actualizar la persona. Inténtalo nuevamente.');
         }
     }
 }

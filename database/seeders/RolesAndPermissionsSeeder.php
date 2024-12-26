@@ -21,6 +21,7 @@ class RolesAndPermissionsSeeder extends Seeder
         Role::create(['name' => 'Encargado_Control']);
         Role::create(['name' => 'Cliente']);
         Role::create(['name' => 'Conductor']);
+        Role::create(['name' => 'Personal']);
 
         // Crear permisos
         Permission::create(['name' => 'GestionUsers']);

@@ -51,4 +51,8 @@ class Vehicle extends Model
     {
         return $this->hasMany(VehicleSchedule::class, 'car_id');
     }
+
+    /*public function mantenimientos() {
+        return $this->hasMany(VehiculoMantenimiento::class, 'vehicle_id');
+    }*/
 }

@@ -1,28 +1,20 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
+import LinkButton from "@/Components/Buttons/LinkButton";
+import ModalDelete from "@/Components/Modal/ModalDelete";
+import DataTableComponent from "@/Components/Table";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import React, { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
-import ModalDelete from "@/Components/Modal/ModalDelete";
-import ModalFormUser from "@/Pages/Admin/Users/ModalFormUser";
-import { RolesInterface } from "@/interfaces/Roles";
-import PrimaryButton from "@/Components/Buttons/PrimaryButton";
-import DataTableComponent from "@/Components/Table";
-import LinkButton from "@/Components/Buttons/LinkButton";
+import { useState } from "react";
 
 type Props = {
-    users: UserInterface[];
-    roles: RolesInterface[];
+    drivers: UserInterface[];
 };
 
-const Index: React.FC<Props> = ({ users, roles }) => {
-    const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
-    const [userIdToSelect, setUserIdToSelect] = useState<number | null>(null);
-    const [confirmingUserShow, setConfirmingUserShow] = useState(false);
+export default function index({ drivers }: Props) {
+    const [confirmDriverStatus, setConfirmDriverStatus] = useState(false);
+    const [idToSelect, setIdToSelect] = useState<number | null>(null);
     const [status, setStatus] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [userData, setUserData] = useState<UserInterface | null>(null);
-
     const columns = [
         {
             name: "#",
@@ -50,11 +42,6 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             sortable: true,
         },
         {
-            name: "Rol",
-            cell: (row: UserInterface) => row.rol,
-            sortable: true,
-        },
-        {
             name: "Estado",
             cell: (row: UserInterface) => (
                 <span
@@ -71,9 +58,9 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             name: "Acciones",
             cell: (row: UserInterface) => (
                 <div className="flex gap-2">
-                    {/*<button onClick={() => handleEdit(row)}>
-                            <i className="bi bi-eye"></i>
-                        </button>*/}
+                    <Link href={route("driver.edit", row.user_id)}>
+                        <i className="bi bi-pencil"></i>
+                    </Link>
                     <button
                         onClick={() =>
                             confirmUserDeletion(row.user_id, row.estado)
@@ -88,75 +75,51 @@ const Index: React.FC<Props> = ({ users, roles }) => {
         },
     ];
 
-    const handleEdit = (row: UserInterface) => {
-        setIsEditing(true);
-        setUserData(row);
-        setConfirmingUserShow(true);
-    };
-
-    const handleCreate = () => {
-        setIsEditing(false);
-        setUserData(null);
-        setConfirmingUserShow(true);
-    };
-
     const confirmUserDeletion = (userId: number, estado: boolean) => {
         setStatus(estado);
-        setUserIdToSelect(userId);
-        setConfirmingUserDeletion(true);
+        setIdToSelect(userId);
+        setConfirmDriverStatus(true);
     };
 
     const closeModal = () => {
-        setConfirmingUserDeletion(false);
-        setConfirmingUserShow(false);
-        setUserIdToSelect(null);
-        setUserData(null);
+        setConfirmDriverStatus(false);
+        setIdToSelect(null);
     };
 
     const deleteUser = async () => {
-        if (userIdToSelect === null) {
-            console.warn("No hay un ID de usuario seleccionado para eliminar.");
-            return;
-        }
-        try {
-            await router.delete(route("user.destroy", userIdToSelect), {
+        if (idToSelect !== null) {
+            await router.delete(route("user.destroy", idToSelect), {
                 preserveScroll: true,
+                onSuccess: () => {
+                    closeModal();
+                },
+                onError: (errors) => {
+                    console.error("Error al eliminar el usuario:", errors);
+                },
+                onFinish: () => {
+                    setIdToSelect(null);
+                },
             });
-            closeModal();
-        } catch (errors) {
-            console.error("Error al eliminar el usuario:", errors);
-        } finally {
-            setUserIdToSelect(null);
             setStatus(false);
+        } else {
+            console.warn("No hay un ID de usuario seleccionado para eliminar.");
         }
     };
 
     return (
         <Authenticated>
-            <Head title="Users" />
-            <Breadcrumb pageName="Users" />
-            <div className="flex justify-between my-10">
-                <div className="flex gap-3">
-                    <LinkButton href="clients.list">
-                        <i className="bi bi-person-plus text-sm" />
-                        Clientes
-                    </LinkButton>
-                    <LinkButton href="drivers.list">
-                        <i className="bi bi-person-plus text-sm" />
-                        Conductor
-                    </LinkButton>
-                </div>
-                <PrimaryButton type="button" onClick={handleCreate}>
-                    Nuevo Personal
-                </PrimaryButton>
+            <Head title="Drivers" />
+            <Breadcrumb pageName="Lista de Conductores" />
+            <div className="flex justify-end my-10 gap-3">
+                <LinkButton href="driver.create">Crear Nuevo</LinkButton>
             </div>
-            <DataTableComponent columns={columns} data={users} />
+            <DataTableComponent columns={columns} data={drivers} />
             <ModalDelete
                 title={`¿Estás seguro de que quieres ${
                     !status ? "activar" : "desactivar"
                 } tu cuenta?`}
                 titleButton={!status ? "Activar" : "Desactivar"}
-                show={confirmingUserDeletion}
+                show={confirmDriverStatus}
                 onClose={closeModal}
                 onDelete={deleteUser}
                 children={
@@ -169,18 +132,6 @@ const Index: React.FC<Props> = ({ users, roles }) => {
                     </p>
                 }
             />
-
-            <ModalFormUser
-                rutaName="user"
-                show={confirmingUserShow}
-                onClose={closeModal}
-                users={userData || undefined} // Pasa datos del usuario si existen
-                isEditing={isEditing}
-                roles={roles}
-            />
         </Authenticated>
     );
-};
-
-
-export default Index;
+}

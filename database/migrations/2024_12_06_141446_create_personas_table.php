@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('numero')->unique()->nullable();
             //$table->string('avatar', 255)->default('user.png');
             $table->boolean('estado')->default(true);
-            $table->string('rol')->default('Cliente');
+            $table->string('rol')->default('cliente');
             $table->timestamps();
         });
     }

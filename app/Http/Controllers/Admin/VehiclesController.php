@@ -10,6 +10,7 @@ use App\Models\Mark;
 use App\Models\TypeVehicle;
 use App\Models\Vehicle;
 use App\Models\VehicleSchedule;
+use App\Models\VehiculoMantenimiento;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,9 +20,6 @@ use Inertia\Inertia;
 
 class VehiclesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $items = Vehicle::all();
@@ -30,9 +28,7 @@ class VehiclesController extends Controller
             'vehicles' => $items,
         ]);
     }
-    /**
-     * Register Asigancion de conductor a vehiculo
-     */
+
     public function registerConductorVehicle(Request $request)
     {
         // Validación de los datos de entrada
@@ -58,9 +54,7 @@ class VehiclesController extends Controller
             return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
         }
     }
-    /**
-     * Update Asigancion de conductor a vehiculo
-     */
+
     public function updateConductorVehicle(Request $request, $id)
     {
         // Validación de los datos de entrada
@@ -84,9 +78,7 @@ class VehiclesController extends Controller
             return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
         }
     }
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
         $marks = Mark::all();
@@ -97,9 +89,6 @@ class VehiclesController extends Controller
             'isEditing' => false
         ]);
     }
-    /**
-     * Store a newly created resource in storage.
-     */
 
     public function store(VehicleCreateResquest $request)
     {
@@ -116,17 +105,12 @@ class VehiclesController extends Controller
             // Redirigir con un mensaje de éxito
             return redirect()->route('vehicle.list')->with('success', 'Vehículo registrado con éxito.');
         } catch (\Throwable $th) {
-            // Revertir la transacción en caso de error
             DB::rollBack();
-            // Registrar el error para depuración
             Log::error('Error al registrar vehículo: ' . $th->getMessage());
-            // Redirigir con un mensaje de error
             return redirect()->route('vehicle.list')->with('error', 'No se pudo registrar el vehículo. Inténtalo nuevamente.');
         }
     }
-    /**
-     * Display the specified resource.
-     */
+
     public function show(string $id)
     {
         try {
@@ -148,11 +132,13 @@ class VehiclesController extends Controller
             $statusTime = $schedules->contains(function ($schedule) {
                 return $schedule['status_time'] === 1;
             });
+            $listMantenimientos = VehiculoMantenimiento::where('vehicle_id', $id)->get();
             return Inertia::render('Admin/Vehicle/show', [
                 'vehicle' => $vehicle,
                 'drivers' => $this->listDriversDisponibles(),
                 'schedules' => $schedules,
-                'statuSchedules' => $statusTime
+                'statuSchedules' => $statusTime,
+                'listMantenimientos' => $listMantenimientos,
             ]);
         } catch (ModelNotFoundException $e) {
             return redirect()->route('vehicle.list')->with('error', 'Vehículo no encontrado.');
@@ -160,9 +146,7 @@ class VehiclesController extends Controller
             return redirect()->route('vehicle.list')->with('error', 'Ocurrió un error al obtener los datos. ' . $e);
         }
     }
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function edit($id)
     {
         $marks = Mark::all();
@@ -175,31 +159,23 @@ class VehiclesController extends Controller
             'isEditing' => true
         ]);
     }
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(VehicleUpdateResquest $request, string $id)
     {
-        // Iniciar la transacción
         DB::beginTransaction();
         try {
-            // Validar y obtener los datos del request
             $data = $request->validated();
             $vehicle = Vehicle::findOrFail($id);
             $vehicle->update($data);
-            // Confirmar la transacción
             DB::commit();
             return redirect()->route('vehicle.list')->with('success', 'Vehículo actualizado con éxito.');
         } catch (\Throwable $th) {
-            // Revertir la transacción en caso de error
             DB::rollBack();
             Log::error('Error al actualizar vehículo: ' . $th->getMessage());
             return redirect()->route('vehicle.list')->with('error', 'No se pudo actualizar el vehículo. Inténtalo nuevamente.');
         }
     }
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id, Request $request)
     {
         $validatedData = $request->validate([
@@ -232,5 +208,53 @@ class VehiclesController extends Controller
                 'ci' => optional($driver->persona)->ci ?? '',
                 'numero' => optional($driver->persona)->numero ?? '',
             ]);
+    }
+
+    public function storeMantenimientoVehicle(Request $request)
+    {
+        $validatedData = $request->validate([
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'fecha' => 'required|date|after_or_equal:now',
+            'observaciones' => 'required|string|max:255',
+        ]);
+
+        try {
+            VehiculoMantenimiento::create([
+                'vehicle_id' => $validatedData['vehicle_id'],
+                'fecha' => $validatedData['fecha'],
+                'observaciones' => $validatedData['observaciones'],
+            ]);
+            return redirect()->back()->with(['success' => 'Vehículo asignado exitosamente.'], 201);
+        } catch (\Throwable $th) {
+            return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
+        }
+    }
+
+    public function updateMantenimientoVehicle(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'fecha' => 'required|date|after_or_equal:now',
+            'observaciones' => 'required|string|max:255',
+        ]);
+
+        try {
+            VehiculoMantenimiento::findOrFail($id)->update([
+                'fecha' => $validatedData['fecha'],
+                'observaciones' => $validatedData['observaciones'],
+            ]);
+            return redirect()->back()->with(['success' => 'Vehículo asignado exitosamente.'], 201);
+        } catch (\Throwable $th) {
+            return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
+        }
+    }
+
+    public function destroyMantenimientoVehicle($id)
+    {
+        try {
+            VehiculoMantenimiento::findOrFail($id)->delete();
+            return redirect()->back()->with(['success' => 'Mantenimiento de vehiculo eliminado exitosamente.'], 201);
+        } catch (\Throwable $th) {
+            return redirect()->back()->with(['error' => 'Error al eliminar mantenimiento de vehículo: ' . $th->getMessage()], 500);
+        }
     }
 }

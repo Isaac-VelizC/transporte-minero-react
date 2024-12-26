@@ -4,15 +4,19 @@ import DataTableComponent from "@/Components/Table";
 import { ScheduleInterface } from "@/interfaces/schedule";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import React, { useState } from "react";
 import ModalFormSchedule from "./Programming/ModalFormSchedule";
 import { DriverInterface } from "@/interfaces/Driver";
 import Card from "@/Components/Card";
+import { MantenimientoInterface } from "@/interfaces/Mantenimiento";
+import ModalFormMantenimieto from "./Programming/ModalFormMantenimieto";
+
 
 type Props = {
     vehicle: VehicleInterface;
     schedules: ScheduleInterface[];
+    listMantenimientos: MantenimientoInterface[];
     drivers: DriverInterface[];
     statuSchedules: boolean;
 };
@@ -22,24 +26,18 @@ const showVehicle: React.FC<Props> = ({
     schedules,
     drivers,
     statuSchedules,
+    listMantenimientos,
 }) => {
-    const [openModal, setOpenModal] = useState(false);
+    const [openModalSchedule, setOpenModalSchedule] = useState(false);
+    const [openModalMantenimiento, setOpenModalMantenimiento] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [scheduleData, setScheduleData] = useState<ScheduleInterface | null>(
         null
     );
+    const [mantenimientoData, setMantenimientoData] =
+        useState<MantenimientoInterface | null>(null);
 
-    const columns = [
-        {
-            name: "#",
-            cell: (row: ScheduleInterface, index: number) => index + 1, // Enumerar filas
-            width: "50px", // Ajustar el ancho de la columna si es necesario
-        },
-        {
-            name: "Matricula Vehiculo",
-            cell: (row: ScheduleInterface) => row.matricula_car,
-            sortable: true,
-        },
+    const columnSchedule = [
         {
             name: "Conductor Designado",
             cell: (row: ScheduleInterface) => row.conductor_name,
@@ -64,35 +62,94 @@ const showVehicle: React.FC<Props> = ({
                     {row.status}
                 </span>
             ),
-            width: "150px",
         },
         {
-            name: "Acciones",
             cell: (row: ScheduleInterface) => (
-                <button onClick={() => handleEdit(row)}>
+                <button onClick={() => handleEditSchedule(row)}>
                     <i className="bi bi-pencil"></i>
                 </button>
             ),
             ignoreRowClick: true,
-            width: "90px",
+            width: "50px",
+        },
+    ];
+    const columnMantenimiento = [
+        {
+            name: "Fecha de mantenimiento",
+            cell: (row: MantenimientoInterface) => row.fecha,
+            sortable: true,
+        },
+        {
+            name: "Conductor Designado",
+            cell: (row: MantenimientoInterface) => row.observaciones,
+            sortable: true,
+        },
+        {
+            name: "Estado",
+            cell: (row: MantenimientoInterface) => (
+                <span
+                    className={`rounded-lg px-2 font-semibold py-1 border border-gray-600 bg-gray-800/5`}
+                >
+                    {row.estado}
+                </span>
+            ),
+        },
+        {
+            cell: (row: MantenimientoInterface) => (
+                <div className="gap-3">
+                    {row.estado == "pendiente" ? (
+                        <button onClick={() => deleteMantenimiento(row.id)}>
+                            <i className="bi bi-trash"></i>
+                        </button>
+                    ) : null}
+                    <button onClick={() => handleEditMantenimiento(row)}>
+                        <i className="bi bi-pencil"></i>
+                    </button>
+                </div>
+            ),
+            ignoreRowClick: true,
+            width: "80px",
         },
     ];
 
-    const handleEdit = (row: ScheduleInterface) => {
+    const handleEditMantenimiento = (row: MantenimientoInterface) => {
         setIsEditing(true);
-        setScheduleData(row);
-        setOpenModal(true);
+        setMantenimientoData(row);
+        setOpenModalMantenimiento(true);
     };
 
-    const handleCreate = () => {
+    const handleEditSchedule = (row: ScheduleInterface) => {
+        setIsEditing(true);
+        setScheduleData(row);
+        setOpenModalSchedule(true);
+    };
+
+    const handleCreateSchedule = () => {
         setIsEditing(false);
         setScheduleData(null);
-        setOpenModal(true);
+        setOpenModalSchedule(true);
+    };
+
+    const handleCreateMantenimiento = () => {
+        setIsEditing(false);
+        setScheduleData(null);
+        setOpenModalMantenimiento(true);
     };
 
     const closeModal = () => {
-        setOpenModal(false);
+        setOpenModalMantenimiento(false);
+        setOpenModalSchedule(false);
         setScheduleData(null);
+    };
+
+    const deleteMantenimiento = async (id: number) => {
+        try {
+            await router.delete(route("mantenimiento.delete", id), {
+                preserveScroll: true,
+            });
+        } catch (errors) {
+            console.error("Error al eliminar el mantenimiento:", errors);
+        }
     };
 
     return (
@@ -167,7 +224,7 @@ const showVehicle: React.FC<Props> = ({
             </Card>
 
             <ModalFormSchedule
-                show={openModal}
+                show={openModalSchedule}
                 onClose={closeModal}
                 drivers={drivers}
                 cardId={vehicle.id}
@@ -175,17 +232,49 @@ const showVehicle: React.FC<Props> = ({
                 isEditing={isEditing}
             />
 
-            <div className="p-4 flex justify-between">
-                <h1 className="text-xl font-semibold">
-                    Historial de Programaciones
-                </h1>
-                {statuSchedules || vehicle.status != "activo" ? null : (
-                    <PrimaryButton onClick={handleCreate}>Nuevo</PrimaryButton>
-                )}
+            <ModalFormMantenimieto
+                show={openModalMantenimiento}
+                onClose={closeModal}
+                cardId={vehicle.id}
+                infoData={mantenimientoData || undefined}
+                isEditing={isEditing}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                    <div className="p-4 flex justify-between">
+                        <h1 className="text-xl font-semibold">
+                            Historial de Programaciones
+                        </h1>
+                        {statuSchedules || vehicle.status != "activo" ? null : (
+                            <PrimaryButton onClick={handleCreateSchedule}>
+                                Nuevo
+                            </PrimaryButton>
+                        )}
+                    </div>
+                    <DataTableComponent
+                        columns={columnSchedule}
+                        data={schedules}
+                    />
+                </div>
+                <div>
+                    <div className="p-4 flex justify-between">
+                        <h1 className="text-xl font-semibold">
+                            Historial de Mantenimintos
+                        </h1>
+                        <PrimaryButton onClick={handleCreateMantenimiento}>
+                            Programar
+                        </PrimaryButton>
+                    </div>
+                    <DataTableComponent
+                        columns={columnMantenimiento}
+                        data={listMantenimientos}
+                    />
+                </div>
             </div>
-            <DataTableComponent columns={columns} data={schedules} />
         </Authenticated>
     );
 };
+
 
 export default showVehicle;

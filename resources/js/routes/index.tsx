@@ -36,9 +36,14 @@ export const roleNavItems: Record<
             label: "Dashboard",
         },
         {
-            href: "user.list",
-            icon: <i className="bi bi-people"></i>,
-            label: "Usuarios",
+            href: "clients.list",
+            icon: <i className="bi bi-person-check"></i>,
+            label: "Clientes",
+        },
+        {
+            href: "drivers.list",
+            icon: <i className="bi bi-person-bounding-box"></i>,
+            label: "Conductores",
         },
         {
             href: "vehicle.list",
