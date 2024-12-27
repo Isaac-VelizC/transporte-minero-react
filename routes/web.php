@@ -85,6 +85,7 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     //Route::get('/devices/locations', [DeviceController::class, 'getLocations']);
     //Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.view');
+    Route::post('/reports/filter', [ReportController::class, 'filterConsult'])->name('admin.resports.filter');
 });
 
 Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
