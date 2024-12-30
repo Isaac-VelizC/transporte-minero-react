@@ -1,11 +1,9 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import LinkButton from "@/Components/Buttons/LinkButton";
-import FlashMessages from "@/Components/FlashMessages";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage } from "@inertiajs/react";
 import React, { useEffect } from "react";
-//import { FlashMessages as FlashMessagesType } from "@/interfaces/FlashMessagesProps";
 import DataTableComponent from "@/Components/Table";
 import toast from "react-hot-toast";
 
