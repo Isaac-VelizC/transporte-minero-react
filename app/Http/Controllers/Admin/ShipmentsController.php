@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Envios\EnviosCreateResquest;
+use App\Http\Requests\Envios\EnviosUpdateResquest;
 use App\Models\CargoShipment;
 use App\Models\Geocerca;
 use App\Models\Persona;
@@ -231,7 +232,7 @@ class ShipmentsController extends Controller
             $envio = CargoShipment::findOrFail($id);
             //$schedules = VehicleSchedule::where('status', 'libre')->get();
             $schedules = VehicleSchedule::with('vehicle')
-                ->where('status', 'libre')
+                ->where('status', '!=', 'pendiente')
                 ->where('status_time', true)
                 ->get()
                 ->map(function ($schedule) {
@@ -259,9 +260,31 @@ class ShipmentsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(EnviosUpdateResquest $request, string $id)
     {
-        //
+        // Validar los datos de entrada
+        $validatedData = $request->validated();
+
+        // Obtener la programación del vehículo
+        $vehicleSchedule = VehicleSchedule::findOrFail($validatedData['programming']);
+
+        // Asignar car_id y conductor_id desde la programación
+        $validatedData['car_id'] = $vehicleSchedule->car_id;
+        $validatedData['conductor_id'] = $vehicleSchedule->driver->persona->user_id;
+
+        try {
+            // Crear el envío
+            CargoShipment::findOrFail($id)->update($validatedData);
+
+            // Actualizar el estado de la programación
+            $vehicleSchedule->update(['status' => 'asignado']);
+
+            return redirect()->route('envios.list')->with('success', 'Envío actualizado exitosamente');
+        } catch (\Exception $e) {
+            Log::error('Error creating envio: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'No se pudo crear el envío. Intente nuevamente.');
+        }
     }
     /**
      * Remove the specified resource from storage.

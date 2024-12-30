@@ -4,8 +4,9 @@ import Modal from "@/Components/Modal/Modal";
 import DataTableComponent from "@/Components/Table";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
-import { useCallback, useState } from "react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     envios: ShipmentInterface[];
@@ -86,17 +87,31 @@ export default function listEnviosConducto({ envios }: Props) {
             try {
                 // Realiza la solicitud para cambiar el estado del envío
                 await router.get(route("driver.envios.status", cargaData.id), {
-                    // Aquí puedes enviar cualquier dato adicional si es necesario
+                    
                 });
             } catch (error) {
-                console.error("Error al cambiar el estado del envío:", error);
+                toast.error("Error al cambiar el estado del envío");
             }
         } else {
-            console.warn(
+            toast.error(
                 "No hay un ID de envío seleccionado para cambiar el estado."
             );
         }
     };
+
+    
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash.success) {
+            // Mostrar mensaje de éxito
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            // Mostrar mensaje de error
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <Authenticated>

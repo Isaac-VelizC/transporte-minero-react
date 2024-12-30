@@ -4,9 +4,10 @@ import ModalDelete from "@/Components/Modal/ModalDelete";
 import DataTableComponent from "@/Components/Table";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
-import React, { useCallback, useState } from "react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
+import { useCallback, useEffect, useState } from "react";
 import ModalFormUser from "../ModalFormUser";
+import toast from "react-hot-toast";
 
 type Props = {
     clientes: UserInterface[];
@@ -114,22 +115,43 @@ const Index = ({ clientes }: Props) => {
     };
 
     const deleteUser = async () => {
-        if (userIdToSelect === null) {
-            console.warn("No hay un ID de usuario seleccionado para eliminar.");
+        if (!userIdToSelect) {
+            toast.error("No hay un ID de usuario seleccionado para eliminar.");
             return;
         }
+
         try {
             await router.delete(route("user.destroy", userIdToSelect), {
                 preserveScroll: true,
+                onSuccess: ({ props: { flash } }) => {
+                    //if (flash?.success) toast.success(flash.success);
+                    closeModal();
+                    setUserIdToSelect(null);
+                    setStatus(false);
+                },
+                onError: (errors) => {
+                    console.error("Error al eliminar el usuario:", errors);
+                    toast.error("Ocurrió un error al eliminar el usuario.");
+                },
             });
-            closeModal();
-        } catch (errors) {
-            console.error("Error al eliminar el usuario:", errors);
-        } finally {
-            setUserIdToSelect(null);
-            setStatus(false);
+        } catch (error) {
+            console.error("Error inesperado:", error);
+            toast.error("Ocurrió un error inesperado.");
         }
     };
+
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash.success) {
+            // Mostrar mensaje de éxito
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            // Mostrar mensaje de error
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <Authenticated>

@@ -10,6 +10,7 @@ import { GeocercaInterface } from "@/interfaces/Geocerca";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import React from "react";
+import toast from "react-hot-toast";
 
 type TypesGeocerca = {
     value: string;
@@ -35,11 +36,25 @@ export default function form({ isEditing, geocerca, types }: Props) {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (isEditing && data?.id) {
-            patch(route("geocerca.update", data.id));
-        } else {
-            post(route("geocerca.store"));
-        }
+
+        const routeUrl =
+            isEditing && data?.id
+                ? route("geocerca.update", data.id)
+                : route("geocerca.store");
+
+        const method = isEditing && data?.id ? patch : post;
+
+        method(routeUrl, {
+            onSuccess: ({ props: { flash } }) => {
+                if (flash?.error) toast.error(flash.error);
+            },
+            onError: () => {
+                const errorMessage = isEditing
+                    ? "Error al actualizar la geocerca"
+                    : "Error al registrar la geocerca";
+                toast.error(errorMessage);
+            },
+        });
     };
 
     const handlePolygonUpdated = (coordinates: number[][]) => {

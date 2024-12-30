@@ -100,6 +100,7 @@ Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
 Route::middleware(['auth', 'checkRole:Cliente'])->group(function () {
     Route::patch('/cliente/envios/{id}/confirm', [ClientDriverController::class, 'confirmEntrega'])->name('client.envios.status');
     Route::get('/client/pedidos/', [ShipmentsController::class, 'listEnviosCliente'])->name('client.pedido.list');
+    Route::get('/client/envio/show/{id}', [ClientDriverController::class, 'showEnvioClient'])->name('client.envio.show');
 });
 
 require __DIR__.'/auth.php';

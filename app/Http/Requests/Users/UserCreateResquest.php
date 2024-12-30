@@ -56,6 +56,7 @@ class UserCreateResquest extends FormRequest
                 'required',
                 'string',
                 'min:8',
+                'max:10',
                 'regex:/^\d+$/',
                 'unique:personas,numero'
             ],

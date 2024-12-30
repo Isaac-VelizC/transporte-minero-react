@@ -7,6 +7,7 @@ import Modal from "@/Components/Modal/Modal";
 import { MantenimientoInterface } from "@/interfaces/Mantenimiento";
 import { useForm } from "@inertiajs/react";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     show: boolean;
@@ -45,7 +46,11 @@ function ModalFormMantenimieto({
                 ? "mantenimiento.update"
                 : "mantenimiento.store";
         action(route(routeName, `${data?.id}`), {
-            onSuccess: () => onClose(),
+            onSuccess: ({ props: { flash } }) =>{
+                if (flash?.success) toast.success(flash.success)
+                if (flash?.error) toast.error(flash.error)
+                onClose();
+            },
         });
     };
 

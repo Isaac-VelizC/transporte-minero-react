@@ -9,6 +9,7 @@ import { DriverInterface } from "@/interfaces/Driver";
 import { ScheduleInterface } from "@/interfaces/schedule";
 import { useForm } from "@inertiajs/react";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     show: boolean;
@@ -16,7 +17,7 @@ type Props = {
     drivers: DriverInterface[];
     schecule?: ScheduleInterface;
     cardId: number;
-    isEditing: boolean; 
+    isEditing: boolean;
 };
 
 function ModalFormSchedule({
@@ -35,7 +36,8 @@ function ModalFormSchedule({
         driver_id: "",
     };
 
-    const { data, setData, post, patch, errors, processing } = useForm(initialData);
+    const { data, setData, post, patch, errors, processing } =
+        useForm(initialData);
 
     useEffect(() => {
         setData(initialData);
@@ -43,21 +45,30 @@ function ModalFormSchedule({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (isEditing && data.id) {
-            patch(route("vehicle.programming.update", data.id), {
-                onSuccess: () => onClose(),
-            });
-        } else {
-            post(route("vehicle.programming"), {
-                onSuccess: () => onClose(),
-            });
-        }
+
+        const routeUrl =
+            isEditing && data.id
+                ? route("vehicle.programming.update", data.id)
+                : route("vehicle.programming");
+
+        const method = isEditing && data.id ? patch : post;
+
+        method(routeUrl, {
+            onSuccess: ({ props: { flash } }) => {
+                if (flash?.error) toast.error(flash.error);
+                if (flash?.success) toast.success(flash.success); // Cambié el toast.error por toast.success para el caso de éxito
+                onClose();
+            },
+        });
     };
+
     return (
         <Modal show={show} onClose={onClose}>
             <form className="p-6" onSubmit={handleSubmit}>
                 <h2 className="text-lg font-bold text-gray-200 mb-2">
-                    {isEditing ? "Editar Información" : "Asignar Vehiculo a Conductor"}
+                    {isEditing
+                        ? "Editar Información"
+                        : "Asignar Vehiculo a Conductor"}
                 </h2>
                 <div>
                     <InputLabel

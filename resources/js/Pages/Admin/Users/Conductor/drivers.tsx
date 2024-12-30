@@ -8,8 +8,9 @@ import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
 import { DriverInterface } from "@/interfaces/Driver";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, router, useForm } from "@inertiajs/react";
 import React from "react";
+import toast from "react-hot-toast";
 
 const generos = [
     { value: "Hombre", label: "Masculino" },
@@ -42,14 +43,33 @@ export default function drivers({ isEditing, driver }: Props) {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (isEditing && data.user_id) {
-            patch(
-                route("driver.update", [data.user_id, data.id, data.driver_id])
-            );
-        } else {
-            post(route("driver.store"));
-        }
+        const routeUrl =
+            isEditing && data.user_id
+                ? route("driver.update", [
+                      data.user_id,
+                      data.id,
+                      data.driver_id,
+                  ])
+                : route("driver.store");
+
+        const method = isEditing && data.user_id ? patch : post;
+
+        method(routeUrl, {
+            preserveScroll: true,
+            onSuccess: ({ props: { flash } }) => {
+                if (flash?.error) toast.error(flash.error);
+            },
+            onError: () => {
+                toast.error(
+                    "Ocurrió un error inesperado al procesar la solicitud."
+                );
+            },
+            onFinish: () => {
+                // Aquí puedes agregar lógica adicional si es necesario
+            },
+        });
     };
+
     return (
         <Authenticated>
             <Head title="Create" />

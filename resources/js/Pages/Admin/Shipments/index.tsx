@@ -5,8 +5,9 @@ import DataTableComponent from "@/Components/Table";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router, usePage } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TableColumn } from "react-data-table-component";
+import toast from "react-hot-toast";
 
 type Props = {
     envios: ShipmentInterface[];
@@ -17,6 +18,7 @@ function index({ envios }: Props) {
     const [idToSelect, setIdToSelect] = useState<number | null>(null);
     const [status, setStatus] = useState(false);
     const rol = usePage().props.auth.rol;
+    const { flash } = usePage().props;
     const columns: TableColumn<ShipmentInterface>[] = [
         {
             name: "#",
@@ -105,13 +107,26 @@ function index({ envios }: Props) {
                 closeModal();
                 setIdToSelect(null);
             } catch (error) {
-                console.error("Error al cancelar el envío:", error);
+                console.log(error);
+                toast.error("Error al cancelar el envío");
                 // Aquí puedes mostrar un mensaje al usuario si es necesario
             }
         } else {
-            console.warn("No hay un ID de envío seleccionado para cancelar.");
+            toast.error("No hay un ID de envío seleccionado para cancelar.");
         }
     };
+
+    useEffect(() => {
+        if (flash.success) {
+            // Mostrar mensaje de éxito
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            // Mostrar mensaje de error
+            toast.error(flash.error);
+        }
+    }, [flash]);
+    
 
     return (
         <Authenticated>

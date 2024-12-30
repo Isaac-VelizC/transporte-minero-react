@@ -7,6 +7,7 @@ import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import Modal from "@/Components/Modal/Modal";
 import { useCallback, useState } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     envios: ShipmentInterface[];
@@ -60,7 +61,7 @@ export default function listEnvios({ envios }: Props) {
                             <i className="bi bi-info-circle"></i>
                         </button>
                     ) : null}
-                    <Link href={route("envios.show", row.id)}>
+                    <Link href={route("client.envio.show", row.id)}>
                         <i className="bi bi-eye"></i>
                     </Link>
                 </div>
@@ -87,15 +88,16 @@ export default function listEnvios({ envios }: Props) {
                     route("client.envios.status", cargaData.id),
                     {
                         preserveScroll: true,
+                        
                     }
                 );
                 closeModal();
             } catch (error) {
-                console.error("Error al cancelar el envío:", error);
+                toast.error("Error al cancelar el envío");
                 // Aquí puedes mostrar un mensaje al usuario si es necesario
             }
         } else {
-            console.warn("No hay un ID de envío seleccionado para cancelar.");
+            toast.error("No hay un ID de envío seleccionado para cancelar.");
         }
     };
 

@@ -4,18 +4,17 @@ import FlashMessages from "@/Components/FlashMessages";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage } from "@inertiajs/react";
-import React from "react";
-import { FlashMessages as FlashMessagesType } from "@/interfaces/FlashMessages";
+import React, { useEffect } from "react";
+//import { FlashMessages as FlashMessagesType } from "@/interfaces/FlashMessagesProps";
 import DataTableComponent from "@/Components/Table";
+import toast from "react-hot-toast";
 
 type Props = {
     vehicles: VehicleInterface[];
 };
 
 const index: React.FC<Props> = ({ vehicles }) => {
-    const { props } = usePage();
-    const flash: FlashMessagesType = props.flash || {};
-    const { error, success } = flash;
+    const { flash } = usePage().props;
 
     const columns = [
         {
@@ -76,11 +75,21 @@ const index: React.FC<Props> = ({ vehicles }) => {
         },
     ];
 
+    useEffect(() => {
+        if (flash.success) {
+            // Mostrar mensaje de éxito
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            // Mostrar mensaje de error
+            toast.error(flash.error);
+        }
+    }, [flash]);
+
     return (
         <Authenticated>
             <Head title="Vehiculos" />
             <Breadcrumb pageName="Vehiculos" />
-            <FlashMessages error={error} success={success} />
             <div className="flex justify-between items-center my-10">
                 <h2 className="text-xl font-semibold">Gestión de Vehículos</h2>
                 <div className="flex gap-4">

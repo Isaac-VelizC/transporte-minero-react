@@ -10,6 +10,7 @@ import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import React from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     marcas: MarksInterface[];
@@ -47,12 +48,20 @@ const showVehicle: React.FC<Props> = ({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (isEditing && data?.id) {
-            patch(route("vehicle.update", data.id));
-        } else {
-            post(route("vehicle.store"));
-        }
+
+        const routeUrl =
+            isEditing && data?.id
+                ? route("vehicle.update", data.id)
+                : route("vehicle.store");
+        const method = isEditing && data?.id ? patch : post;
+
+        method(routeUrl, {
+            onSuccess: ({ props: { flash } }) => {
+                if (flash?.error) toast.error(flash.error);
+            },
+        });
     };
+
     return (
         <Authenticated>
             <Head title={isEditing ? "Editar" : "Crear"} />

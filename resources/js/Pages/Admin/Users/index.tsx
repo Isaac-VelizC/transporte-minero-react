@@ -1,14 +1,15 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import React, { useState } from "react";
-import { Head, Link, router } from "@inertiajs/react";
+import React, { useEffect, useState } from "react";
+import { Head, router, usePage } from "@inertiajs/react";
 import ModalDelete from "@/Components/Modal/ModalDelete";
 import ModalFormUser from "@/Pages/Admin/Users/ModalFormUser";
 import { RolesInterface } from "@/interfaces/Roles";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import DataTableComponent from "@/Components/Table";
 import LinkButton from "@/Components/Buttons/LinkButton";
+import toast from "react-hot-toast";
 
 type Props = {
     users: UserInterface[];
@@ -88,12 +89,6 @@ const Index: React.FC<Props> = ({ users, roles }) => {
         },
     ];
 
-    const handleEdit = (row: UserInterface) => {
-        setIsEditing(true);
-        setUserData(row);
-        setConfirmingUserShow(true);
-    };
-
     const handleCreate = () => {
         setIsEditing(false);
         setUserData(null);
@@ -130,6 +125,19 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             setStatus(false);
         }
     };
+
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash.success) {
+            // Mostrar mensaje de éxito
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            // Mostrar mensaje de error
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <Authenticated>
@@ -174,7 +182,7 @@ const Index: React.FC<Props> = ({ users, roles }) => {
                 rutaName="user"
                 show={confirmingUserShow}
                 onClose={closeModal}
-                users={userData || undefined} // Pasa datos del usuario si existen
+                users={userData || undefined}
                 isEditing={isEditing}
                 roles={roles}
             />

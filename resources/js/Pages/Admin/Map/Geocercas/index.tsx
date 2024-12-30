@@ -4,8 +4,9 @@ import ModalDelete from "@/Components/Modal/ModalDelete";
 import DataTableComponent from "@/Components/Table";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
-import { useState, useCallback, useMemo } from "react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     geocercas: GeocercaInterface[];
@@ -79,21 +80,37 @@ export default function Index({ geocercas }: Props) {
                     preserveScroll: true,
                     onSuccess: closeModal,
                     onError: (errors) => {
-                        console.error("Error al eliminar la geocerca:", errors);
+                        toast.error("Error al eliminar la geocerca");
+                        console.log("Error al eliminar la geocerca:", errors);
                     },
                     onFinish: () => {
                         setItemIdToSelect(null);
                     },
                 });
             } catch (error) {
-                console.error("Error inesperado al eliminar:", error);
+                console.log("Error inesperado al eliminar:", error);
+                toast.error("Error inesperado al eliminar");
             }
         } else {
-            console.warn(
+            toast.error(
                 "No hay un ID de geocerca seleccionado para eliminar."
             );
         }
     }, [itemIdToSelect, closeModal]);
+
+    
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash.success) {
+            // Mostrar mensaje de éxito
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            // Mostrar mensaje de error
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <Authenticated>

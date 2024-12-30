@@ -13,6 +13,7 @@ import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useCallback, useMemo } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     geocercas: GeocercaInterface[];
@@ -65,16 +66,33 @@ export default function form({
     const handleSubmit = useCallback(
         (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
+
             if (!data.client_latitude || !data.client_longitude) {
-                alert("Debe seleccionar una ubicación");
+                toast.error("Debe seleccionar una ubicación");
                 return;
             }
+
             const submitRoute =
                 isEditing && data?.id
                     ? route("envios.update.form", data.id)
                     : route("envios.store.form");
+
             const submitMethod = isEditing && data?.id ? patch : post;
-            submitMethod(submitRoute);
+
+            submitMethod(submitRoute, {
+                onSuccess: ({ props: { flash } }) => {
+                    if (flash?.success) {
+                        toast.success(flash.success);
+                    }
+                    if (flash?.error) {
+                        toast.error(flash.error);
+                    }
+                },
+                onError: (errors) => {
+                    toast.error("Ocurrió un error al procesar la solicitud.");
+                    console.error(errors);
+                },
+            });
         },
         [isEditing, data, post, patch]
     );

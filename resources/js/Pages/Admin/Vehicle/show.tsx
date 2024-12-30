@@ -11,6 +11,7 @@ import { DriverInterface } from "@/interfaces/Driver";
 import Card from "@/Components/Card";
 import { MantenimientoInterface } from "@/interfaces/Mantenimiento";
 import ModalFormMantenimieto from "./Programming/ModalFormMantenimieto";
+import toast from "react-hot-toast";
 
 
 type Props = {
@@ -146,9 +147,14 @@ const showVehicle: React.FC<Props> = ({
         try {
             await router.delete(route("mantenimiento.delete", id), {
                 preserveScroll: true,
+                onSuccess: ({ props: { flash } }) => {
+                    if (flash?.success) toast.error(flash.success);
+                    if (flash?.error) toast.error(flash.error);
+                }
             });
         } catch (errors) {
-            console.error("Error al eliminar el mantenimiento:", errors);
+            console.log("Error al eliminar el mantenimiento:", errors);
+            toast.error("Error al eliminar el mantenimiento");
         }
     };
 

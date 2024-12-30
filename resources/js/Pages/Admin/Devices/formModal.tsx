@@ -9,6 +9,7 @@ import { DeviceInterface } from "@/interfaces/Device";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import { useForm } from "@inertiajs/react";
 import React, { useEffect } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     show: boolean;
@@ -50,9 +51,14 @@ const FormModal: React.FC<Props> = ({
         const routeParams = isEditing && data?.id ? data?.id : undefined;
 
         action(route(routeName, routeParams), {
-            onSuccess: () => {
+            onSuccess: ({ props: { flash } }) => {
                 onClose();
                 reset();
+                if (flash?.success) toast.success(flash.success);
+                if (flash?.error) toast.error(flash.error);
+            },
+            onError: () => {
+                toast.error('Error al registrar o actualizar el dispositivo');
             },
         });
     };

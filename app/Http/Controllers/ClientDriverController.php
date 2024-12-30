@@ -35,7 +35,7 @@ class ClientDriverController extends Controller
             'client_longitude' => $envio->client_longitude,
         ];
     }
-    
+
     public function showEnvio($id)
     {
         try {
@@ -56,7 +56,36 @@ class ClientDriverController extends Controller
             return redirect()->back()->with('error', 'Ocurrió un error al obtener los datos.');
         }
     }
-    public function changeStatusShipment($id) {
+
+    public function showEnvioClient($id)
+    {
+        try {
+            $idUser = Auth::user()->persona->id;
+            $envio = CargoShipment::with([
+                'vehicle:id,matricula',
+                'client:id,nombre,ap_pat,ap_mat',
+                'geocerca:id,name'
+            ])->where('client_id', $idUser)
+                ->findOrFail($id);
+
+            // Formatear la respuesta
+            $response = $this->formatResponse($envio);
+
+            return Inertia::render('Client/show', [
+                'envio' => $response
+            ]);
+        } catch (ModelNotFoundException $e) {
+            Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
+            return redirect()->back()->with('error', 'Envio no encontrado.');
+        } catch (\Exception $e) {
+            Log::error('Error retrieving shipment data: ', ['error' => $e]);
+            return redirect()->back()->with('error', 'Ocurrió un error al obtener los datos.');
+        }
+    }
+
+
+    public function changeStatusShipment($id)
+    {
         try {
             $item = CargoShipment::findOrFail($id);
             $statusMap = [
@@ -77,14 +106,16 @@ class ClientDriverController extends Controller
             return redirect()->route('driver.envios.list')->with('error', 'Ocurrió un error al actualizar el estado.');
         }
     }
-    public function showMapMonitoreo($id) {
+
+    public function showMapMonitoreo($id)
+    {
         try {
             $envio = CargoShipment::with([
                 'vehicle:id,matricula',
                 'client:id,nombre,ap_pat,ap_mat',
                 'geocerca:id,name'
             ])->findOrFail($id);
-            
+
             $response = $this->formatResponse($envio);
             $geocerca = Geocerca::findOrFail($envio->geofence_id);
             $device = Device::where('car_id', $envio->car_id)->first();
@@ -103,7 +134,8 @@ class ClientDriverController extends Controller
         }
     }
 
-    public function confirmEntrega($id) {
+    public function confirmEntrega($id)
+    {
         try {
             $item = CargoShipment::findOrFail($id);
             $item->status = "entregado";
@@ -137,7 +169,7 @@ class ClientDriverController extends Controller
             $carId = $vehicleSchedule->car_id;
             $list = VehiculoMantenimiento::where('vehicle_id', $carId)->get();
         }
-        
+
         return Inertia::render('Conductor/listMantenimiento', [
             'list' => $list,
             'message' => $list->isEmpty() ? 'No hay mantenimientos disponibles.' : null

@@ -9,6 +9,7 @@ import { useForm } from "@inertiajs/react";
 import PrimaryButton from "../../../Components/Buttons/PrimaryButton";
 import SelectInput from "../../../Components/Forms/SelectInput";
 import { RolesInterface } from "@/interfaces/Roles";
+import toast from "react-hot-toast";
 
 const generos = [
     { value: "Hombre", label: "Masculino" },
@@ -64,7 +65,8 @@ const ModalFormUser: React.FC<Props> = ({
         const method = isEditing && data?.user_id ? patch : post;
 
         method(route(routeName, [data.user_id, data.id]), {
-            onSuccess: () => {
+            onSuccess: (page) => {
+                toast.error(`${page.props.flash.error}`);
                 onClose();
                 reset();
             },

@@ -4,8 +4,9 @@ import ModalDelete from "@/Components/Modal/ModalDelete";
 import DataTableComponent from "@/Components/Table";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
-import { useState } from "react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     drivers: UserInterface[];
@@ -87,24 +88,43 @@ export default function index({ drivers }: Props) {
     };
 
     const deleteUser = async () => {
-        if (idToSelect !== null) {
+        if (!idToSelect) {
+            toast.error("No hay un ID de usuario seleccionado para eliminar.");
+            return;
+        }
+
+        try {
             await router.delete(route("user.destroy", idToSelect), {
                 preserveScroll: true,
-                onSuccess: () => {
+                onSuccess: ({ props: { flash } }) => {
+                    //if (flash?.success) toast.success(flash.success);
                     closeModal();
+                    setIdToSelect(null);
+                    setStatus(false);
                 },
                 onError: (errors) => {
                     console.error("Error al eliminar el usuario:", errors);
-                },
-                onFinish: () => {
-                    setIdToSelect(null);
-                },
+                    toast.error("Ocurrió un error al eliminar el usuario.");
+                }
             });
-            setStatus(false);
-        } else {
-            console.warn("No hay un ID de usuario seleccionado para eliminar.");
+        } catch (error) {
+            console.error("Error inesperado:", error);
+            toast.error("Ocurrió un error inesperado.");
         }
     };
+
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash.success) {
+            // Mostrar mensaje de éxito
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            // Mostrar mensaje de error
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <Authenticated>
