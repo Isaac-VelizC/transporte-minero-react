@@ -57,7 +57,7 @@ class UsersController extends Controller
             'drivers' => $list,
         ]);
     }
-    
+
     public function index()
     {
         $users = User::with(['persona', 'roles'])
@@ -244,6 +244,30 @@ class UsersController extends Controller
             Log::error('Error retrieving client data: ', ['error' => $e]);
             return redirect()->back()->with('error', 'Ocurrió un error al obtener los datos.');
         }
-        
+    }
+
+    public function reestablecerPasswordUser($id)
+    {
+        try {
+            // Buscar al usuario asociado a la persona por el ID
+            $user = Persona::findOrFail($id)->user;
+            // Generar la nueva contraseña
+            $newPassword = 'TM.' . $user->persona->ci;
+            // Actualizar y guardar la nueva contraseña hasheada
+            $user->update([
+                'password' => Hash::make($newPassword),
+            ]);
+            // Redirigir con un mensaje de éxito
+            return redirect()->back()->with(
+                'success',
+                "Contraseña reestablecida correctamente a: $newPassword"
+            );
+        } catch (\Exception $e) {
+            // Redirigir con un mensaje de error si ocurre una excepción
+            return redirect()->back()->with(
+                'error',
+                'No se pudo reestablecer la contraseña.'
+            );
+        }
     }
 }

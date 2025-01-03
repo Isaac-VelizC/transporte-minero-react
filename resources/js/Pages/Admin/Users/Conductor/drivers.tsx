@@ -73,7 +73,13 @@ export default function drivers({ isEditing, driver }: Props) {
     return (
         <Authenticated>
             <Head title="Create" />
-            <Breadcrumb pageName="Conductor" />
+            <Breadcrumb
+                breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista", path: "/drivers/list" },
+                    { name: isEditing ? "Editar" : "Registrar nuevo" },
+                ]}
+            />
             <Card>
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-900">

@@ -33,6 +33,7 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::post('/users', [UsersController::class, 'store'])->name('user.create');
     Route::patch('/users/{id}/{id_persona}', [UsersController::class, 'update'])->name('user.update');
     Route::delete('/users/{id}', [UsersController::class, 'destroy'])->name('user.destroy');
+    Route::get('/users/password/reestablcer/{id}', [UsersController::class, 'reestablecerPasswordUser'])->name('user.password.restore');
     //Clients
     Route::get('/users/clients/historial/{id}', [UsersController::class, 'historialEnviosCliente'])->name('client.history.list');
     Route::get('/users/clients', [UsersController::class, 'listClients'])->name('clients.list');

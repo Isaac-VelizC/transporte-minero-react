@@ -105,7 +105,7 @@ export default function index({ drivers }: Props) {
                 onError: (errors) => {
                     console.error("Error al eliminar el usuario:", errors);
                     toast.error("Ocurrió un error al eliminar el usuario.");
-                }
+                },
             });
         } catch (error) {
             console.error("Error inesperado:", error);
@@ -129,7 +129,12 @@ export default function index({ drivers }: Props) {
     return (
         <Authenticated>
             <Head title="Drivers" />
-            <Breadcrumb pageName="Lista de Conductores" />
+            <Breadcrumb
+                breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista de Conductores" },
+                ]}
+            />
             <div className="flex justify-end my-10 gap-3">
                 <LinkButton href="driver.create">Crear Nuevo</LinkButton>
             </div>

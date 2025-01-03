@@ -7,6 +7,7 @@ import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import Modal from "@/Components/Modal/Modal";
 import { useCallback, useState } from "react";
 import { UserInterface } from "@/interfaces/User";
+import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 
 type Props = {
     envios: ShipmentInterface[];
@@ -72,13 +73,18 @@ export default function historyList({ envios, cliente }: Props) {
     return (
         <Authenticated>
             <Head title="Envios" />
+            <Breadcrumb
+                breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista", path: "/users/clients" },
+                    { name: "Historial de Pedidos" },
+                ]}
+            />
             <div>
-                <div className="flex flex-col lg:flex-row items-center justify-between my-4">
-                    <h1 className="text-lg font-semibold">Historial de Pedidos del cliente {cliente.nombre} {cliente.ap_pat} : {cliente.ci}</h1>
-                </div>
                 <DataTableComponent<ShipmentInterface>
                     columns={columns}
                     data={envios}
+                    title={`Cliente: ${cliente.nombre} ${cliente.ap_pat} - ${cliente.ci}`}
                 />
             </div>
             <Modal show={confirmingShow} onClose={closeModal}>

@@ -19,7 +19,7 @@ const Index: React.FC<Props> = ({ geocercas }) => {
     return (
         <Authenticated>
             <Head title="Map" />
-            <Breadcrumb pageName="Map" />
+            {/*<Breadcrumb pageName="Map" />*/}
             <div className=" h-150 w-full">
                 <MapContainer
                     center={[-19.58361, -65.75306]} // Coordenadas iniciales del mapa

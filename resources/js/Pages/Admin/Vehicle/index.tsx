@@ -87,17 +87,25 @@ const index: React.FC<Props> = ({ vehicles }) => {
     return (
         <Authenticated>
             <Head title="Vehiculos" />
-            <Breadcrumb pageName="Vehiculos" />
-            <div className="flex justify-between items-center my-10">
-                <h2 className="text-xl font-semibold">Gestión de Vehículos</h2>
-                <div className="flex gap-4">
-                    <LinkButton href="devices.list" className="flex items-center gap-2">
-                        <i className="bi bi-phone"></i> Dispositivos
-                    </LinkButton>
-                    <LinkButton href="vehicle.create" className="flex items-center gap-2">
-                        <i className="bi bi-plus"></i> Nuevo Vehículo
-                    </LinkButton>
-                </div>
+            <Breadcrumb
+                breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista Vehiculos" },
+                ]}
+            />
+            <div className="flex justify-end items-center gap-4 my-10">
+                <LinkButton
+                    href="devices.list"
+                    className="flex items-center gap-2"
+                >
+                    <i className="bi bi-phone"></i> Dispositivos
+                </LinkButton>
+                <LinkButton
+                    href="vehicle.create"
+                    className="flex items-center gap-2"
+                >
+                    <i className="bi bi-plus"></i> Nuevo Vehículo
+                </LinkButton>
             </div>
             <DataTableComponent columns={columns} data={vehicles} />
         </Authenticated>

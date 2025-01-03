@@ -66,7 +66,11 @@ const showVehicle: React.FC<Props> = ({
         <Authenticated>
             <Head title={isEditing ? "Editar" : "Crear"} />
             <Breadcrumb
-                pageName={isEditing ? "Editar info" : "Crear nuevo Vehiculo"}
+            breadcrumbs={[
+                { name: "Dashboard", path: "/dashboard" },
+                { name: "Lista", path: "/vehicle" },
+                { name: isEditing ? "Editar info" : "Registrar Vehiculo"},
+            ]}
             />
             <div className="bg-gray-600 rounded-xl">
                 <form className="p-6" onSubmit={handleSubmit}>

@@ -44,7 +44,10 @@ export default function Index({
     return (
         <Authenticated>
             <Head title="Reports" />
-            <Breadcrumb pageName="Reports" />
+            <Breadcrumb breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Resportes de envios" },
+                ]} />
             <Card>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

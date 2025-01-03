@@ -106,7 +106,7 @@ export default function listEnvios({ envios }: Props) {
             <Head title="Envios" />
             <div>
                 <div className="flex flex-col lg:flex-row items-center justify-between my-4">
-                    <h1 className="text-lg font-semibold">Lista de Pedidos</h1>
+                    <h1 className="text-lg font-semibold text-gray-200">Lista de Pedidos</h1>
                 </div>
                 <DataTableComponent<ShipmentInterface>
                     columns={columns}

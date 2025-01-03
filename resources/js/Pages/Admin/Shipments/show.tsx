@@ -11,7 +11,11 @@ function show({ datos }: Props) {
     return (
         <Authenticated>
             <Head title="Show" />
-            <Breadcrumb pageName="Show list" />
+            <Breadcrumb breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista", path: "/envios" },
+                    { name: `Codigo ${datos.id}`},
+                ]} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="bg-gray-400 lg:col-span-1 rounded-lg p-6 text-gray-600 shadow-md hover:shadow-lg transition-shadow duration-300">
                     <h1 className="font-bold text-2xl mb-4 text-gray-800">

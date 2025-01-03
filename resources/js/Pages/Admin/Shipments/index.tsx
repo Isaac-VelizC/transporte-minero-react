@@ -131,14 +131,16 @@ function index({ envios }: Props) {
     return (
         <Authenticated>
             <Head title="Envios" />
-            <Breadcrumb pageName="Envios list" />
+            <Breadcrumb breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista de Envios"},
+                ]} />
             {rol === "Encargado_Control" ? null : (
                 <div className="flex justify-end my-4">
                     <LinkButton href={"envios.create.form"}>Nuevo</LinkButton>
                 </div>
             )}
             <DataTableComponent
-                title="Lista de envios registrados"
                 columns={columns}
                 data={envios}
             />

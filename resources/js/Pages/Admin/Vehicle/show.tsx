@@ -161,7 +161,11 @@ const showVehicle: React.FC<Props> = ({
     return (
         <Authenticated>
             <Head title="Show" />
-            <Breadcrumb pageName="Show Vehicle" />
+            <Breadcrumb breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista", path: "/vehicle" },
+                    { name: vehicle.matricula },
+                ]} />
 
             <Card classNames="mb-10">
                 <div className="flex flex-col lg:flex-row lg:justify-between text-gray-500">

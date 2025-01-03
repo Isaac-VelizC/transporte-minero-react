@@ -115,12 +115,13 @@ export default function Index({ geocercas }: Props) {
     return (
         <Authenticated>
             <Head title="Geocercas" />
-            <Breadcrumb pageName="Geocercas" />
+            <Breadcrumb breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Geocercas", path: "/geocerca" },
+                ]}/>
             <div>
-                <div className="flex lg:flex-row flex-col items-center justify-between my-4">
-                    <h1 className="text-lg font-semibold">
-                        Geocercas Registrados
-                    </h1>
+                <div className="flex justify-end my-4">
+                    
                     <LinkButton href="geocerca.create">Nuevo</LinkButton>
                 </div>
                 <DataTableComponent columns={columns} data={geocercas} />

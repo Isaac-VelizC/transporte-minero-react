@@ -66,7 +66,11 @@ export default function form({ isEditing, geocerca, types }: Props) {
     return (
         <Authenticated>
             <Head title="Geocerca" />
-            <Breadcrumb pageName="Create" />
+            <Breadcrumb breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista", path: "/geocerca" },
+                    { name: isEditing ? "Editar" : "Registrar nuevo" },
+                ]} />
             <div className="bg-gray-600 rounded-xl">
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-200 mb-2">

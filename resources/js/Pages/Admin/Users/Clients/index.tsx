@@ -155,8 +155,13 @@ const Index = ({ clientes }: Props) => {
 
     return (
         <Authenticated>
-            <Head title="Cientes" />
-            <Breadcrumb pageName="List Clientes" />
+            <Head title="Clientes" />
+            <Breadcrumb
+                breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista Clientes"}
+                ]}
+            />
             <div className="flex justify-end my-10 gap-3">
                 <PrimaryButton type="button" onClick={handleCreate}>
                     Nuevo

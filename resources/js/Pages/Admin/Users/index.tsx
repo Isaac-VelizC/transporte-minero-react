@@ -10,6 +10,7 @@ import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import DataTableComponent from "@/Components/Table";
 import LinkButton from "@/Components/Buttons/LinkButton";
 import toast from "react-hot-toast";
+import ModalPassword from "./ModalPassword";
 
 type Props = {
     users: UserInterface[];
@@ -20,6 +21,7 @@ const Index: React.FC<Props> = ({ users, roles }) => {
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
     const [userIdToSelect, setUserIdToSelect] = useState<number | null>(null);
     const [confirmingUserShow, setConfirmingUserShow] = useState(false);
+    const [modalUpdatePassword, setModalUpdatePassword] = useState(false);
     const [status, setStatus] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState<UserInterface | null>(null);
@@ -72,9 +74,9 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             name: "Acciones",
             cell: (row: UserInterface) => (
                 <div className="flex gap-2">
-                    {/*<button onClick={() => handleEdit(row)}>
-                            <i className="bi bi-eye"></i>
-                        </button>*/}
+                    <button onClick={() => handlePasswordModal(row)}>
+                        <i className="bi bi-shield-lock"></i>
+                    </button>
                     <button
                         onClick={() =>
                             confirmUserDeletion(row.user_id, row.estado)
@@ -88,6 +90,11 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             width: "90px",
         },
     ];
+
+    const handlePasswordModal = (row: UserInterface) => {
+        setModalUpdatePassword(true);
+        setUserData(row);
+    };
 
     const handleCreate = () => {
         setIsEditing(false);
@@ -104,13 +111,14 @@ const Index: React.FC<Props> = ({ users, roles }) => {
     const closeModal = () => {
         setConfirmingUserDeletion(false);
         setConfirmingUserShow(false);
+        setModalUpdatePassword(false);
         setUserIdToSelect(null);
         setUserData(null);
     };
 
     const deleteUser = async () => {
         if (userIdToSelect === null) {
-            console.warn("No hay un ID de usuario seleccionado para eliminar.");
+            toast.error("No hay un ID de usuario seleccionado para eliminar.");
             return;
         }
         try {
@@ -119,7 +127,7 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             });
             closeModal();
         } catch (errors) {
-            console.error("Error al eliminar el usuario:", errors);
+            toast.error("Error al eliminar el usuario");
         } finally {
             setUserIdToSelect(null);
             setStatus(false);
@@ -142,7 +150,12 @@ const Index: React.FC<Props> = ({ users, roles }) => {
     return (
         <Authenticated>
             <Head title="Users" />
-            <Breadcrumb pageName="Users" />
+            <Breadcrumb
+                breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Users" }
+                ]}
+            />
             <div className="flex justify-between my-10">
                 <div className="flex gap-3">
                     <LinkButton href="clients.list">
@@ -177,7 +190,11 @@ const Index: React.FC<Props> = ({ users, roles }) => {
                     </p>
                 }
             />
-
+            <ModalPassword
+                show={modalUpdatePassword}
+                onClose={closeModal}
+                user={userData!}
+            />
             <ModalFormUser
                 rutaName="user"
                 show={confirmingUserShow}
@@ -189,6 +206,5 @@ const Index: React.FC<Props> = ({ users, roles }) => {
         </Authenticated>
     );
 };
-
 
 export default Index;

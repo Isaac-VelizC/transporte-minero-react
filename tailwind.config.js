@@ -23,6 +23,7 @@ export default {
         },
         extend: {
             colors: {
+                accent: "#ffc234",
                 current: "currentColor",
                 transparent: "transparent",
                 white: "#FFFFFF",
