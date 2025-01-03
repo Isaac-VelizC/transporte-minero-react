@@ -34,8 +34,8 @@ export default function Welcome({
             )}
             {/* header-area start */}
             <header>
-                <div className="header-top">
-                    <div className="container mx-auto">
+                <div className="bg-[#142440]">
+                    <div className="container mx-auto text-white py-5">
                         <div className="flex flex-col sm:flex-row justify-between items-center md:gap-4">
                             {/* Columna Izquierda */}
                             <div className="flex items-center text-center lg:text-left">
@@ -53,14 +53,17 @@ export default function Welcome({
                                 {auth.user ? (
                                     <>
                                         <li>
-                                            <Link href={route("dashboard")}>
+                                            <Link
+                                                href={route("dashboard")}
+                                                className="hover:text-blue-600 transition duration-300 ease-in-out"
+                                            >
                                                 Dashboard
                                             </Link>
                                         </li>
                                         <li>
                                             <Link
                                                 href={route("logout")}
-                                                className="flex gap-2"
+                                                className="flex gap-2 hover:text-blue-600 transition duration-300 ease-in-out"
                                             >
                                                 <span>Salir</span>
                                                 <i className="bi bi-box-arrow-left"></i>
@@ -69,7 +72,10 @@ export default function Welcome({
                                     </>
                                 ) : (
                                     <li>
-                                        <Link href={route("login")}>
+                                        <Link
+                                            href={route("login")}
+                                            className="hover:text-blue-600 transition duration-300 ease-in-out"
+                                        >
                                             Acceso
                                         </Link>
                                     </li>
@@ -79,7 +85,10 @@ export default function Welcome({
                     </div>
                 </div>
 
-                <div className="header-area" id="sticky-header">
+                <div
+                    className="w-full absolute z-99 bg-[#ffffff1a] border-b-[1px] border-solid"
+                    id="sticky-header"
+                >
                     <div className="container mx-auto">
                         <div className="flex flex-wrap items-center justify-between">
                             {/* Logo */}
@@ -96,52 +105,46 @@ export default function Welcome({
 
                             {/* Menú Principal */}
                             <div className="hidden lg:block w-2/3">
-                                <div className="main-menu">
-                                    <nav className="nav_mobile_menu">
-                                        <ul className="text-gray-700">
-                                            <li className="active">
-                                                <a
-                                                    onClick={() =>
-                                                        scrollToSection("hero")
-                                                    }
-                                                >
-                                                    Home
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    onClick={() =>
-                                                        scrollToSection("about")
-                                                    }
-                                                >
-                                                    Acerca
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    onClick={() =>
-                                                        scrollToSection(
-                                                            "service"
-                                                        )
-                                                    }
-                                                >
-                                                    Servicios
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    onClick={() =>
-                                                        scrollToSection(
-                                                            "contact"
-                                                        )
-                                                    }
-                                                >
-                                                    Contacto
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </nav>
-                                </div>
+                                <nav className="text-right relative">
+                                    <ul className="text-white flex items-center font-semibold gap-8 justify-end text-lg">
+                                        <li className="active text-blue-400 cursor-pointer">
+                                            <a
+                                                onClick={() =>
+                                                    scrollToSection("hero")
+                                                }
+                                            >
+                                                Home
+                                            </a>
+                                        </li>
+                                        <li className="cursor-pointer hover:text-blue-400">
+                                            <a
+                                                onClick={() =>
+                                                    scrollToSection("about")
+                                                }
+                                            >
+                                                Acerca
+                                            </a>
+                                        </li>
+                                        <li className="cursor-pointer hover:text-blue-400">
+                                            <a
+                                                onClick={() =>
+                                                    scrollToSection("service")
+                                                }
+                                            >
+                                                Servicios
+                                            </a>
+                                        </li>
+                                        <li className="cursor-pointer hover:text-blue-400">
+                                            <a
+                                                onClick={() =>
+                                                    scrollToSection("contact")
+                                                }
+                                            >
+                                                Contacto
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
                             </div>
                         </div>
                     </div>
