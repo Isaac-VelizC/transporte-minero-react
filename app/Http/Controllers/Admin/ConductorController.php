@@ -23,14 +23,15 @@ class ConductorController extends Controller
         ]);
     }
 
-    public function store(UserCreateResquest $request) {
+    public function store(UserCreateResquest $request)
+    {
         $data = $request->validated();
         DB::transaction(function () use ($data) {
             $user = User::updateOrCreate(
-                ['email' => $data['email']], // Busca por email
+                ['email' => $data['email']],
                 [
-                    'name' => $data['ci'], // Usar CI como nombre (si es apropiado)
-                    'password' => Hash::make('TM.' . $data['ci']), // Generación segura de la contraseña
+                    'name' => $data['ci'],
+                    'password' => Hash::make('TM.' . $data['ci']),
                 ]
             );
             if (!$user->hasRole('Conductor')) {
@@ -47,7 +48,9 @@ class ConductorController extends Controller
                 ['persona_id' => $persona->id], // Relacionar con la persona
                 [
                     'license_number' => $data['license_number'],
-                    'hiring_date' => Carbon::parse($data['hiring_date']), // Asegurarse de que la fecha sea válida
+                    'hiring_date' => Carbon::parse($data['hiring_date']),
+                    'experiencia' => $data['experiencia'],
+                    'direccion' => $data['direccion']
                 ]
             );
         });
@@ -57,7 +60,10 @@ class ConductorController extends Controller
             ->with('success', 'El conductor ha sido registrado y asignado correctamente.');
     }
 
-    public function edit($id) {
+    public function edit($id)
+    {
+        
+        $item = Persona::where('user_id', $id)->with('user', 'driver')->first();
         $item = User::with(['persona'])->findOrFail($id);
         $driver = [
             'id' => $item->persona->id,
@@ -72,6 +78,8 @@ class ConductorController extends Controller
             'numero' => $item->persona->numero,
             'license_number' => $item->persona->driver->license_number ?? null,
             'hiring_date' => $item->persona->driver->hiring_date ?? null,
+            'direccion' => $item->persona->driver->direccion ?? null,
+            'experiencia' => $item->persona->driver->experiencia ?? null,
         ];
         return Inertia::render('Admin/Users/Conductor/drivers', [
             'driver' => $driver,
@@ -79,37 +87,36 @@ class ConductorController extends Controller
         ]);
     }
 
-    public function update(UserUpdateResquest $request, $id) {
+    public function update(UserUpdateResquest $request, $id)
+    {
         try {
             $data = $request->validated();
             $user = User::findOrFail($id);
             $persona = Persona::where('user_id', $id)->firstOrFail();
-
             // Actualizar el usuario
             $user->update([
                 'email' => $data['email'],
             ]);
-
             // Actualizar los datos de la persona
             $persona->update($data);
-
             // Crear el conductor solo si no existe
             Driver::updateOrCreate(
                 ['persona_id' => $persona->id],
                 [
                     'license_number' => $data['license_number'],
                     'hiring_date' => Carbon::parse($data['hiring_date']),
+                    'experiencia' => $data['experiencia'],
+                    'direccion' => $data['direccion']
                 ]
             );
-
             // Retornar un mensaje de éxito
             return redirect()->route('drivers.list')->with('success', 'Persona actualizada con éxito.');
         } catch (ModelNotFoundException $e) {
             // Si no se encuentra el usuario o la persona
-            return redirect()->route('drivers.list')->with('error', 'Persona no encontrada.');
+            return redirect()->back()->with('error', 'Persona no encontrada.');
         } catch (\Throwable $th) {
             // Si ocurre cualquier otro error
-            return redirect()->route('drivers.list')->with('error', 'No se pudo actualizar la persona. Inténtalo nuevamente.');
+            return redirect()->back()->with('error', 'No se pudo actualizar la información. Inténtalo nuevamente.');
         }
     }
 }

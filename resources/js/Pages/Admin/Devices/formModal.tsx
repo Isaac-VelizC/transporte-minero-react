@@ -22,7 +22,6 @@ type Props = {
 const FormModal: React.FC<Props> = ({
     show,
     onClose,
-    vehicles,
     device,
     isEditing,
 }) => {
@@ -31,7 +30,6 @@ const FormModal: React.FC<Props> = ({
         num_serial: "",
         name_device: "",
         type: "",
-        car_id: null,
         status: "",
     };
 
@@ -71,7 +69,7 @@ const FormModal: React.FC<Props> = ({
                         ? "Editar informacion del dispositivo"
                         : "Registrar nuevo dispositivo"}
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 sm:gap-4">
                     <div>
                         <InputLabel
                             htmlFor="num_serial"
@@ -122,32 +120,6 @@ const FormModal: React.FC<Props> = ({
                             isFocused
                         />
                         <InputError className="mt-2" message={errors.type} />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="car_id" value="Seleccionar Vehiculo" />
-                        <SelectInput
-                            isFocused
-                            className="mt-1 block w-full"
-                            onChange={(e) =>
-                                setData("car_id", Number(e.target.value))
-                            }
-                            value={data.car_id || ""}
-                            defaultValue={""}
-                        >
-                            <option value="" disabled>
-                                {vehicles && vehicles.length > 0
-                                    ? "Selecciona una matricula de vehiculo"
-                                    : "No hay datos disponibles"}
-                            </option>
-                            {vehicles && vehicles.length > 0
-                                ? vehicles.map((item, index) => (
-                                      <option key={index} value={item.id}>
-                                          {item.matricula}
-                                      </option>
-                                  ))
-                                : null}
-                        </SelectInput>
-                        <InputError className="mt-2" message={errors.car_id} />
                     </div>
                     <div>
                         <InputLabel

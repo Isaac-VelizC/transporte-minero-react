@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('altercation_recports', function (Blueprint $table) {
+        Schema::create('altercation_reports', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('car_id')->nullable();
+            $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
             $table->unsignedBigInteger('envio_id')->nullable();
             $table->foreign('envio_id')->references('id')->on('cargo_shipments')->onDelete('cascade');
             $table->unsignedBigInteger('driver_id')->nullable();
             $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('cascade');
             $table->text('description');
+            $table->dateTime('fecha')->default(now());
             $table->decimal('last_latitude', 10, 7)->nullable();
             $table->decimal('last_longitude', 10, 7)->nullable();
             $table->timestamps();
@@ -29,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('altercation_recports');
+        Schema::dropIfExists('altercation_reports');
     }
 };

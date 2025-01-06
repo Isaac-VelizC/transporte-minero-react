@@ -15,13 +15,14 @@ class Vehicle extends Model
         'matricula',
         'mark_id',
         'type_id',
+        'device_id',
         'modelo',
         'color',
         'fecha_compra',
         'status',
+        'kilometrage',
         'responsable_id',
         'capacidad_carga',
-        'fecha_ultima_revision'
     ];
 
     public function marca() {
@@ -37,14 +38,9 @@ class Vehicle extends Model
         return $this->hasMany(CargoShipment::class, 'car_id');
     }
 
-    public function reports()
+    public function device()
     {
-        return $this->hasMany(VehicleReport::class, 'car_id');
-    }
-
-    public function devices()
-    {
-        return $this->hasMany(Device::class, 'car_id');
+        return $this->belongsTo(Device::class, 'device_id');
     }
 
     public function schedules()
@@ -52,7 +48,7 @@ class Vehicle extends Model
         return $this->hasMany(VehicleSchedule::class, 'car_id');
     }
 
-    /*public function mantenimientos() {
+    public function mantenimientos() {
         return $this->hasMany(VehiculoMantenimiento::class, 'vehicle_id');
-    }*/
+    }
 }

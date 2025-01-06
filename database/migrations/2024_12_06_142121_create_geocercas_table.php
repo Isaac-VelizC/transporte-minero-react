@@ -24,6 +24,7 @@ return new class extends Migration
             // Detalles de la geocerca
             $table->enum('type', ['zona_de_trabajo', 'zona_de_peligro', 'zona_de_descanso'])->default('zona_de_trabajo');
             $table->text('description')->nullable();
+            $table->string('color', 7)->default('#23c825');
             // Estado de la geocerca
             $table->boolean('is_active')->default(true);
             // Relación con usuarios

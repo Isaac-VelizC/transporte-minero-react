@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\UserCreateResquest;
 use App\Http\Requests\Users\UserUpdateResquest;
+use App\Models\CargoShipment;
 use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -16,69 +17,30 @@ use Spatie\Permission\Models\Role;
 
 class UsersController extends Controller
 {
-    private function mapPersonaData($persona, $user = null)
-    {
-        return [
-            'id' => $persona->id,
-            'user_id' => $user ? $user->id : null,
-            'full_name' => trim("{$persona->nombre} {$persona->ap_pat} {$persona->ap_mat}"),
-            'nombre' => $persona->nombre,
-            'ap_pat' => $persona->ap_pat,
-            'ap_mat' => $persona->ap_mat,
-            'ci' => $persona->ci,
-            'email' => $user ? $user->email : null,
-            'genero' => $persona->genero,
-            'numero' => $persona->numero,
-            'estado' => $persona->estado,
-            'rol' => $persona->rol,
-        ];
-    }
-
-    public function listClients()
-    {
-        $list = Persona::where('rol', 'cliente')->with('user')->get()
-            ->map(function ($persona) {
-                return $this->mapPersonaData($persona, $persona->user);
-            });
-
+    public function listClients() {
+        $list = Persona::where('rol', 'cliente')->with('user')->get();
         return Inertia::render('Admin/Users/Clients/index', [
             'clientes' => $list,
         ]);
     }
 
-    public function listConductores()
-    {
-        $list = Persona::where('rol', 'conductor')->with('user')->get()
-            ->map(function ($persona) {
-                return $this->mapPersonaData($persona, $persona->user);
-            });
-
+    public function listConductores() {
+        $list = Persona::where('rol', 'conductor')->with('user', 'driver')->get();
         return Inertia::render('Admin/Users/Conductor/index', [
             'drivers' => $list,
         ]);
     }
 
-    public function index()
-    {
-        $users = User::with(['persona', 'roles'])
-            ->whereDoesntHave('roles', function ($query) {
-                $query->where('name', 'Admin');
-            })
-            ->get()
-            ->map(function ($user) {
-                return $this->mapPersonaData($user->persona, $user);
-            });
-
+    public function index() {
+        $users = Persona::with('user')->where('rol', '!=', 'Admin')->get();
         $roles = Role::whereNotIn('name', ['Admin', 'Conductor', 'Cliente'])->get();
-
         return Inertia::render('Admin/Users/index', [
             'users' => $users,
             'roles' => $roles
         ]);
     }
 
-    public function storeCliente(UserCreateResquest $request)
-    {
+    public function storeCliente(UserCreateResquest $request) {
         DB::beginTransaction();
         try {
             $data = $request->validated();
@@ -111,8 +73,7 @@ class UsersController extends Controller
         }
     }
 
-    public function updateCliente(UserUpdateResquest $request, $id)
-    {
+    public function updateCliente(UserUpdateResquest $request, $id) {
         DB::beginTransaction();
         try {
             $data = $request->validated();
@@ -202,8 +163,7 @@ class UsersController extends Controller
         }
     }
 
-    public function destroy(string $id)
-    {
+    public function destroy(string $id) {
         try {
             $user = User::with('persona')->findOrFail($id);
 
@@ -227,12 +187,12 @@ class UsersController extends Controller
             return redirect()->back()->with('error', 'Ocurrió un error al modificar el estado del usuario.');
         }
     }
+
     public function historialEnviosCliente($id)
     {
         try {
             $persona = Persona::findOrFail($id);
-            $envios = $persona->envios()->with('vehicle:id,matricula')->get();
-
+            $envios = CargoShipment::where('client_id', $id)->get();
             return Inertia::render('Admin/Users/Clients/historyList', [
                 'cliente' => $persona,
                 'envios' => $envios
@@ -246,24 +206,18 @@ class UsersController extends Controller
         }
     }
 
-    public function reestablecerPasswordUser($id)
-    {
+    public function reestablecerPasswordUser($id) {
         try {
-            // Buscar al usuario asociado a la persona por el ID
             $user = Persona::findOrFail($id)->user;
-            // Generar la nueva contraseña
             $newPassword = 'TM.' . $user->persona->ci;
-            // Actualizar y guardar la nueva contraseña hasheada
             $user->update([
                 'password' => Hash::make($newPassword),
             ]);
-            // Redirigir con un mensaje de éxito
             return redirect()->back()->with(
                 'success',
                 "Contraseña reestablecida correctamente a: $newPassword"
             );
         } catch (\Exception $e) {
-            // Redirigir con un mensaje de error si ocurre una excepción
             return redirect()->back()->with(
                 'error',
                 'No se pudo reestablecer la contraseña.'

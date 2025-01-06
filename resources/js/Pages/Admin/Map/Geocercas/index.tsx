@@ -20,7 +20,12 @@ export default function Index({ geocercas }: Props) {
         () => [
             {
                 name: "#",
-                cell: (row: GeocercaInterface, index: number) => index + 1,
+                cell: (_: GeocercaInterface, index: number) => index + 1,
+            },
+            {
+                name: "Creador",
+                selector: (row: GeocercaInterface) => row.creator.email,
+                sortable: true,
             },
             {
                 name: "Nombre de la Geocerca",
@@ -103,11 +108,9 @@ export default function Index({ geocercas }: Props) {
 
     useEffect(() => {
         if (flash.success) {
-            // Mostrar mensaje de éxito
             toast.success(flash.success);
         }
         if (flash.error) {
-            // Mostrar mensaje de error
             toast.error(flash.error);
         }
     }, [flash]);

@@ -27,12 +27,12 @@ function index({ envios }: Props) {
         },
         {
             name: "Cliente",
-            cell: (row: ShipmentInterface) => row.full_name,
+            cell: (row: ShipmentInterface) => row.client.nombre+' '+row.client.ap_pat+' '+row.client.ap_mat,
             sortable: true,
         },
         {
             name: "Matricula de Vehiculo",
-            cell: (row: ShipmentInterface) => row.matricula,
+            cell: (row: ShipmentInterface) => row.vehicle.matricula,
             sortable: true,
         },
         {
@@ -109,7 +109,6 @@ function index({ envios }: Props) {
             } catch (error) {
                 console.log(error);
                 toast.error("Error al cancelar el envío");
-                // Aquí puedes mostrar un mensaje al usuario si es necesario
             }
         } else {
             toast.error("No hay un ID de envío seleccionado para cancelar.");
@@ -118,11 +117,9 @@ function index({ envios }: Props) {
 
     useEffect(() => {
         if (flash.success) {
-            // Mostrar mensaje de éxito
             toast.success(flash.success);
         }
         if (flash.error) {
-            // Mostrar mensaje de error
             toast.error(flash.error);
         }
     }, [flash]);

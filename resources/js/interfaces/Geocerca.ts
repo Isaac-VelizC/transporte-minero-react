@@ -1,3 +1,5 @@
+import { UserInterface } from "./User";
+
 // Definición de la interfaz para geocerca
 export interface GeocercaInterface {
     id: number;
@@ -6,7 +8,7 @@ export interface GeocercaInterface {
     type: string;
     description: string;
     is_active: boolean;
-    created_by: string;
-    email: string;
+    creator: UserInterface;
+    color: string;
     [key: string]: unknown;
 }

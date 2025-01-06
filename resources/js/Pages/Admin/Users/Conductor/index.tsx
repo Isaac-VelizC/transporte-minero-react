@@ -2,14 +2,14 @@ import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import LinkButton from "@/Components/Buttons/LinkButton";
 import ModalDelete from "@/Components/Modal/ModalDelete";
 import DataTableComponent from "@/Components/Table";
-import { UserInterface } from "@/interfaces/User";
+import { PersonaInterface } from "@/interfaces/Persona";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 type Props = {
-    drivers: UserInterface[];
+    drivers: PersonaInterface[];
 };
 
 export default function index({ drivers }: Props) {
@@ -19,32 +19,37 @@ export default function index({ drivers }: Props) {
     const columns = [
         {
             name: "#",
-            cell: (_: UserInterface, index: number) => index + 1,
+            cell: (_: PersonaInterface, index: number) => index + 1,
             width: "50px",
         },
         {
             name: "Nombre Completo",
-            cell: (row: UserInterface) => row.full_name,
+            cell: (row: PersonaInterface) => row.nombre + ' ' + row.ap_pat + ' ' + row.ap_mat,
             sortable: true,
         },
         {
             name: "Cedula",
-            cell: (row: UserInterface) => row.ci,
+            cell: (row: PersonaInterface) => row.ci,
             sortable: true,
         },
         {
             name: "Email",
-            cell: (row: UserInterface) => row.email,
+            cell: (row: PersonaInterface) => row.user.email,
             sortable: true,
         },
         {
             name: "Telefono",
-            cell: (row: UserInterface) => (row.numero ? row.numero : "unknown"),
+            cell: (row: PersonaInterface) => (row.numero ? row.numero : "unknown"),
+            sortable: true,
+        },
+        {
+            name: "Dirección",
+            cell: (row: PersonaInterface) => (row.driver?.direccion ? row.driver?.direccion : "unknown"),
             sortable: true,
         },
         {
             name: "Estado",
-            cell: (row: UserInterface) => (
+            cell: (row: PersonaInterface) => (
                 <span
                     className={`rounded-lg px-2 font-semibold py-1 text-white ${
                         row.estado ? "bg-green-400" : "bg-red-400"
@@ -57,14 +62,14 @@ export default function index({ drivers }: Props) {
         },
         {
             name: "Acciones",
-            cell: (row: UserInterface) => (
+            cell: (row: PersonaInterface) => (
                 <div className="flex gap-2">
-                    <Link href={route("driver.edit", row.user_id)}>
+                    <Link href={route("driver.edit", row.user.id)}>
                         <i className="bi bi-pencil"></i>
                     </Link>
                     <button
                         onClick={() =>
-                            confirmUserDeletion(row.user_id, row.estado)
+                            confirmUserDeletion(row.user.id, row.estado)
                         }
                     >
                         <i className="bi bi-trash2"></i>
@@ -97,7 +102,7 @@ export default function index({ drivers }: Props) {
             await router.delete(route("user.destroy", idToSelect), {
                 preserveScroll: true,
                 onSuccess: ({ props: { flash } }) => {
-                    //if (flash?.success) toast.success(flash.success);
+                    if (flash?.error) toast.success(flash.error);
                     closeModal();
                     setIdToSelect(null);
                     setStatus(false);
@@ -117,11 +122,9 @@ export default function index({ drivers }: Props) {
 
     useEffect(() => {
         if (flash.success) {
-            // Mostrar mensaje de éxito
             toast.success(flash.success);
         }
         if (flash.error) {
-            // Mostrar mensaje de error
             toast.error(flash.error);
         }
     }, [flash]);

@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('car_id')->nullable();
             $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
-            
             // Nuevos campos relevantes
-            $table->timestamp('start_time'); // Hora de inicio del horario
-            $table->timestamp('end_time')->nullable(); // Hora de fin del horario
-            $table->unsignedBigInteger('driver_id')->nullable(); // ID del conductor asignado
+            $table->timestamp('start_time');
+            $table->timestamp('end_time')->nullable();
+            $table->unsignedBigInteger('driver_id')->nullable();
             $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null');
             // Información adicional
             $table->enum('status', ['pendiente', 'asignado', 'libre'])->default('libre');

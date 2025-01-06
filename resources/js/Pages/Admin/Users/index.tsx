@@ -1,7 +1,7 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
 import ModalDelete from "@/Components/Modal/ModalDelete";
 import ModalFormUser from "@/Pages/Admin/Users/ModalFormUser";
@@ -11,9 +11,10 @@ import DataTableComponent from "@/Components/Table";
 import LinkButton from "@/Components/Buttons/LinkButton";
 import toast from "react-hot-toast";
 import ModalPassword from "./ModalPassword";
+import { PersonaInterface } from "@/interfaces/Persona";
 
 type Props = {
-    users: UserInterface[];
+    users: PersonaInterface[];
     roles: RolesInterface[];
 };
 
@@ -24,74 +25,79 @@ const Index: React.FC<Props> = ({ users, roles }) => {
     const [modalUpdatePassword, setModalUpdatePassword] = useState(false);
     const [status, setStatus] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [userData, setUserData] = useState<UserInterface | null>(null);
+    const [userData, setUserData] = useState<PersonaInterface | null>(null);
 
-    const columns = [
-        {
-            name: "#",
-            cell: (_: UserInterface, index: number) => index + 1,
-            width: "50px",
-        },
-        {
-            name: "Nombre Completo",
-            cell: (row: UserInterface) => row.full_name,
-            sortable: true,
-        },
-        {
-            name: "Cedula",
-            cell: (row: UserInterface) => row.ci,
-            sortable: true,
-        },
-        {
-            name: "Email",
-            cell: (row: UserInterface) => row.email,
-            sortable: true,
-        },
-        {
-            name: "Telefono",
-            cell: (row: UserInterface) => (row.numero ? row.numero : "unknown"),
-            sortable: true,
-        },
-        {
-            name: "Rol",
-            cell: (row: UserInterface) => row.rol,
-            sortable: true,
-        },
-        {
-            name: "Estado",
-            cell: (row: UserInterface) => (
-                <span
-                    className={`rounded-lg px-2 font-semibold py-1 text-white ${
-                        row.estado ? "bg-green-400" : "bg-red-400"
-                    }`}
-                >
-                    {row.estado ? "Activo" : "Inactivo"}
-                </span>
-            ),
-            width: "100px",
-        },
-        {
-            name: "Acciones",
-            cell: (row: UserInterface) => (
-                <div className="flex gap-2">
-                    <button onClick={() => handlePasswordModal(row)}>
-                        <i className="bi bi-shield-lock"></i>
-                    </button>
-                    <button
-                        onClick={() =>
-                            confirmUserDeletion(row.user_id, row.estado)
-                        }
+    const columns = useMemo(
+        () => [
+            {
+                name: "#",
+                cell: (_: PersonaInterface, index: number) => index + 1,
+                width: "50px",
+            },
+            {
+                name: "Nombre Completo",
+                cell: (row: PersonaInterface) =>
+                    row.nombre + " " + row.ap_pat + " " + row.ap_mat,
+                sortable: true,
+            },
+            {
+                name: "Cedula",
+                cell: (row: PersonaInterface) => row.ci,
+                sortable: true,
+            },
+            {
+                name: "Email",
+                cell: (row: PersonaInterface) => row.user.email,
+                sortable: true,
+            },
+            {
+                name: "Telefono",
+                cell: (row: PersonaInterface) =>
+                    row.numero ? row.numero : "unknown",
+                sortable: true,
+            },
+            {
+                name: "Rol",
+                cell: (row: PersonaInterface) => row.rol,
+                sortable: true,
+            },
+            {
+                name: "Estado",
+                cell: (row: PersonaInterface) => (
+                    <span
+                        className={`rounded-lg px-2 font-semibold py-1 text-white ${
+                            row.estado ? "bg-green-400" : "bg-red-400"
+                        }`}
                     >
-                        <i className="bi bi-trash2"></i>
-                    </button>
-                </div>
-            ),
-            ignoreRowClick: true,
-            width: "90px",
-        },
-    ];
+                        {row.estado ? "Activo" : "Inactivo"}
+                    </span>
+                ),
+                width: "100px",
+            },
+            {
+                name: "Acciones",
+                cell: (row: PersonaInterface) => (
+                    <div className="flex gap-2">
+                        <button onClick={() => handlePasswordModal(row)}>
+                            <i className="bi bi-shield-lock"></i>
+                        </button>
+                        <button
+                            onClick={() =>
+                                confirmUserDeletion(row.id, row.estado)
+                            }
+                        >
+                            <i className="bi bi-trash2"></i>
+                        </button>
+                    </div>
+                ),
+                ignoreRowClick: true,
+                width: "90px",
+            },
+        ],
+        []
+    );
 
-    const handlePasswordModal = (row: UserInterface) => {
+    const handlePasswordModal = (row: PersonaInterface) => {
         setModalUpdatePassword(true);
         setUserData(row);
     };
@@ -138,11 +144,9 @@ const Index: React.FC<Props> = ({ users, roles }) => {
 
     useEffect(() => {
         if (flash.success) {
-            // Mostrar mensaje de éxito
             toast.success(flash.success);
         }
         if (flash.error) {
-            // Mostrar mensaje de error
             toast.error(flash.error);
         }
     }, [flash]);
@@ -153,22 +157,17 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             <Breadcrumb
                 breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
-                    { name: "Users" }
+                    { name: "Users" },
                 ]}
             />
             <div className="flex justify-between my-10">
                 <div className="flex gap-3">
-                    <LinkButton href="clients.list">
-                        <i className="bi bi-person-plus text-sm" />
-                        Clientes
-                    </LinkButton>
-                    <LinkButton href="drivers.list">
-                        <i className="bi bi-person-plus text-sm" />
-                        Conductor
-                    </LinkButton>
+                    <LinkButton href="clients.list">Clientes</LinkButton>
+                    <LinkButton href="drivers.list">Conducto</LinkButton>
                 </div>
-                <PrimaryButton type="button" onClick={handleCreate}>
-                    Nuevo Personal
+                <PrimaryButton type="button" onClick={handleCreate} className="gap-2">
+                    <i className="bi bi-person-plus text-sm" />
+                    <p className="hidden lg:block text-white text-sm">Personal</p>
                 </PrimaryButton>
             </div>
             <DataTableComponent columns={columns} data={users} />
@@ -199,7 +198,7 @@ const Index: React.FC<Props> = ({ users, roles }) => {
                 rutaName="user"
                 show={confirmingUserShow}
                 onClose={closeModal}
-                users={userData || undefined}
+                //users={userData || undefined}
                 isEditing={isEditing}
                 roles={roles}
             />

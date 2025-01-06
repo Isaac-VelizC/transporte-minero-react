@@ -61,5 +61,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $userSecretary->assignRole('Cliente');
         $userSecretary = User::find(5);
         $userSecretary->assignRole('Conductor');
+        $userAdmin = User::find(6);
+        $userAdmin->assignRole('Admin');
     }
 }

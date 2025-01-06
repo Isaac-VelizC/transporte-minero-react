@@ -5,6 +5,7 @@ import { GeocercaInterface } from "@/interfaces/Geocerca";
 import { DeviceInterface } from "@/interfaces/Device";
 import { Head } from "@inertiajs/react";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
+import L from "leaflet";
 import {
     MapContainer,
     Marker,
@@ -13,7 +14,21 @@ import {
     Popup,
     TileLayer,
 } from "react-leaflet";
-import { LatLngExpression } from "leaflet";
+//import { LatLngExpression } from "leaflet";
+
+const customIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854866.png", // URL de la imagen del ícono
+    iconSize: [32, 32], // Tamaño del ícono
+    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
+    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+});
+
+/*const vehicleIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854866.png", // URL de la imagen del ícono
+    iconSize: [32, 32], // Tamaño del ícono
+    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
+    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+});*/
 
 type Props = {
     envio: ShipmentInterface;
@@ -41,10 +56,10 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
         envio.client_latitude,
         envio.client_longitude,
     ];
-    const [routeCoords, setRouteCoords] = useState<LatLngExpression[]>([]);
+    //const [routeCoords, setRouteCoords] = useState<LatLngExpression[]>([]);
 
     // Obtener la ruta inicial
-    const fetchRoute = async () => {
+    /*const fetchRoute = async () => {
         try {
             // Solicitar la ruta a tu backend Laravel
             const url = `/route?start=${CERRO_RICO_COORDS[1]},${CERRO_RICO_COORDS[0]}&end=${envioCoords[1]},${envioCoords[0]}`;
@@ -58,7 +73,7 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
         } catch (error) {
             console.error("Error al obtener la ruta:", error);
         }
-    };
+    };*/
 
     // Obtiene la posición actual del dispositivo
     const getCurrentPosition =
@@ -97,11 +112,11 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
         [device.id, deviceLocation]
     );
 
-    useEffect(() => {
-        fetchRoute();
-    })
+    /*useEffect(() => {
+    })*/
     // Actualiza la ubicación periódicamente
     useEffect(() => {
+        //fetchRoute();
         let isMounted = true;
         const intervalId = setInterval(async () => {
             try {
@@ -141,23 +156,21 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
                     />
                     <Polygon
                         positions={geocercaCoords}
-                        color="blue"
+                        color={geocerca.color}
                         weight={2}
                     />
-                    <Marker position={envioCoords}>
+                    <Marker position={envioCoords} icon={customIcon}>
                         <Popup>
-                            {envio.full_name} - {envio.destino}
+                            {envio.client.nombre} - {envio.destino}
                         </Popup>
                     </Marker>
                     <Marker position={CERRO_RICO_COORDS} />
-                    {routeCoords.length > 0 && (
+                    {/*routeCoords.length > 0 && (
                         <Polyline positions={routeCoords} color="red" />
-                    )}
+                    )*/}
                     {deviceLocation && (
                         <Marker position={deviceLocation}>
-                            <Popup>
-                                Ubicación del vehiculo
-                            </Popup>
+                            <Popup>Ubicación del vehiculo</Popup>
                         </Marker>
                     )}
                 </MapContainer>

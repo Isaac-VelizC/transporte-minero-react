@@ -1,29 +1,43 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
+import Card from "@/Components/Card";
+import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
 type Props = {
     datos: ShipmentInterface;
+    reportes: AltercationReportInterface[];
 };
 
-function show({ datos }: Props) {
+function show({ datos, reportes }: Props) {
     return (
         <Authenticated>
             <Head title="Show" />
-            <Breadcrumb breadcrumbs={[
+            <Breadcrumb
+                breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Lista", path: "/envios" },
-                    { name: `Codigo ${datos.id}`},
-                ]} />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="bg-gray-400 lg:col-span-1 rounded-lg p-6 text-gray-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                    { name: `Codigo ${datos.id}` },
+                ]}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card>
                     <h1 className="font-bold text-2xl mb-4 text-gray-800">
                         Información del Envío
                     </h1>
                     <div className="py-2 space-y-2 text-lg">
                         <p>
-                            <strong>Cliente:</strong> {datos.full_name}
+                            <strong>Cliente:</strong>{" "}
+                            {datos.client.nombre +
+                                " " +
+                                datos.client.ap_pat +
+                                " " +
+                                datos.client.ap_mat}
+                        </p>
+                        <p>
+                            <strong>Telefono del Cliente:</strong>{" "}
+                            {datos.client.numero}
                         </p>
                         <p>
                             <strong>Destino:</strong> {datos.destino}
@@ -36,11 +50,15 @@ function show({ datos }: Props) {
                             {datos.fecha_entrega}
                         </p>
                         <p>
-                            <strong>Matrícula de Vehículo:</strong>{" "}
-                            {datos.matricula}
+                            <strong>Conductor de Vehículo:</strong>{" "}
+                            {datos.conductor.nombre +
+                                " " +
+                                datos.conductor.ap_pat}{" "}
+                            - {datos.conductor.numero}
                         </p>
                         <p>
-                            <strong>Notas:</strong> {datos.notas || "N/A"}
+                            <strong>Matrícula de Vehículo:</strong>{" "}
+                            {datos.vehicle.matricula}
                         </p>
                         <p>
                             <strong>Peso de la Carga:</strong> {datos.peso}{" "}
@@ -55,14 +73,23 @@ function show({ datos }: Props) {
                                         : "text-red-600 capitalize"
                                 }
                             >
-                                {" "}{datos.status}
+                                {" "}
+                                {datos.status}
                             </span>
                         </p>
+                        <p>
+                            <strong>Notas:</strong> {datos.notas || "N/A"}
+                        </p>
                     </div>
-                </div>
-                <div className="bg-gray-400 rounded-lg p-6 text-gray-600 shadow-md hover:shadow-lg transition-shadow duration-300 lg:col-span-2">
-                    Listado de Reportes
-                </div>
+                </Card>
+                <Card>
+                    <h1>Listado de Reportes</h1>
+                    {reportes.map((item) => (
+                        <div key={item.id}>
+                            <p>{item.fecha}</p>
+                        </div>
+                    ))}
+                </Card>
             </div>
         </Authenticated>
     );

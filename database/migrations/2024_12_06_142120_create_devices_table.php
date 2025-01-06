@@ -16,9 +16,7 @@ return new class extends Migration
             $table->string('num_serial')->unique();
             $table->string('name_device')->nullable();
             $table->string('type')->nullable();
-            $table->unsignedBigInteger('car_id')->nullable();
-            $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
-            $table->enum('status', ['activo', 'inactivo'])->default('activo');
+            $table->enum('status', ['activo', 'inactivo', 'asignado'])->default('activo');
             $table->decimal('last_latitude', 10, 7)->nullable();
             $table->decimal('last_longitude', 10, 7)->nullable();
             $table->timestamp('last_updated_at')->nullable();

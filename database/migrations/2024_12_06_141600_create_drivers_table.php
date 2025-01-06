@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('license_number')->unique();
             $table->boolean('status')->default(true);
             $table->date('hiring_date')->default(now());
+            $table->integer('experiencia')->default(0);
+            $table->string('direccion', 255)->nullable();
             $table->timestamps();
         });
     }

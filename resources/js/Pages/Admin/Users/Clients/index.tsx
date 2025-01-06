@@ -2,15 +2,15 @@ import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import ModalDelete from "@/Components/Modal/ModalDelete";
 import DataTableComponent from "@/Components/Table";
-import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router, usePage } from "@inertiajs/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ModalFormUser from "../ModalFormUser";
 import toast from "react-hot-toast";
+import { PersonaInterface } from "@/interfaces/Persona";
 
 type Props = {
-    clientes: UserInterface[];
+    clientes: PersonaInterface[];
 };
 
 const Index = ({ clientes }: Props) => {
@@ -19,13 +19,35 @@ const Index = ({ clientes }: Props) => {
     const [showModalForm, setShowModalForm] = useState(false);
     const [status, setStatus] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [userData, setUserData] = useState<UserInterface | null>(null);
+    const [userData, setUserData] = useState<formUserType | null>(null);
 
-    const handleEdit = useCallback((row: UserInterface) => {
-        setIsEditing(true);
-        setUserData(row);
-        setShowModalForm(true);
-    }, []);
+    const handleEdit = useCallback(
+        (row: PersonaInterface) => {
+            if (!row || !row.user) {
+                toast.error('Error al tratar de editar la Información');
+                return;
+            }
+
+            setIsEditing(true);
+
+            const data = {
+                id: row.id,
+                user_id: row.user.id,
+                nombre: row.nombre || "",
+                ap_pat: row.ap_pat || "",
+                ap_mat: row.ap_mat || "",
+                email: row.user.email || "",
+                ci: row.ci || "",
+                genero: row.genero || "",
+                numero: row.numero || "",
+                rol: row.rol || "",
+            };
+
+            setUserData(data);
+            setShowModalForm(true);
+        },
+        [setUserData, setShowModalForm]
+    );
 
     const handleCreate = useCallback(() => {
         setIsEditing(false);
@@ -52,7 +74,7 @@ const Index = ({ clientes }: Props) => {
         </span>
     );
 
-    const renderAcciones = (row: UserInterface) => (
+    const renderAcciones = (row: PersonaInterface) => (
         <div className="flex gap-2">
             <Link href={route("client.history.list", row.id)}>
                 <i className="bi bi-card-checklist"></i>
@@ -61,51 +83,55 @@ const Index = ({ clientes }: Props) => {
                 <i className="bi bi-eye"></i>
             </button>
             <button
-                onClick={() => confirmUserDeletion(row.user_id, row.estado)}
+                onClick={() => confirmUserDeletion(row.user.id, row.estado)}
             >
                 <i className="bi bi-trash2"></i>
             </button>
         </div>
     );
 
-    const columns = [
-        {
-            name: "#",
-            cell: (_: UserInterface, index: number) => index + 1,
-            width: "50px",
-        },
-        {
-            name: "Nombre Completo",
-            cell: (row: UserInterface) => row.full_name,
-            sortable: true,
-        },
-        {
-            name: "Cedula",
-            cell: (row: UserInterface) => row.ci,
-            sortable: true,
-        },
-        {
-            name: "Email",
-            cell: (row: UserInterface) => row.email,
-            sortable: true,
-        },
-        {
-            name: "Telefono",
-            cell: (row: UserInterface) => (row.numero ? row.numero : "unknown"),
-            sortable: true,
-        },
-        {
-            name: "Estado",
-            cell: (row: UserInterface) => renderEstado(row.estado),
-            width: "100px",
-        },
-        {
-            name: "Acciones",
-            cell: (row: UserInterface) => renderAcciones(row),
-            ignoreRowClick: true,
-            width: "90px",
-        },
-    ];
+    const columns = useMemo(
+        () => [
+            {
+                name: "#",
+                cell: (_: PersonaInterface, index: number) => index + 1,
+                width: "50px",
+            },
+            {
+                name: "Nombre Completo",
+                cell: (row: PersonaInterface) =>
+                    row.nombre + " " + row.ap_pat + " " + row.ap_mat,
+                sortable: true,
+            },
+            {
+                name: "Cedula",
+                cell: (row: PersonaInterface) => row.ci,
+                sortable: true,
+            },
+            {
+                name: "Email",
+                cell: (row: PersonaInterface) => row.user.email,
+                sortable: true,
+            },
+            {
+                name: "Telefono",
+                cell: (row: PersonaInterface) =>
+                    row.numero ? row.numero : "unknown",
+            },
+            {
+                name: "Estado",
+                cell: (row: PersonaInterface) => renderEstado(row.estado),
+                width: "100px",
+            },
+            {
+                name: "Acciones",
+                cell: (row: PersonaInterface) => renderAcciones(row),
+                ignoreRowClick: true,
+                width: "90px",
+            },
+        ],
+        []
+    );
 
     const closeModal = () => {
         setConfirmClientStatus(false);
@@ -124,7 +150,7 @@ const Index = ({ clientes }: Props) => {
             await router.delete(route("user.destroy", userIdToSelect), {
                 preserveScroll: true,
                 onSuccess: ({ props: { flash } }) => {
-                    //if (flash?.success) toast.success(flash.success);
+                    if (flash?.error) toast.success(flash.error);
                     closeModal();
                     setUserIdToSelect(null);
                     setStatus(false);
@@ -144,11 +170,9 @@ const Index = ({ clientes }: Props) => {
 
     useEffect(() => {
         if (flash.success) {
-            // Mostrar mensaje de éxito
             toast.success(flash.success);
         }
         if (flash.error) {
-            // Mostrar mensaje de error
             toast.error(flash.error);
         }
     }, [flash]);
@@ -159,7 +183,7 @@ const Index = ({ clientes }: Props) => {
             <Breadcrumb
                 breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
-                    { name: "Lista Clientes"}
+                    { name: "Lista Clientes" },
                 ]}
             />
             <div className="flex justify-end my-10 gap-3">

@@ -77,7 +77,15 @@ class UserCreateResquest extends FormRequest
                 'nullable',
                 'date_format:Y-m-d',
             ],
-
+            'experiencia' => [
+                'nullable',
+                'integer',
+                'min:1'
+            ],
+            'direccion' => [
+                'nullable',
+                'string',
+            ]
         ];
     }
 }

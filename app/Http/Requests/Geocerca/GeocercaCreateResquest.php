@@ -68,7 +68,11 @@ class GeocercaCreateResquest extends FormRequest
             ],
             'created_by' => [
                 'exists:users,id'
-            ]
+            ],
+            /*'color' => [
+                'nullable',
+                'string',
+            ]*/
         ];
     }
 }

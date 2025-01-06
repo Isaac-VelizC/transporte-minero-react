@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Device;
-use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,11 +13,8 @@ class DeviceController extends Controller
     public function index()
     {
         $devices = Device::all();
-
-        $vehicles = Vehicle::where('status', '!=', 'inactivo')->get();
         return Inertia::render('Admin/Devices/index', [
-            'devices' => $devices,
-            'vehicles' => $vehicles
+            'devices' => $devices
         ]);
     }
 
@@ -29,7 +25,6 @@ class DeviceController extends Controller
             'num_serial' => 'required|string|unique:devices',
             'name_device' => 'required|string',
             'type' => 'required|string|in:Android,IOS',
-            'car_id' => 'nullable|exists:vehicles,id',
             'status' => 'required|string|in:activo,inactivo',
         ]);
 
@@ -50,7 +45,6 @@ class DeviceController extends Controller
             'num_serial' => 'required|string|unique:devices,num_serial,' . $id,
             'name_device' => 'required|string',
             'type' => 'required|string|in:Android,IOS',
-            'car_id' => 'required|exists:vehicles,id',
             'status' => 'required|string|in:activo,inactivo',
         ]);
 

@@ -1,15 +1,15 @@
 import DangerButton from "@/Components/Buttons/DangerButton";
 import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import Modal from "@/Components/Modal/Modal";
-import { UserInterface } from "@/interfaces/User";
+import { PersonaInterface } from "@/interfaces/Persona";
 import { router } from "@inertiajs/react";
-import React, { useState } from "react";
+import React from "react";
 import toast from "react-hot-toast";
 
 type Props = {
-    show: boolean; // Prop para controlar la visibilidad del modal
-    onClose: () => void; // Función para cerrar el modal
-    user: UserInterface;
+    show: boolean;
+    onClose: () => void;
+    user: PersonaInterface;
 };
 
 const ModalPassword: React.FC<Props> = ({ show, onClose, user }) => {
@@ -22,7 +22,7 @@ const ModalPassword: React.FC<Props> = ({ show, onClose, user }) => {
             return;
         }
         try {
-            await router.get(route("user.password.restore", user.id), {
+            await router.get(route("user.password.restore", user.user.id), {
                 preserveScroll: true,
                 /*onSuccess: ({ props: { flash } }) => {
                     if (flash?.success) toast.success(flash.success);
@@ -61,7 +61,7 @@ const ModalPassword: React.FC<Props> = ({ show, onClose, user }) => {
                 <p className="mt-1 text-sm text-gray-600">
                     Ingrese la nueva contraseña para el usuario{" "}
                     <strong>
-                        {user && user.full_name} - {user && user.ci}
+                        {user && user.nombre + ' ' + user.ap_pat } - {user && user.ci}
                     </strong>
                 </p>
 

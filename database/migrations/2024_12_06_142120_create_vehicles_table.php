@@ -18,6 +18,8 @@ return new class extends Migration
             $table->foreign('mark_id')->references('id')->on('marks')->onDelete('cascade');
             $table->unsignedBigInteger('type_id')->nullable();
             $table->foreign('type_id')->references('id')->on('type_vehicles')->onDelete('cascade');
+            $table->unsignedBigInteger('device_id')->nullable();
+            $table->foreign('device_id')->references('id')->on('devices')->onDelete('cascade');
             
             // Nuevos campos relevantes
             $table->string('modelo', 50); // Marca del vehículo
@@ -28,10 +30,9 @@ return new class extends Migration
             
             // Información del responsable
             $table->unsignedBigInteger('responsable_id')->nullable();
-            $table->foreign('responsable_id')->references('id')->on('personas')->onDelete('set null'); // Cambiamos a 'set null' para no eliminar el responsable
+            $table->foreign('responsable_id')->references('id')->on('personas')->onDelete('set null');
             // Información adicional
-            $table->decimal('capacidad_carga', 10, 2)->nullable(); // Capacidad de carga en toneladas
-            $table->date('fecha_ultima_revision')->nullable(); // Fecha de la última revisión técnica
+            $table->integer('capacidad_carga')->default(0);
             
             // Timestamps
             $table->timestamps();

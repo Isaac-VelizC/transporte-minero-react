@@ -42,7 +42,7 @@ class ReportController extends Controller
 
     private function getDrivers()
     {
-        return Driver::with('persona') // Cargar relación con Persona
+        return Driver::with('persona')
             ->get()
             ->map(function ($driver) {
                 return [

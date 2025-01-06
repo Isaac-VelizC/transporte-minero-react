@@ -15,7 +15,6 @@ class Device extends Model
         'num_serial',
         'name_device',
         'type',
-        'car_id',
         'status',
         'last_latitude',
         'last_longitude',
@@ -25,6 +24,6 @@ class Device extends Model
 
     public function vehicle()
     {
-        return $this->belongsTo(Vehicle::class, 'car_id');
+        return $this->belongsTo(Vehicle::class, 'device_id');
     }
 }

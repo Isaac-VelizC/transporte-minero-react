@@ -31,9 +31,9 @@ class UsersSeeder extends Seeder
                 'role' => 'Admin',
             ],
             [
-                'name' => 'Teagan Croft',
-                'email' => 'teagan.croft@gmail.com',
-                'password' => bcrypt('TeaganCroft'),
+                'name' => 'July Croft',
+                'email' => 'july.croft@gmail.com',
+                'password' => bcrypt('JulyCroft'),
                 'persona' => [
                     'nombre' => 'Teagan',
                     'ap_pat' => 'Croft',
@@ -44,9 +44,9 @@ class UsersSeeder extends Seeder
                 'role' => 'Secretaria',
             ],
             [
-                'name' => 'Rachel Starr',
-                'email' => 'rachel.starr@gmail.com',
-                'password' => bcrypt('RachelStarr'),
+                'name' => 'Adrian Starr',
+                'email' => 'adrian.starr@gmail.com',
+                'password' => bcrypt('AdrianStarr'),
                 'persona' => [
                     'nombre' => 'Rachel',
                     'ap_pat' => 'Starr',
@@ -57,9 +57,9 @@ class UsersSeeder extends Seeder
                 'role' => 'Encargado_Control',
             ],
             [
-                'name' => 'Peyton List',
-                'email' => 'peyton.list@gmail.com',
-                'password' => bcrypt('PeytonList'),
+                'name' => 'rosa List',
+                'email' => 'rosa.list@gmail.com',
+                'password' => bcrypt('RosaList'),
                 'persona' => [
                     'nombre' => 'Peyton',
                     'ap_pat' => 'List',
@@ -70,9 +70,9 @@ class UsersSeeder extends Seeder
                 'role' => 'Cliente',
             ],
             [
-                'name' => 'Sandara Park',
-                'email' => 'sandara.park@gmail.com',
-                'password' => bcrypt('SandaraPark'),
+                'name' => 'Juan Park',
+                'email' => 'juan.park@gmail.com',
+                'password' => bcrypt('JuanPark'),
                 'persona' => [
                     'nombre' => 'Sandara',
                     'ap_pat' => 'Park',
@@ -80,8 +80,20 @@ class UsersSeeder extends Seeder
                     'genero' => 'Mujer',
                     'rol' => 'conductor'
                 ],
-                // Asignar rol directamente en el array
-            ]
+            ],
+            [
+                'name' => 'Pablo Denis',
+                'email' => 'ticona59@gmail.com',
+                'password' => bcrypt('PabloDenisAdmin'),
+                'persona' => [
+                    'nombre' => 'Pablo',
+                    'ap_pat' => 'Denis',
+                    'ci' => '9835432',
+                    'genero' => 'Hombre',
+                    'rol' => 'admin'
+                ],
+                'role' => 'Admin',
+            ],
         ];
 
         // Crear usuarios y sus personas

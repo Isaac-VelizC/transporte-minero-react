@@ -5,8 +5,9 @@ import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
+import { DeviceInterface } from "@/interfaces/Device";
 import { MarksInterface, TypeInterface } from "@/interfaces/Modelo";
-import { VehicleInterface } from "@/interfaces/Vehicle";
+import { FormVehicleType } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import React from "react";
@@ -15,7 +16,8 @@ import toast from "react-hot-toast";
 type Props = {
     marcas: MarksInterface[];
     typesVehicle: TypeInterface[];
-    vehicle: VehicleInterface;
+    vehicle: FormVehicleType;
+    devices: DeviceInterface[]
     isEditing: boolean;
 };
 
@@ -29,18 +31,21 @@ const showVehicle: React.FC<Props> = ({
     marcas,
     typesVehicle,
     vehicle,
+    devices,
     isEditing,
 }) => {
     const initialData = vehicle || {
         id: null,
         matricula: "",
-        mark_id: "",
+        mark_id: null,
         color: "",
         modelo: "",
-        type_id: "",
+        type_id: null,
+        device_id: null,
         fecha_compra: "",
         status: "",
-        capacidad_carga: "",
+        capacidad_carga: null,
+        kilometrage: "",
     };
 
     const { data, setData, post, patch, errors, processing } =
@@ -66,11 +71,11 @@ const showVehicle: React.FC<Props> = ({
         <Authenticated>
             <Head title={isEditing ? "Editar" : "Crear"} />
             <Breadcrumb
-            breadcrumbs={[
-                { name: "Dashboard", path: "/dashboard" },
-                { name: "Lista", path: "/vehicle" },
-                { name: isEditing ? "Editar info" : "Registrar Vehiculo"},
-            ]}
+                breadcrumbs={[
+                    { name: "Dashboard", path: "/dashboard" },
+                    { name: "Lista", path: "/vehicle" },
+                    { name: isEditing ? "Editar info" : "Registrar Vehiculo" },
+                ]}
             />
             <div className="bg-gray-600 rounded-xl">
                 <form className="p-6" onSubmit={handleSubmit}>
@@ -106,7 +111,7 @@ const showVehicle: React.FC<Props> = ({
                                 className="mt-1 block w-full"
                                 required
                                 onChange={(e) =>
-                                    setData("mark_id", e.target.value)
+                                    setData("mark_id", parseInt(e.target.value))
                                 }
                                 value={data.mark_id}
                                 defaultValue={""}
@@ -139,7 +144,7 @@ const showVehicle: React.FC<Props> = ({
                                 className="mt-1 block w-full"
                                 required
                                 onChange={(e) =>
-                                    setData("type_id", e.target.value)
+                                    setData("type_id", parseInt(e.target.value))
                                 }
                                 value={data.type_id}
                                 defaultValue={""}
@@ -203,14 +208,18 @@ const showVehicle: React.FC<Props> = ({
                         <div>
                             <InputLabel
                                 htmlFor="capacidad_carga"
-                                value="Capacidad de Carga"
+                                value="Capacidad de Carga (Toneladas)"
                             />
                             <TextInput
                                 id="capacidad_carga"
                                 className="mt-1 block w-full"
+                                type="number"
                                 value={data.capacidad_carga}
                                 onChange={(e) =>
-                                    setData("capacidad_carga", e.target.value)
+                                    setData(
+                                        "capacidad_carga",
+                                        parseInt(e.target.value)
+                                    )
                                 }
                                 required
                                 isFocused
@@ -218,6 +227,37 @@ const showVehicle: React.FC<Props> = ({
                             <InputError
                                 className="mt-2"
                                 message={errors.capacidad_carga}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
+                                htmlFor="device_id"
+                                value="Dispositivo"
+                            />
+                            <SelectInput
+                                isFocused
+                                className="mt-1 block w-full"
+                                onChange={(e) =>
+                                    setData("device_id", parseInt(e.target.value))
+                                }
+                                value={data.device_id || ''}
+                            >
+                                <option value="" disabled>
+                                    {devices && devices.length > 0
+                                        ? "Selecciona un dispositivo"
+                                        : "No hay datos disponibles"}
+                                </option>
+                                {devices && devices.length > 0
+                                    ? devices.map((item, index) => (
+                                          <option key={index} value={item.id}>
+                                              {item.num_serial}
+                                          </option>
+                                      ))
+                                    : null}
+                            </SelectInput>
+                            <InputError
+                                className="mt-2"
+                                message={errors.device_id}
                             />
                         </div>
                         <div>
@@ -239,6 +279,30 @@ const showVehicle: React.FC<Props> = ({
                             <InputError
                                 className="mt-2"
                                 message={errors.fecha_compra}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
+                                htmlFor="kilometrage"
+                                value="Kilometrage"
+                            />
+                            <TextInput
+                                id="kilometrage"
+                                type="number"
+                                className="mt-1 block w-full"
+                                value={data.kilometrage}
+                                onChange={(e) =>
+                                    setData(
+                                        "kilometrage",
+                                        parseInt(e.target.value)
+                                    )
+                                }
+                                required
+                                isFocused
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.kilometrage}
                             />
                         </div>
                         <div>

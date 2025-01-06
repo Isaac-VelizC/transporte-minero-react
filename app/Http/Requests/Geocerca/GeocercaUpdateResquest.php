@@ -66,6 +66,10 @@ class GeocercaUpdateResquest extends FormRequest
                 'nullable',
                 'string',
                 'max:1000'
+            ],
+            'color' => [
+                'nullable',
+                'string',
             ]
         ];
     }

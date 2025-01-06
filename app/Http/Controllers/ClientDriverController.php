@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AltercationReport;
 use App\Models\CargoShipment;
 use App\Models\Device;
 use App\Models\Geocerca;
@@ -15,38 +16,15 @@ use Inertia\Inertia;
 
 class ClientDriverController extends Controller
 {
-    private function formatResponse($envio)
-    {
-        return [
-            'id' => $envio->id,
-            'car_id' => $envio->car_id,
-            'programming' => $envio->programming,
-            'matricula' => optional($envio->vehicle)->matricula,
-            'client_id' => $envio->client_id,
-            'full_name' => $envio->formatFullName(),
-            'peso' => $envio->peso,
-            'destino' => $envio->destino,
-            'status' => $envio->status,
-            'fecha_envio' => $envio->fecha_envio,
-            'fecha_entrega' => $envio->fecha_entrega,
-            'notas' => $envio->notas,
-            'geofence_id' => $envio->geofence_id,
-            'client_latitude' => $envio->client_latitude,
-            'client_longitude' => $envio->client_longitude,
-        ];
-    }
-
     public function showEnvio($id)
     {
         try {
-            $envio = CargoShipment::with([
-                'vehicle:id,matricula',
-                'client:id,nombre,ap_pat,ap_mat',
-                'geocerca:id,name'
-            ])->findOrFail($id);
-            $response = $this->formatResponse($envio);
+            $envio = CargoShipment::with(['vehicle', 'client', 'conductor.driver'])->findOrFail($id);
+            $item = AltercationReport::where('envio_id', $id)->get();
+        
             return Inertia::render('Conductor/showEnvio', [
-                'dataCarga' => $response
+                'dataCarga' => $envio,
+                'altercados' => $item
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
@@ -62,17 +40,13 @@ class ClientDriverController extends Controller
         try {
             $idUser = Auth::user()->persona->id;
             $envio = CargoShipment::with([
-                'vehicle:id,matricula',
-                'client:id,nombre,ap_pat,ap_mat',
-                'geocerca:id,name'
+                'vehicle',
+                'client'
             ])->where('client_id', $idUser)
-                ->findOrFail($id);
-
-            // Formatear la respuesta
-            $response = $this->formatResponse($envio);
+                ->findOrFail($id);;
 
             return Inertia::render('Client/show', [
-                'envio' => $response
+                'envio' => $envio
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
@@ -82,7 +56,6 @@ class ClientDriverController extends Controller
             return redirect()->back()->with('error', 'Ocurrió un error al obtener los datos.');
         }
     }
-
 
     public function changeStatusShipment($id)
     {
@@ -111,18 +84,21 @@ class ClientDriverController extends Controller
     {
         try {
             $envio = CargoShipment::with([
-                'vehicle:id,matricula',
-                'client:id,nombre,ap_pat,ap_mat',
-                'geocerca:id,name'
+                'vehicle',
+                'client',
+                'geocerca'
             ])->findOrFail($id);
-
-            $response = $this->formatResponse($envio);
+            
             $geocerca = Geocerca::findOrFail($envio->geofence_id);
-            $device = Device::where('car_id', $envio->car_id)->first();
+            $device = Device::find($envio->vehicle->device_id);
+
+            if (is_null($device)) {
+                return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
+            }
 
             return Inertia::render('Conductor/showMapa', [
                 'geocerca' => $geocerca,
-                'envio' => $response,
+                'envio' => $envio,
                 'device' => $device,
             ]);
         } catch (ModelNotFoundException $e) {
@@ -160,6 +136,7 @@ class ClientDriverController extends Controller
             ]);
         }
         $idDriver = $user->persona->driver->id;
+        
         $vehicleSchedule = VehicleSchedule::where('end_time', '>', now())
             ->where('driver_id', $idDriver)
             ->first();
@@ -167,11 +144,11 @@ class ClientDriverController extends Controller
 
         if ($vehicleSchedule) {
             $carId = $vehicleSchedule->car_id;
-            $list = VehiculoMantenimiento::where('vehicle_id', $carId)->get();
+            $list = VehiculoMantenimiento::with('vehicle')->where('vehicle_id', $carId)->get();
         }
 
-        return Inertia::render('Conductor/listMantenimiento', [
-            'list' => $list,
+        return Inertia::render('Conductor/mantenimientos', [
+            'mantenimientos' => $list,
             'message' => $list->isEmpty() ? 'No hay mantenimientos disponibles.' : null
         ]);
     }
@@ -196,6 +173,23 @@ class ClientDriverController extends Controller
         } catch (\Exception $e) {
             Log::error('Error actualizando la ubicación: ', ['error' => $e]);
             return response()->json(['error' => 'Error actualizando la ubicación'], 500);
+        }
+    }
+
+    public function storeReporteAltercados(Request $request) {
+        $validatedData = $request->validate([
+            'car_id' => 'required|exists:vehicles,id',
+            'driver_id' => 'required|exists:drivers,id',
+            'envio_id' => 'required|numeric|exists:cargo_shipments,id',
+            'description' => 'required|string|min:10',
+        ]);
+        try {
+            // Crear la programación del vehículo
+            AltercationReport::create($validatedData);
+            return redirect()->back()->with(['success' => 'Registrado exitosamente.'], 201);
+        } catch (\Throwable $th) {
+            // Manejo de errores
+            return redirect()->back()->with(['error' => 'Error al reportar: ' . $th->getMessage()], 500);
         }
     }
 }

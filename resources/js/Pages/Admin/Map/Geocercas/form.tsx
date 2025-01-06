@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 
 type TypesGeocerca = {
     value: string;
+    color: string;
 };
 
 type Props = {
@@ -29,6 +30,7 @@ export default function form({ isEditing, geocerca, types }: Props) {
         polygon_coordinates: "[51.505, -0.09]",
         type: "",
         description: "",
+        color: "",
     };
 
     const { data, setData, post, patch, errors, processing } =
@@ -63,14 +65,27 @@ export default function form({ isEditing, geocerca, types }: Props) {
             polygon_coordinates: JSON.stringify(coordinates),
         }));
     };
+
+    /*const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedType = e.target.value;
+        const selectedColor =
+            types.find((type) => type.value === selectedType)?.color || "";
+        
+        // Actualiza el tipo y el color en el estado
+        setData("type", selectedType);
+        setData("color", selectedColor);
+    };*/
+
     return (
         <Authenticated>
             <Head title="Geocerca" />
-            <Breadcrumb breadcrumbs={[
+            <Breadcrumb
+                breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Lista", path: "/geocerca" },
                     { name: isEditing ? "Editar" : "Registrar nuevo" },
-                ]} />
+                ]}
+            />
             <div className="bg-gray-600 rounded-xl">
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-200 mb-2">
@@ -100,18 +115,16 @@ export default function form({ isEditing, geocerca, types }: Props) {
                         </div>
                         <div>
                             <InputLabel
-                                htmlFor="types"
+                                htmlFor="type"
                                 value="Tipo de Geocerca"
                             />
                             <SelectInput
-                                isFocused
                                 className="mt-1 block w-full"
                                 required
                                 onChange={(e) =>
                                     setData("type", e.target.value)
                                 }
                                 value={data.type}
-                                defaultValue={""}
                             >
                                 <option value="" disabled>
                                     {types && types.length > 0
@@ -134,7 +147,7 @@ export default function form({ isEditing, geocerca, types }: Props) {
                                 message={errors.type}
                             />
                         </div>
-                        <div>
+                        <div className="hidden lg:block">
                             <InputLabel
                                 htmlFor="polygon_coordinates"
                                 value="Coordenadas del poligono"
@@ -179,7 +192,6 @@ export default function form({ isEditing, geocerca, types }: Props) {
                             message={errors.description}
                         />
                     </div>
-
                     <div className="mt-6 flex justify-end">
                         <LinkButton href={"geocerca.list"}>Cancelar</LinkButton>
 

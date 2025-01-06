@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vehicle\VehicleCreateResquest;
 use App\Http\Requests\Vehicle\VehicleUpdateResquest;
+use App\Models\Device;
 use App\Models\Driver;
 use App\Models\Mark;
+use App\Models\TipoMantenimiento;
 use App\Models\TypeVehicle;
 use App\Models\Vehicle;
 use App\Models\VehicleSchedule;
@@ -22,16 +24,25 @@ class VehiclesController extends Controller
 {
     public function index()
     {
-        $items = Vehicle::all();
-        // Retornar la vista utilizando Inertia
+        $vehicles = Vehicle::with('marca', 'device')->get();
         return Inertia::render('Admin/Vehicle/index', [
-            'vehicles' => $items,
+            'vehicles' => $vehicles,
+        ]);
+    }
+
+    public function listSchedules()
+    {
+        $vehicles = Vehicle::has('device')->get();
+        $list = VehicleSchedule::with(['vehicle', 'driver.persona'])->get();
+        return Inertia::render('Admin/Vehicle/Programming/index', [
+            'schedules' => $list,
+            'drivers' => $this->listDriversDisponibles(),
+            'vehicles' => $vehicles
         ]);
     }
 
     public function registerConductorVehicle(Request $request)
     {
-        // Validación de los datos de entrada
         $validatedData = $request->validate([
             'car_id' => 'required|exists:vehicles,id',
             'start_time' => 'required|date|after_or_equal:now',
@@ -41,14 +52,9 @@ class VehiclesController extends Controller
 
         try {
             // Crear la programación del vehículo
-            VehicleSchedule::create([
-                'car_id' => $validatedData['car_id'],
-                'start_time' => $validatedData['start_time'],
-                'end_time' => $validatedData['end_time'],
-                'driver_id' => $validatedData['driver_id'],
-            ]);
+            VehicleSchedule::create($validatedData);
             Driver::findOrFail($validatedData['driver_id'])->update(['status' => false]);
-            return redirect()->back()->with(['success' => 'Vehículo asignado exitosamente.'], 201);
+            return redirect()->back()->with(['success' => 'Conductor asignado a vehiculo exitosamente.'], 201);
         } catch (\Throwable $th) {
             // Manejo de errores
             return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
@@ -57,25 +63,52 @@ class VehiclesController extends Controller
 
     public function updateConductorVehicle(Request $request, $id)
     {
-        // Validación de los datos de entrada
         $validatedData = $request->validate([
+            'car_id' => 'required|exists:vehicles,id',
             'start_time' => 'required|date|after_or_equal:now',
             'end_time' => 'required|date|after:start_time',
             'driver_id' => 'required|exists:drivers,id',
         ]);
 
         try {
-            // Crear la programación del vehículo
-            VehicleSchedule::find($id)->update([
-                'start_time' => $validatedData['start_time'],
-                'end_time' => $validatedData['end_time'],
-                'driver_id' => $validatedData['driver_id'],
-            ]);
-
-            return redirect()->back()->with(['success' => 'Informacion actualizado exitosamente.'], 201);
+            DB::beginTransaction();
+            $item = VehicleSchedule::findOrFail($id);
+            // Cambiar el estado del conductor solo si es necesario
+            if ($validatedData['driver_id'] !== $item->driver_id) {
+                Driver::where('id', $item->driver_id)->update(['status' => true]);
+                Driver::where('id', $validatedData['driver_id'])->update(['status' => false]);
+            }
+            // Actualizar la programación del vehículo
+            $item->update($validatedData);
+            // Confirmar la transacción
+            DB::commit();
+            return redirect()->back()->with('success', 'Información actualizada exitosamente.');
         } catch (\Throwable $th) {
+            // Revertir la transacción en caso de error
+            DB::rollBack();
             // Manejo de errores
-            return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
+            return redirect()->back()->with('error', 'Error al asignar vehículo: ' . $th->getMessage());
+        }
+    }
+
+    public function cancelScheduleVehicle($id)
+    {
+        try {
+            $item = VehicleSchedule::findOrFail($id);
+            if ($item->cargas()->where('status', '!=', 'entregado')->where('status', '!=', 'cancelado')->exists()) {
+                return back()->with('error', 'Hay cargas con estado diferente a entregado o pendiente.');
+            }
+            $item->status_time = !$item->status_time;
+            $item->update();
+            $message = $item->status_time
+                ? 'Reactivado correctamente'
+                : 'Desactivado correctamente';
+            return redirect()->back()->with('success', $message);
+        } catch (ModelNotFoundException $e) {
+            return redirect()->back()->with('error', 'No encontrado.');
+        } catch (\Exception $e) {
+            Log::error('Error al modificar estado: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Ocurrió un error al modificar el estado.');
         }
     }
 
@@ -83,23 +116,28 @@ class VehiclesController extends Controller
     {
         $marks = Mark::all();
         $types = TypeVehicle::all();
+        $devices = Device::where('status', 'activo')->get();
         return Inertia::render('Admin/Vehicle/form', [
             'marcas' => $marks,
             'typesVehicle' => $types,
+            'devices' => $devices,
             'isEditing' => false
         ]);
     }
 
     public function store(VehicleCreateResquest $request)
     {
-        // Iniciar la transacción
         DB::beginTransaction();
         try {
             $data = $request->validated();
             // Crear un nuevo vehículo
             $vehicle = new Vehicle($data);
-            $vehicle->responsable_id = Auth::user()->id;
+            $vehicle->responsable_id = Auth::user()->id; // Asignar el responsable
             $vehicle->save();
+            // Actualizar el estado del dispositivo si se proporciona device_id
+            if (!empty($data['device_id'])) {
+                Device::findOrFail($data['device_id'])->update(['status' => 'asignado']);
+            }
             // Confirmar la transacción
             DB::commit();
             // Redirigir con un mensaje de éxito
@@ -114,30 +152,12 @@ class VehiclesController extends Controller
     public function show(string $id)
     {
         try {
-            $vehicle = Vehicle::with('schedules.driver.persona')->findOrFail($id);
-            // Obtener las programaciones del vehículo
-            $schedules = $vehicle->schedules()->with('driver.persona')->get()->map(function ($schedule) {
-                return [
-                    'id' => $schedule->id,
-                    'matricula_car' => $schedule->vehicle->matricula,
-                    'car_id' => $schedule->car_id,
-                    'start_time' => $schedule->start_time,
-                    'end_time' => $schedule->end_time,
-                    'driver_id' => $schedule->driver_id,
-                    'conductor_name' => $schedule->driver ? $schedule->driver->formatFullName() : 'No asignado',
-                    'status' => $schedule->status,
-                    'status_time' => $schedule->status_time,
-                ];
-            });
-            $statusTime = $schedules->contains(function ($schedule) {
-                return $schedule['status_time'] === 1;
-            });
+            $vehicle = Vehicle::with(['marca', 'tipo', 'device'])->findOrFail($id);
+            $schedules = $vehicle->schedules()->with('driver.persona')->get();
             $listMantenimientos = VehiculoMantenimiento::where('vehicle_id', $id)->get();
             return Inertia::render('Admin/Vehicle/show', [
                 'vehicle' => $vehicle,
-                'drivers' => $this->listDriversDisponibles(),
                 'schedules' => $schedules,
-                'statuSchedules' => $statusTime,
                 'listMantenimientos' => $listMantenimientos,
             ]);
         } catch (ModelNotFoundException $e) {
@@ -152,10 +172,12 @@ class VehiclesController extends Controller
         $marks = Mark::all();
         $types = TypeVehicle::all();
         $vehicle = Vehicle::find($id);
+        $devices = Device::where('status', '!=', 'inactivo')->get();
         return Inertia::render('Admin/Vehicle/form', [
             'marcas' => $marks,
             'typesVehicle' => $types,
             'vehicle' => $vehicle,
+            'devices' => $devices,
             'isEditing' => true
         ]);
     }
@@ -167,6 +189,12 @@ class VehiclesController extends Controller
             $data = $request->validated();
             $vehicle = Vehicle::findOrFail($id);
             $vehicle->update($data);
+
+            // Actualizar el estado del dispositivo si se proporciona device_id
+            if ($data['device_id'] != $vehicle->device_id) {
+                Device::findOrFail($vehicle->device_id)->update(['status' => 'activo']);
+                Device::findOrFail($data['device_id'])->update(['status' => 'asignado']);
+            }
             DB::commit();
             return redirect()->route('vehicle.list')->with('success', 'Vehículo actualizado con éxito.');
         } catch (\Throwable $th) {
@@ -201,50 +229,52 @@ class VehiclesController extends Controller
         return Driver::with('persona')
             ->where('status', true)
             ->whereHas('persona', fn($query) => $query->where('estado', true))
-            ->get()
-            ->map(fn($driver) => [
-                'id' => $driver->id,
-                'full_name' => $driver->formatFullName(),
-                'ci' => optional($driver->persona)->ci ?? '',
-                'numero' => optional($driver->persona)->numero ?? '',
-            ]);
+            ->get();
+    }
+
+    /** Mantenimientos */
+    public function listMantenimientos()
+    {
+        $vehicles = Vehicle::all();
+        $list = VehiculoMantenimiento::with(['vehicle', 'tipo'])->get();
+        $tipos = TipoMantenimiento::all();
+        return Inertia::render('Admin/Vehicle/Mantenimientos/index', [
+            'mantenimientos' => $list,
+            'tipos' => $tipos,
+            'vehicles' => $vehicles
+        ]);
     }
 
     public function storeMantenimientoVehicle(Request $request)
     {
         $validatedData = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
-            'fecha' => 'required|date|after_or_equal:now',
+            'fecha_inicio' => 'required|date|after_or_equal:now',
             'observaciones' => 'required|string|max:255',
+            'tipo' => 'required|numeric|exists:tipo_mantenimientos,id'
         ]);
-
         try {
-            VehiculoMantenimiento::create([
-                'vehicle_id' => $validatedData['vehicle_id'],
-                'fecha' => $validatedData['fecha'],
-                'observaciones' => $validatedData['observaciones'],
-            ]);
-            return redirect()->back()->with(['success' => 'Vehículo asignado exitosamente.'], 201);
+            VehiculoMantenimiento::create($validatedData);
+            return redirect()->back()->with(['success' => 'Mantenimiento programado exitosamente.'], 201);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
+            return redirect()->back()->with(['error' => 'Error al progrmar mantenimiento: ' . $th->getMessage()], 500);
         }
     }
 
     public function updateMantenimientoVehicle(Request $request, $id)
     {
         $validatedData = $request->validate([
-            'fecha' => 'required|date|after_or_equal:now',
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'fecha_inicio' => 'required|date|after_or_equal:now',
             'observaciones' => 'required|string|max:255',
+            'tipo' => 'required|numeric|exists:tipo_mantenimientos,id'
         ]);
 
         try {
-            VehiculoMantenimiento::findOrFail($id)->update([
-                'fecha' => $validatedData['fecha'],
-                'observaciones' => $validatedData['observaciones'],
-            ]);
-            return redirect()->back()->with(['success' => 'Vehículo asignado exitosamente.'], 201);
+            VehiculoMantenimiento::findOrFail($id)->update($validatedData);
+            return redirect()->back()->with(['success' => 'Actualización realizada exitosamente.'], 201);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
+            return redirect()->back()->with(['error' => 'Error al actualizar la infomración: ' . $th->getMessage()], 500);
         }
     }
 

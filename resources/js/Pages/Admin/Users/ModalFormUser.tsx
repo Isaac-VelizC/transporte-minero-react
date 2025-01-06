@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import Modal from "../../../Components/Modal/Modal";
 import SecondaryButton from "../../../Components/Buttons/SecondaryButton";
-import { UserInterface } from "@/interfaces/User";
 import InputLabel from "../../../Components/Forms/InputLabel";
 import TextInput from "../../../Components/Forms/TextInput";
 import InputError from "../../../Components/Forms/InputError";
@@ -17,11 +16,10 @@ const generos = [
     { value: "Otro", label: "Otro" },
 ];
 
-
 type Props = {
     show: boolean;
     onClose: () => void;
-    users?: UserInterface;
+    users?: formUserType;
     roles?: RolesInterface[];
     isEditing: boolean;
     rutaName: string;
@@ -107,7 +105,7 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputLabel htmlFor="ap_mat" value="Apellido Materno" />
                         <TextInput
                             id="ap_mat"
-                            value={data.ap_mat}
+                            value={data.ap_mat || ""}
                             className="mt-1 block w-full"
                             onChange={(e) => setData("ap_mat", e.target.value)}
                             isFocused
@@ -145,7 +143,7 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputLabel htmlFor="numero" value="Teléfono" />
                         <TextInput
                             id="numero"
-                            value={data.numero}
+                            value={data.numero || ""}
                             className="mt-1 block w-full"
                             onChange={(e) => setData("numero", e.target.value)}
                             required
@@ -161,7 +159,6 @@ const ModalFormUser: React.FC<Props> = ({
                             className="mt-1 block w-full"
                             onChange={(e) => setData("genero", e.target.value)}
                             value={data.genero}
-                            defaultValue={""}
                         >
                             <option value="" disabled>
                                 {generos && generos.length > 0
@@ -187,7 +184,6 @@ const ModalFormUser: React.FC<Props> = ({
                                 className="mt-1 block w-full"
                                 onChange={(e) => setData("rol", e.target.value)}
                                 value={data.rol}
-                                defaultValue={""}
                             >
                                 <option value="" disabled>
                                     {roles && roles.length > 0

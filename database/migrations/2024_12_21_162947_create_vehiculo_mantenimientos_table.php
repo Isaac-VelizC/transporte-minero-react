@@ -11,15 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::create('tipo_mantenimientos', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+        });
+        
         Schema::create('vehiculo_mantenimientos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('vehicle_id')->nullable();
             $table->foreign('vehicle_id')->references('id')->on('vehicles')->onDelete('cascade');
-            $table->date('fecha');
+            $table->date('fecha_inicio');
+            $table->date('fecha_fin')->nullable();
             $table->text('observaciones')->nullable();
-            $table->string('estado')->default('pendiente');
-            //$table->unsignedBigInteger('driver_id')->nullable();
-            //$table->foreign('driver_id')->references('id')->on('drivers')->onDelete('cascade');
+            $table->enum('estado', ['pendiente', 'en curso', 'terminado'])->default('pendiente');
+            $table->unsignedBigInteger('tipo')->nullable();
+            $table->foreign('tipo')->references('id')->on('tipo_mantenimientos')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -29,6 +35,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('tipo_mantenimientos');
         Schema::dropIfExists('vehiculo_mantenimientos');
     }
 };

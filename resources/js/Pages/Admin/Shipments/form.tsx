@@ -7,8 +7,9 @@ import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
 import SelectLatLonMap from "@/Components/Maps/SelectLatLonMap";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
+import { PersonaInterface } from "@/interfaces/Persona";
 import { ScheduleInterface } from "@/interfaces/schedule";
-import { ShipmentInterface } from "@/interfaces/Shipment";
+import { FormShipmentType } from "@/interfaces/Shipment";
 import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
@@ -17,9 +18,9 @@ import toast from "react-hot-toast";
 
 type Props = {
     geocercas: GeocercaInterface[];
-    clientes: UserInterface[];
+    clientes: PersonaInterface[];
     schedules: ScheduleInterface[];
-    shipment: ShipmentInterface;
+    shipment: FormShipmentType;
     isEditing: boolean;
 };
 
@@ -81,9 +82,6 @@ export default function form({
 
             submitMethod(submitRoute, {
                 onSuccess: ({ props: { flash } }) => {
-                    if (flash?.success) {
-                        toast.success(flash.success);
-                    }
                     if (flash?.error) {
                         toast.error(flash.error);
                     }
@@ -100,11 +98,17 @@ export default function form({
     return (
         <Authenticated>
             <Head title="Form" />
-            <Breadcrumb breadcrumbs={[
+            <Breadcrumb
+                breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Lista", path: "/envios" },
-                    { name: isEditing ? "Editar Información" : "Registrar nuevo" },
-                ]}/>
+                    {
+                        name: isEditing
+                            ? "Editar Información"
+                            : "Registrar nuevo",
+                    },
+                ]}
+            />
             <div className="bg-gray-600 rounded-xl">
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-200 mb-2">
@@ -128,8 +132,7 @@ export default function form({
                                         parseFloat(e.target.value)
                                     )
                                 }
-                                value={data.client_id}
-                                defaultValue={0}
+                                value={data.client_id || 0}
                             >
                                 <option value={0} disabled>
                                     {clientes && clientes.length > 0
@@ -138,11 +141,8 @@ export default function form({
                                 </option>
                                 {clientes && clientes.length > 0
                                     ? clientes.map((item) => (
-                                          <option
-                                              key={item.user_id}
-                                              value={item.user_id}
-                                          >
-                                              {item.ci}
+                                          <option key={item.id} value={item.id}>
+                                              {item.nombre}
                                           </option>
                                       ))
                                     : null}
@@ -161,14 +161,13 @@ export default function form({
                                 isFocused
                                 className="mt-1 block w-full"
                                 required
-                                value={data.programming}
+                                value={data.programming || 0}
                                 onChange={(e) =>
                                     setData(
                                         "programming",
                                         parseFloat(e.target.value)
                                     )
                                 }
-                                defaultValue={0}
                             >
                                 <option value={0} disabled>
                                     {schedules && schedules.length > 0
@@ -178,7 +177,7 @@ export default function form({
                                 {schedules && schedules.length > 0
                                     ? schedules.map((item) => (
                                           <option key={item.id} value={item.id}>
-                                              {item.matricula_car}
+                                              {item.vehicle.matricula}
                                           </option>
                                       ))
                                     : null}
@@ -203,8 +202,7 @@ export default function form({
                                         parseFloat(e.target.value)
                                     )
                                 }
-                                value={data.geofence_id}
-                                defaultValue={""}
+                                value={data.geofence_id || ''}
                             >
                                 <option value="" disabled>
                                     {geocercas && geocercas.length > 0

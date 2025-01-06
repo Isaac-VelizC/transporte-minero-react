@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 
 interface AccordionItemProps {
   title: string;
@@ -7,7 +7,7 @@ interface AccordionItemProps {
   onToggle: () => void;
 }
 
-const AccordionItem: React.FC<AccordionItemProps> = React.memo(({ title, content, isOpen, onToggle }) => {
+export const AccordionItem: React.FC<AccordionItemProps> = React.memo(({ title, content, isOpen, onToggle }) => {
   return (
     <div className="border-b">
       <div 
@@ -26,41 +26,3 @@ const AccordionItem: React.FC<AccordionItemProps> = React.memo(({ title, content
   );
 });
 
-const Accordion: React.FC = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const items = [
-    {
-      title: 'Elemento 1',
-      content: 'Contenido del elemento 1.',
-    },
-    {
-      title: 'Elemento 2',
-      content: 'Contenido del elemento 2.',
-    },
-    {
-      title: 'Elemento 3',
-      content: 'Contenido del elemento 3.',
-    },
-  ];
-
-  const handleToggle = useCallback((index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  }, [openIndex]);
-
-  return (
-    <div>
-      {items.map((item, index) => (
-        <AccordionItem 
-          key={index} 
-          title={item.title} 
-          content={item.content} 
-          isOpen={openIndex === index} 
-          onToggle={() => handleToggle(index)} 
-        />
-      ))}
-    </div>
-  );
-};
-
-export default Accordion;

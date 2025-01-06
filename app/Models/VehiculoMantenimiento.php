@@ -13,13 +13,20 @@ class VehiculoMantenimiento extends Model
 
     protected $fillable = [
         'vehicle_id',
-        'fecha',
+        'fecha_inicio',
+        'fecha_fin',
         'observaciones',
         'estado',
+        'tipo'
     ];
 
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class, 'vehicle_id');
+    }
+
+    public function tipo()
+    {
+        return $this->belongsTo(TipoMantenimiento::class, 'tipo');
     }
 }

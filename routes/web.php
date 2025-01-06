@@ -53,12 +53,16 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::get('/vehicle/form/{id}', [VehiclesController::class, 'edit'])->name('vehicle.edit');
     Route::patch('/vehicle/update/{id}', [VehiclesController::class, 'update'])->name('vehicle.update');
     Route::delete('/vehicle/{id}', [VehiclesController::class, 'destroy'])->name('vehicle.destroy');
+    
+    Route::get('/vehicle/programmings', [VehiclesController::class, 'listSchedules'])->name('schedule.list');
     Route::post('/vehicle/programming', [VehiclesController::class, 'registerConductorVehicle'])->name('vehicle.programming');
     Route::patch('/vehicle/programming/{id}', [VehiclesController::class, 'updateConductorVehicle'])->name('vehicle.programming.update');
+    Route::get('/vehicle/programming/{id}/cancel', [VehiclesController::class, 'cancelScheduleVehicle'])->name('vehicle.programming.cancel');
     // Mantenimientos
-    Route::post('vehicle/mantenimiento',[VehiclesController::class, 'storeMantenimientoVehicle'])->name('mantenimiento.store');
-    Route::patch('vehicle/mantenimiento/{id}',[VehiclesController::class, 'updateMantenimientoVehicle'])->name('mantenimiento.update');
-    Route::delete('vehicle/mantenimiento/{id}',[VehiclesController::class, 'destroyMantenimientoVehicle'])->name('mantenimiento.delete');
+    Route::get('/vehicle/mantenimientos', [VehiclesController::class, 'listMantenimientos'])->name('mantenimiento.list');
+    Route::post('/vehicle/mantenimiento',[VehiclesController::class, 'storeMantenimientoVehicle'])->name('mantenimiento.store');
+    Route::patch('/vehicle/mantenimiento/{id}',[VehiclesController::class, 'updateMantenimientoVehicle'])->name('mantenimiento.update');
+    Route::delete('/vehicle/mantenimiento/{id}',[VehiclesController::class, 'destroyMantenimientoVehicle'])->name('mantenimiento.delete');
     //envios
     Route::get('/envios', [ShipmentsController::class, 'index'])->name('envios.list');
     Route::get('/envios/{id}', [ShipmentsController::class, 'show'])->name('envios.show');
@@ -96,6 +100,8 @@ Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
     Route::get('/driver/show/map/{id}', [ClientDriverController::class, 'showMapMonitoreo'])->name('driver.show.map');
     Route::get('/driver/mantenimientos/', [ClientDriverController::class, 'mantenimientosVehiculosList'])->name('driver.mantenimientos.list');
     Route::put('/devices/{id}/location', [ClientDriverController::class, 'updateLocationDevice']);
+
+    Route::post('driver/store/artercado', [ClientDriverController::class, 'storeReporteAltercados'])->name('driver.store.altercado');
 });
 
 Route::middleware(['auth', 'checkRole:Cliente'])->group(function () {

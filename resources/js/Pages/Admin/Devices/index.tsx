@@ -20,7 +20,7 @@ export default function index({ devices, vehicles }: Props) {
     const columns = useMemo(
         () => [
             {
-                name: "#",
+                name: "Numero Serial",
                 cell: (row: DeviceInterface) => row.num_serial,
             },
             {
@@ -40,6 +40,8 @@ export default function index({ devices, vehicles }: Props) {
                         className={`rounded-lg px-2 font-semibold py-1 text-white ${
                             row.status === "activo"
                                 ? "bg-green-400"
+                                : row.status === "asignado"
+                                ? "bg-orange-400"
                                 : "bg-red-400"
                         } `}
                     >

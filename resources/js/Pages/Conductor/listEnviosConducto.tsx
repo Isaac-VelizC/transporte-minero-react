@@ -24,12 +24,12 @@ export default function listEnviosConducto({ envios }: Props) {
         },
         {
             name: "Cliente",
-            cell: (row: ShipmentInterface) => row.full_name,
+            cell: (row: ShipmentInterface) => row.client.nombre +' '+row.client.ap_pat,
             sortable: true,
         },
         {
             name: "Matricula de Vehiculo",
-            cell: (row: ShipmentInterface) => row.matricula,
+            cell: (row: ShipmentInterface) => row.vehicle.matricula,
             sortable: true,
         },
         {
@@ -99,16 +99,13 @@ export default function listEnviosConducto({ envios }: Props) {
         }
     };
 
-    
     const { flash } = usePage().props;
 
     useEffect(() => {
         if (flash.success) {
-            // Mostrar mensaje de éxito
             toast.success(flash.success);
         }
         if (flash.error) {
-            // Mostrar mensaje de error
             toast.error(flash.error);
         }
     }, [flash]);
@@ -117,7 +114,7 @@ export default function listEnviosConducto({ envios }: Props) {
         <Authenticated>
             <Head title="Envios" />
             <div className="flex flex-col lg:flex-row items-center justify-between my-4">
-                <h1 className="text-lg font-semibold">Envios Asigandos</h1>
+                <h1 className="text-lg font-semibold text-gray-200">Envios Asigandos</h1>
             </div>
             <DataTableComponent columns={columns} data={envios} />
             <Modal show={confirmingShow} onClose={closeModal}>
@@ -128,7 +125,7 @@ export default function listEnviosConducto({ envios }: Props) {
                     <div className="py-2 pl-4">
                         <p>
                             <strong>Cliente: </strong>
-                            {cargaData?.full_name}
+                            {cargaData?.client.nombre+' '+cargaData?.client.ap_pat+' '+cargaData?.client.ap_mat}
                         </p>
                     </div>
                     <h3 className="font-medium text-base text-gray-900">
@@ -149,7 +146,7 @@ export default function listEnviosConducto({ envios }: Props) {
                         </p>
                         <p>
                             <strong>Matricula del vehiculo: </strong>
-                            {cargaData?.matricula}
+                            {cargaData?.vehicle.matricula}
                         </p>
                         <p>
                             <strong>Fecha de Entrega: </strong>

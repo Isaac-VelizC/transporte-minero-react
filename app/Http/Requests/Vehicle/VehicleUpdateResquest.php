@@ -31,11 +31,13 @@ class VehicleUpdateResquest extends FormRequest
             ],
             'mark_id' => ['required', 'exists:marks,id'],
             'type_id' => ['required', 'exists:type_vehicles,id'],
+            'device_id' => 'nullable|exists:devices,id',
             'modelo' => 'required|string|max:50',
             'color' => 'required|string|max:30',
             'fecha_compra' => 'required|date',
             'status' => 'required|in:activo,mantenimiento,inactivo',
             'capacidad_carga' => 'nullable|integer|min:0',
+            'kilometrage' => 'nullable|integer|min:1'
         ];
     }
 }

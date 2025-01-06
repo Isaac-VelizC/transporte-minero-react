@@ -18,9 +18,26 @@ const generos = [
     { value: "Otro", label: "Otro" },
 ];
 
+type formConductorType = {
+    id: Number;
+    driver_id: Number
+    user_id: Number;
+    nombre: string;
+    ap_pat: string;
+    ap_mat: string;
+    email: string;
+    ci: string;
+    genero: string;
+    numero: string;
+    license_number: string;
+    hiring_date: string;
+    experiencia: string;
+    direccion: string;
+};
+
 type Props = {
     isEditing: boolean;
-    driver?: DriverInterface;
+    driver?: formConductorType;
 };
 
 export default function drivers({ isEditing, driver }: Props) {
@@ -35,8 +52,11 @@ export default function drivers({ isEditing, driver }: Props) {
         numero: "",
         license_number: "",
         hiring_date: "",
+        experiencia: "",
+        direccion: "",
     };
 
+    const today = new Date().toISOString().split('T')[0];
     const { data, setData, post, patch, errors, processing } =
         useForm(initialData);
 
@@ -133,7 +153,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <TextInput
                                 id="ap_mat"
                                 className="mt-1 block w-full"
-                                value={data.ap_mat} // Cambia esto a 'data.ap_mat'
+                                value={data.ap_mat || ''}
                                 onChange={(e) =>
                                     setData("ap_mat", e.target.value)
                                 }
@@ -180,23 +200,6 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputError className="mt-2" message={errors.ci} />
                         </div>
                         <div>
-                            <InputLabel htmlFor="numero" value="Teléfono" />
-                            <TextInput
-                                id="numero"
-                                className="mt-1 block w-full"
-                                value={data.numero}
-                                onChange={(e) =>
-                                    setData("numero", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.numero}
-                            />
-                        </div>
-                        <div>
                             <InputLabel htmlFor="genero" value="Genero" />
                             <SelectInput
                                 className="mt-1 block w-full"
@@ -205,7 +208,6 @@ export default function drivers({ isEditing, driver }: Props) {
                                     setData("genero", e.target.value)
                                 }
                                 value={data.genero}
-                                defaultValue={""}
                             >
                                 <option value="" disabled>
                                     {generos && generos.length > 0
@@ -226,6 +228,64 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputError
                                 className="mt-2"
                                 message={errors.genero}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="numero" value="Teléfono" />
+                            <TextInput
+                                id="numero"
+                                className="mt-1 block w-full"
+                                value={data.numero || ''}
+                                onChange={(e) =>
+                                    setData("numero", e.target.value)
+                                }
+                                required
+                                isFocused
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.numero}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
+                                htmlFor="experiencia"
+                                value="Años de experiencia"
+                            />
+                            <TextInput
+                                id="experiencia"
+                                type="number"
+                                className="mt-1 block w-full"
+                                value={data.experiencia}
+                                onChange={(e) =>
+                                    setData("experiencia", e.target.value)
+                                }
+                                required
+                                isFocused
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.experiencia}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
+                                htmlFor="direccion"
+                                value="Dirección"
+                            />
+                            <TextInput
+                                id="direccion"
+                                className="mt-1 block w-full"
+                                value={data.direccion}
+                                onChange={(e) =>
+                                    setData("direccion", e.target.value)
+                                }
+                                required
+                                isFocused
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.direccion}
                             />
                         </div>
                         <div>
@@ -263,12 +323,14 @@ export default function drivers({ isEditing, driver }: Props) {
                                 }
                                 required
                                 isFocused
+                                max={today}
                             />
                             <InputError
                                 className="mt-2"
                                 message={errors.hiring_date}
                             />
                         </div>
+                        
                     </div>
 
                     <div className="mt-6 flex justify-end">

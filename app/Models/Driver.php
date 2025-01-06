@@ -12,7 +12,9 @@ class Driver extends Model
         'persona_id',
         'license_number',
         'hiring_date',
-        'status'
+        'status',
+        'experiencia',
+        'direccion'
     ];
 
     public function formatFullName(): string

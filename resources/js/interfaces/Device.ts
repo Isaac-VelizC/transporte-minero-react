@@ -4,7 +4,6 @@ export interface DeviceInterface {
     num_serial: string;
     name_device: string;
     type: string;
-    car_id: number;
     status: string;
     last_latitude: string;
     last_longitude: string;

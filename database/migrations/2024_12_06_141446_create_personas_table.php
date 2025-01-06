@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('nombre', 100); // Aumentado a 100 caracteres
-            $table->string('ap_pat', 100); // Aumentado a 100 caracteres
-            $table->string('ap_mat', 100)->nullable(); // Aumentado a 100 caracteres
+            $table->string('nombre', 100);
+            $table->string('ap_pat', 100);
+            $table->string('ap_mat', 100)->nullable();
             $table->string('ci')->unique();
             $table->enum('genero', ['Hombre', 'Mujer', 'Otro']);
             $table->string('numero')->unique()->nullable();

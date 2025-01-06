@@ -1,47 +1,29 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
-import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import DataTableComponent from "@/Components/Table";
 import { ScheduleInterface } from "@/interfaces/schedule";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
-import React, { useState } from "react";
-import ModalFormSchedule from "./Programming/ModalFormSchedule";
-import { DriverInterface } from "@/interfaces/Driver";
+import { Head } from "@inertiajs/react";
+import React from "react";
 import Card from "@/Components/Card";
 import { MantenimientoInterface } from "@/interfaces/Mantenimiento";
-import ModalFormMantenimieto from "./Programming/ModalFormMantenimieto";
-import toast from "react-hot-toast";
-
 
 type Props = {
     vehicle: VehicleInterface;
     schedules: ScheduleInterface[];
     listMantenimientos: MantenimientoInterface[];
-    drivers: DriverInterface[];
-    statuSchedules: boolean;
 };
 
 const showVehicle: React.FC<Props> = ({
     vehicle,
     schedules,
-    drivers,
-    statuSchedules,
     listMantenimientos,
 }) => {
-    const [openModalSchedule, setOpenModalSchedule] = useState(false);
-    const [openModalMantenimiento, setOpenModalMantenimiento] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [scheduleData, setScheduleData] = useState<ScheduleInterface | null>(
-        null
-    );
-    const [mantenimientoData, setMantenimientoData] =
-        useState<MantenimientoInterface | null>(null);
-
     const columnSchedule = [
         {
             name: "Conductor Designado",
-            cell: (row: ScheduleInterface) => row.conductor_name,
+            cell: (row: ScheduleInterface) =>
+                row.driver.persona.nombre + " " + row.driver.persona.ap_pat,
             sortable: true,
         },
         {
@@ -54,35 +36,17 @@ const showVehicle: React.FC<Props> = ({
             cell: (row: ScheduleInterface) => row.end_time,
             sortable: true,
         },
-        {
-            name: "Estado",
-            cell: (row: ScheduleInterface) => (
-                <span
-                    className={`rounded-lg px-2 font-semibold py-1 border border-gray-600 bg-gray-800/5`}
-                >
-                    {row.status}
-                </span>
-            ),
-        },
-        {
-            cell: (row: ScheduleInterface) => (
-                <button onClick={() => handleEditSchedule(row)}>
-                    <i className="bi bi-pencil"></i>
-                </button>
-            ),
-            ignoreRowClick: true,
-            width: "50px",
-        },
     ];
     const columnMantenimiento = [
         {
-            name: "Fecha de mantenimiento",
-            cell: (row: MantenimientoInterface) => row.fecha,
+            name: "Fecha",
+            cell: (row: MantenimientoInterface) => row.fecha_inicio,
             sortable: true,
         },
         {
-            name: "Conductor Designado",
-            cell: (row: MantenimientoInterface) => row.observaciones,
+            name: "Fecha Fin",
+            cell: (row: MantenimientoInterface) =>
+                row.fecha_fin ? row.fecha_fin : "unknown",
             sortable: true,
         },
         {
@@ -96,15 +60,10 @@ const showVehicle: React.FC<Props> = ({
             ),
         },
         {
-            cell: (row: MantenimientoInterface) => (
+            cell: (_: MantenimientoInterface) => (
                 <div className="gap-3">
-                    {row.estado == "pendiente" ? (
-                        <button onClick={() => deleteMantenimiento(row.id)}>
-                            <i className="bi bi-trash"></i>
-                        </button>
-                    ) : null}
-                    <button onClick={() => handleEditMantenimiento(row)}>
-                        <i className="bi bi-pencil"></i>
+                    <button>
+                        <i className="bi bi-eye"></i>
                     </button>
                 </div>
             ),
@@ -113,59 +72,16 @@ const showVehicle: React.FC<Props> = ({
         },
     ];
 
-    const handleEditMantenimiento = (row: MantenimientoInterface) => {
-        setIsEditing(true);
-        setMantenimientoData(row);
-        setOpenModalMantenimiento(true);
-    };
-
-    const handleEditSchedule = (row: ScheduleInterface) => {
-        setIsEditing(true);
-        setScheduleData(row);
-        setOpenModalSchedule(true);
-    };
-
-    const handleCreateSchedule = () => {
-        setIsEditing(false);
-        setScheduleData(null);
-        setOpenModalSchedule(true);
-    };
-
-    const handleCreateMantenimiento = () => {
-        setIsEditing(false);
-        setScheduleData(null);
-        setOpenModalMantenimiento(true);
-    };
-
-    const closeModal = () => {
-        setOpenModalMantenimiento(false);
-        setOpenModalSchedule(false);
-        setScheduleData(null);
-    };
-
-    const deleteMantenimiento = async (id: number) => {
-        try {
-            await router.delete(route("mantenimiento.delete", id), {
-                preserveScroll: true,
-                onSuccess: ({ props: { flash } }) => {
-                    if (flash?.success) toast.error(flash.success);
-                    if (flash?.error) toast.error(flash.error);
-                }
-            });
-        } catch (errors) {
-            console.log("Error al eliminar el mantenimiento:", errors);
-            toast.error("Error al eliminar el mantenimiento");
-        }
-    };
-
     return (
         <Authenticated>
             <Head title="Show" />
-            <Breadcrumb breadcrumbs={[
+            <Breadcrumb
+                breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Lista", path: "/vehicle" },
                     { name: vehicle.matricula },
-                ]} />
+                ]}
+            />
 
             <Card classNames="mb-10">
                 <div className="flex flex-col lg:flex-row lg:justify-between text-gray-500">
@@ -184,9 +100,21 @@ const showVehicle: React.FC<Props> = ({
                             <span className="font-medium">{vehicle.color}</span>
                         </p>
                         <p className="text-sm">
+                            Marca:{" "}
+                            <span className="font-medium">
+                                {vehicle.marca.name}
+                            </span>
+                        </p>
+                        <p className="text-sm">
                             Modelo:{" "}
                             <span className="font-medium">
                                 {vehicle.modelo}
+                            </span>
+                        </p>
+                        <p className="text-sm">
+                            tipo:{" "}
+                            <span className="font-medium">
+                                {vehicle.tipo.name}
                             </span>
                         </p>
                     </div>
@@ -215,52 +143,29 @@ const showVehicle: React.FC<Props> = ({
 
                     <div className="flex-1">
                         <h3 className="font-bold text-lg">
-                            Fechas Importantes
+                            Información del dispositivo
                         </h3>
-                        <p className="text-sm">
-                            Fecha de Compra:{" "}
-                            <span className="font-medium">
-                                {vehicle.fecha_compra}
-                            </span>
-                        </p>
-                        <p className="text-sm">
-                            Última Revisión:{" "}
-                            <span className="font-medium">
-                                {vehicle.fecha_ultima_revision}
-                            </span>
-                        </p>
+                        <div>
+                            {vehicle.device ? (
+                                <p className="text-sm">
+                                    <strong>IMEI</strong> {vehicle.device.num_serial} <br />
+                                    {vehicle.device.name_device} <br />
+                                    {vehicle.device.type}
+                                </p>
+                            ) : (
+                                <p>Dispositivo no seleccionado</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </Card>
 
-            <ModalFormSchedule
-                show={openModalSchedule}
-                onClose={closeModal}
-                drivers={drivers}
-                cardId={vehicle.id}
-                schecule={scheduleData || undefined}
-                isEditing={isEditing}
-            />
-
-            <ModalFormMantenimieto
-                show={openModalMantenimiento}
-                onClose={closeModal}
-                cardId={vehicle.id}
-                infoData={mantenimientoData || undefined}
-                isEditing={isEditing}
-            />
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                     <div className="p-4 flex justify-between">
-                        <h1 className="text-xl font-semibold">
+                        <h1 className="text-xl font-semibold text-gray-300">
                             Historial de Programaciones
                         </h1>
-                        {statuSchedules || vehicle.status != "activo" ? null : (
-                            <PrimaryButton onClick={handleCreateSchedule}>
-                                Nuevo
-                            </PrimaryButton>
-                        )}
                     </div>
                     <DataTableComponent
                         columns={columnSchedule}
@@ -269,12 +174,9 @@ const showVehicle: React.FC<Props> = ({
                 </div>
                 <div>
                     <div className="p-4 flex justify-between">
-                        <h1 className="text-xl font-semibold">
+                        <h1 className="text-xl font-semibold text-gray-300">
                             Historial de Mantenimintos
                         </h1>
-                        <PrimaryButton onClick={handleCreateMantenimiento}>
-                            Programar
-                        </PrimaryButton>
                     </div>
                     <DataTableComponent
                         columns={columnMantenimiento}
@@ -285,6 +187,5 @@ const showVehicle: React.FC<Props> = ({
         </Authenticated>
     );
 };
-
 
 export default showVehicle;

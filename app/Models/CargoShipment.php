@@ -63,7 +63,7 @@ class CargoShipment extends Model
     }
 
     public function altercadoReports() {
-        return $this->hasMany(AltercationRecport::class, 'envio_id');
+        return $this->hasMany(AltercationReport::class, 'envio_id');
     }
 
     /*public function satisfacion() {

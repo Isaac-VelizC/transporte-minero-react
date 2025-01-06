@@ -1,15 +1,34 @@
+import { DeviceInterface } from "./Device";
+import { MarksInterface, TypeInterface } from "./Modelo";
+
 // Definición de la interfaz para un usuario
 export interface VehicleInterface {
     id: number;
     matricula: string;
     modelo: string;
-    type_id: string;
-    mark_id: string;
+    tipo: TypeInterface;
+    marca: MarksInterface;
     color: string;
     fecha_compra: string;
     status: string;
     responsable?: string;
+    kilometrage: number;
     capacidad_carga: string;
-    fecha_ultima_revision?: string;
+    device?: DeviceInterface;
+    [key: string]: unknown;
+}
+
+export type FormVehicleType = {
+    id: number;
+    matricula: string;
+    modelo: string;
+    type_id: number;
+    mark_id: number;
+    device_id: number;
+    color: string;
+    fecha_compra: string;
+    status: string;
+    kilometrage: number;
+    capacidad_carga: number;
     [key: string]: unknown;
 }

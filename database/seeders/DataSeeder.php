@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Mark;
-use App\Models\ModelVehicle;
+use App\Models\TipoMantenimiento;
 use App\Models\TypeVehicle;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DataSeeder extends Seeder
@@ -27,6 +26,13 @@ class DataSeeder extends Seeder
         TypeVehicle::create(['name' => 'Camión Volquete']);
         TypeVehicle::create(['name' => 'Camión Mixer']);
         TypeVehicle::create(['name' => 'Camión Grúa']);
-        TypeVehicle::create(['name' => 'Camión Tanque']);
+
+        
+        TipoMantenimiento::create(['name' => 'Cambios de Aceite']);
+        TipoMantenimiento::create(['name' => 'Revisión de Neumáticos']);
+        TipoMantenimiento::create(['name' => 'Sistema de Frenos']);
+        TipoMantenimiento::create(['name' => 'Sistema de Refrigeración']);
+        TipoMantenimiento::create(['name' => 'Control de Batería']);
+        TipoMantenimiento::create(['name' => 'Limpieza General']);
     }
 }

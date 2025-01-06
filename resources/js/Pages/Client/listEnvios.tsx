@@ -25,7 +25,7 @@ export default function listEnvios({ envios }: Props) {
         },
         {
             name: "Cliente",
-            cell: (row) => row.full_name,
+            cell: (row) => row.client.nombre +' '+row.client.ap_pat,
             sortable: true,
         },
         {
