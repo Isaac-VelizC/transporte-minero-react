@@ -8,6 +8,7 @@ export interface ReportsInterface {
     conductor: UserInterface; // Objeto del cliente asociado al reporte
     peso: string; // Peso asociado al reporte
     destino: string; // Destino del envío
-    status: string; // Estado del reporte (por ejemplo, 'pendiente', 'completado', etc.)
+    status: string;
+    fecha_envio: string;
     [key: string]: unknown; // Permite propiedades adicionales no definidas explícitamente
 }

@@ -30,38 +30,23 @@ class ReportController extends Controller
     {
         return Persona::where('rol', 'cliente')
             ->where('estado', true)
-            ->get()
-            ->map(function ($cliente) {
-                return [
-                    'id' => $cliente->id,
-                    'full_name' => $cliente->formatFullName(),
-                ];
-            });
+            ->get();
     }
 
     private function getDrivers()
     {
-        return Driver::with('persona')
-            ->get()
-            ->map(function ($driver) {
-                return [
-                    'id' => $driver->id,
-                    'full_name' => $driver->formatFullName(),
-                    'licencia' => $driver->license_number,
-                ];
-            });
+        return Driver::with('persona')->get();
     }
 
     private function getVehiculos()
     {
-        return Vehicle::where('status', 'activo')
-            ->get(['id', 'matricula', 'modelo', 'color']);
+        return Vehicle::where('status', 'activo')->get();
     }
 
     public function filterConsult(Request $request)
     {
         try {
-            // Validate request parameters
+            // Validar los parámetros del request
             $request->validate([
                 'vehiculo' => 'nullable|exists:vehicles,id',
                 'cliente' => 'nullable|exists:personas,id',
@@ -70,20 +55,20 @@ class ReportController extends Controller
                 'fecha' => 'nullable|date',
             ]);
 
-            // Dynamic query
+            // Crear la consulta base
             $query = CargoShipment::query();
+            
+            // Aplicar filtros dinámicos según los parámetros presentes
+            $query->when($request->vehiculo, fn($q, $vehiculo) => $q->where('car_id', $vehiculo))
+                ->when($request->cliente, fn($q, $cliente) => $q->where('client_id', $cliente))
+                ->when($request->conductor, fn($q, $conductor) => $q->where('conductor_id', $conductor))
+                ->when($request->mes, fn($q, $mes) => $q->whereMonth('fecha_envio', $mes))
+                ->when($request->fecha, fn($q, $fecha) => $q->whereDate('fecha_envio', $fecha));
 
-            // Apply dynamic filters
-            $query->when($request->vehiculo, fn($q) => $q->where('car_id', $request->vehiculo))
-                ->when($request->cliente, fn($q) => $q->where('client_id', $request->cliente))
-                ->when($request->conductor, fn($q) => $q->where('conductor_id', $request->conductor))
-                ->when($request->mes, fn($q) => $q->whereMonth('fecha_envio', $request->mes))
-                ->when($request->fecha, fn($q) => $q->whereDate('fecha_envio', $request->fecha));
+            // Eager load de relaciones y paginación
+            $results = $query->with(['vehicle', 'conductor', 'client'])->get();//->paginate(10);
 
-            // Eager load relationships and paginate results
-            $results = $query->with(['vehicle', 'conductor', 'client'])->paginate(10);
-
-            // Send data to the view with Inertia
+            // Enviar los resultados a la vista con Inertia
             return Inertia::render('Admin/Reports/index', [
                 'clientes' => $this->getClientes(),
                 'drivers' => $this->getDrivers(),
@@ -91,11 +76,11 @@ class ReportController extends Controller
                 'results' => $results,
             ]);
         } catch (\Throwable $th) {
-            // Log the error for debugging
+            // Registrar el error para depuración
             Log::error('Error filtering cargo shipments: ', ['error' => $th]);
-
-            // Handle errors
-            return redirect()->back()->with(['error' => 'Error al realizar la consulta: ' . $th->getMessage()], 500);
+            dd($th);
+            // Retornar un error manejado
+            return redirect()->back()->withErrors(['error' => 'Error al realizar la consulta: ' . $th->getMessage()]);
         }
     }
 }

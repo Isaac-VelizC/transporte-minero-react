@@ -7,9 +7,8 @@ import InputLabel from "@/Components/Forms/InputLabel";
 import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
 import { DriverInterface } from "@/interfaces/Driver";
+import { PersonaInterface } from "@/interfaces/Persona";
 import { ReportsInterface } from "@/interfaces/Reports";
-import { ShipmentInterface } from "@/interfaces/Shipment";
-import { UserInterface } from "@/interfaces/User";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
@@ -17,7 +16,7 @@ import { Head, useForm } from "@inertiajs/react";
 // Define Props interface
 interface Props {
     vehiculos: VehicleInterface[];
-    clientes: UserInterface[];
+    clientes: PersonaInterface[];
     drivers: DriverInterface[];
     results: ReportsInterface[];
 }
@@ -55,17 +54,15 @@ export default function Index({
                             <InputLabel htmlFor="vehiculo" value="Vehículo" />
                             <SelectInput
                                 isFocused
-                                required
                                 className="mt-1 block w-full"
                                 onChange={(e) =>
                                     setData("vehiculo", e.target.value)
                                 }
-                                value={data.vehiculo}
-                                defaultValue={""}
+                                value={data.vehiculo || ''}
                             >
                                 <option value="" disabled>
                                     {vehiculos && vehiculos.length > 0
-                                        ? "Selecciona un genero"
+                                        ? "Selecciona vehiculo"
                                         : "No hay datos disponibles"}
                                 </option>
                                 {vehiculos && vehiculos.length > 0
@@ -87,20 +84,20 @@ export default function Index({
                             <SelectInput
                                 id="cliente"
                                 className="mt-1 block w-full"
-                                value={data.cliente}
+                                value={data.cliente || ''}
                                 onChange={(e) =>
                                     setData("cliente", e.target.value)
                                 }
                             >
                                 <option value="" disabled>
                                     {clientes && clientes.length > 0
-                                        ? "Selecciona un genero"
+                                        ? "Selecciona cliente"
                                         : "No hay datos disponibles"}
                                 </option>
                                 {clientes && clientes.length > 0
                                     ? clientes.map((item, index) => (
                                           <option key={index} value={item.id}>
-                                              {item.full_name}
+                                              {item.nombre +' '+item.ap_pat}
                                           </option>
                                       ))
                                     : null}
@@ -116,20 +113,20 @@ export default function Index({
                             <SelectInput
                                 id="conductor"
                                 className="mt-1 block w-full"
-                                value={data.conductor}
+                                value={data.conductor || ''}
                                 onChange={(e) =>
                                     setData("conductor", e.target.value)
                                 }
                             >
                                 <option value="" disabled>
                                     {drivers && drivers.length > 0
-                                        ? "Selecciona un genero"
+                                        ? "Selecciona conductor"
                                         : "No hay datos disponibles"}
                                 </option>
                                 {drivers && drivers.length > 0
                                     ? drivers.map((item, index) => (
-                                          <option key={index} value={item.id}>
-                                              {item.full_name}
+                                          <option key={index} value={item.persona.id}>
+                                              {item.persona.nombre +' '+item.persona.ap_pat}
                                           </option>
                                       ))
                                     : null}
@@ -223,7 +220,7 @@ export default function Index({
                                         Estado
                                     </th>
                                     <th className="border border-gray-300 px-4 py-2">
-                                        Carga
+                                        Fecha
                                     </th>
                                     <th className="border border-gray-300 px-4 py-2">
                                         Destino
@@ -284,7 +281,7 @@ export default function Index({
                                                 {item.status}
                                             </td>
                                             <td className="border border-gray-300 px-4 py-2">
-                                                {item.peso}
+                                                {item.fecha_envio}
                                             </td>
                                             <td className="border border-gray-300 px-4 py-2">
                                                 {item.destino}
