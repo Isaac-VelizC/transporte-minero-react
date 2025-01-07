@@ -61,6 +61,7 @@ export default function Welcome({
                                         <li>
                                             <Link
                                                 href={route("logout")}
+                                                method="post"
                                                 className="flex gap-2 hover:text-blue-600 transition duration-300 ease-in-out"
                                             >
                                                 <span>Salir</span>
@@ -91,10 +92,10 @@ export default function Welcome({
                         <div className="flex flex-wrap items-center justify-between">
                             {/* Logo */}
                             <div className="w-1/3 sm:w-1/4 md:w-auto">
-                                <div className="h-20 w-20">
+                                <div className="h16 w-16">
                                     <a href="/">
                                         <img
-                                            src="assets/images/logo/logo.png"
+                                            src="assets/images/logo/logo.webp"
                                             alt="Benjamin"
                                         />
                                     </a>

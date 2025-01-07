@@ -19,4 +19,6 @@ export type FormScheduleType = {
     start_time: string;
     end_time: string;
     driver_id: number;
+    conductor?: string;
+    matricula?: string;
 };

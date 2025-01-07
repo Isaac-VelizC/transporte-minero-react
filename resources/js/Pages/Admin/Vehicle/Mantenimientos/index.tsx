@@ -136,7 +136,7 @@ const index: React.FC<Props> = ({ mantenimientos, tipos, vehicles }) => {
 
     return (
         <Authenticated>
-            <Head title="Mantenimiento" />
+            <Head title="Mantenimientos" />
             <Breadcrumb
                 breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },

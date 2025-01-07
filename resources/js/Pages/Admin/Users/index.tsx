@@ -163,7 +163,7 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             <div className="flex justify-between my-10">
                 <div className="flex gap-3">
                     <LinkButton href="clients.list">Clientes</LinkButton>
-                    <LinkButton href="drivers.list">Conducto</LinkButton>
+                    <LinkButton href="drivers.list">Conductores</LinkButton>
                 </div>
                 <PrimaryButton type="button" onClick={handleCreate} className="gap-2">
                     <i className="bi bi-person-plus text-sm" />

@@ -1,9 +1,11 @@
+import { AccordionItem } from "@/Components/Accordeon";
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import Card from "@/Components/Card";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import { useCallback, useState } from "react";
 
 type Props = {
     datos: ShipmentInterface;
@@ -11,6 +13,13 @@ type Props = {
 };
 
 function show({ datos, reportes }: Props) {
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const handleToggle = useCallback(
+        (index: number) => {
+            setOpenIndex(openIndex === index ? null : index);
+        },
+        [openIndex]
+    );
     return (
         <Authenticated>
             <Head title="Show" />
@@ -83,12 +92,26 @@ function show({ datos, reportes }: Props) {
                     </div>
                 </Card>
                 <Card>
-                    <h1>Listado de Reportes</h1>
-                    {reportes.map((item) => (
-                        <div key={item.id}>
-                            <p>{item.fecha}</p>
+                    <div className="text-center font-bold text-lg">
+                        <h1>Listado de Reportes</h1>
+                    </div>
+                    {reportes.length > 0 ? (
+                        reportes.map((item, index) => (
+                            <AccordionItem
+                                key={index}
+                                title={item.fecha}
+                                content={item.description}
+                                isOpen={openIndex === index}
+                                onToggle={() => handleToggle(index)}
+                            />
+                        ))
+                    ) : (
+                        <div className="flex h-full items-center justify-center">
+                            <p className="font-semibold text-sm">
+                                No hay registro de altercados
+                            </p>
                         </div>
-                    ))}
+                    )}
                 </Card>
             </div>
         </Authenticated>

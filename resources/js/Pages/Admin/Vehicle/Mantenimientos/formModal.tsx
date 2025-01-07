@@ -38,7 +38,7 @@ function FormModalMantenimieto({
         tipo: null,
     };
 
-    const { data, setData, post, patch, errors, processing } =
+    const { data, setData, post, patch, errors, processing, reset } =
         useForm(initialData);
 
     useEffect(() => {
@@ -59,6 +59,11 @@ function FormModalMantenimieto({
         });
     };
 
+    const handleCancelModal = () => {
+        reset();
+        onClose();
+    }
+
     return (
         <Modal show={show} onClose={onClose}>
             <form className="p-6" onSubmit={handleSubmit}>
@@ -68,7 +73,7 @@ function FormModalMantenimieto({
                         : "Programar Mantenimiento"}
                 </h2>
                 <div>
-                    <InputLabel htmlFor="fecha_inicio" value="fecha" />
+                    <InputLabel htmlFor="fecha_inicio" value="Fecha de mantenimiento" />
                     <TextInput
                         id="fecha_inicio"
                         type="date"
@@ -85,22 +90,6 @@ function FormModalMantenimieto({
                     />
                 </div>
                 <div>
-                    <InputLabel htmlFor="observaciones" value="Observaciones" />
-                    <textarea
-                        id="observaciones"
-                        rows={4}
-                        className="mt-1 block w-full rounded-md"
-                        onChange={(e) =>
-                            setData("observaciones", e.target.value)
-                        }
-                        value={data.observaciones}
-                    />
-                    <InputError
-                        className="mt-2"
-                        message={errors.observaciones}
-                    />
-                </div>
-                <div>
                     <InputLabel htmlFor="vehicle_id" value="Seleccionar Vehiculo" />
                     <SelectInput
                         isFocused
@@ -109,7 +98,7 @@ function FormModalMantenimieto({
                         onChange={(e) =>
                             setData("vehicle_id", parseInt(e.target.value))
                         }
-                        value={data.vehicle_id!}
+                        value={data.vehicle_id || ''}
                     >
                         <option value="" disabled>
                             {vehicles && vehicles.length > 0
@@ -135,7 +124,7 @@ function FormModalMantenimieto({
                         onChange={(e) =>
                             setData("tipo", parseInt(e.target.value))
                         }
-                        value={data.tipo!}
+                        value={data.tipo || ''}
                     >
                         <option value="" disabled>
                             {tipos && tipos.length > 0
@@ -152,9 +141,24 @@ function FormModalMantenimieto({
                     </SelectInput>
                     <InputError className="mt-2" message={errors.tipo} />
                 </div>
-
+                <div>
+                    <InputLabel htmlFor="observaciones" value="Observaciones" />
+                    <textarea
+                        id="observaciones"
+                        rows={4}
+                        className="mt-1 block w-full rounded-md"
+                        onChange={(e) =>
+                            setData("observaciones", e.target.value)
+                        }
+                        value={data.observaciones}
+                    />
+                    <InputError
+                        className="mt-2"
+                        message={errors.observaciones}
+                    />
+                </div>
                 <div className="mt-6 flex justify-end">
-                    <SecondaryButton type="button" onClick={onClose}>
+                    <SecondaryButton type="button" onClick={handleCancelModal}>
                         Cancelar
                     </SecondaryButton>
 

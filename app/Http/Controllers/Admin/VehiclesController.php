@@ -30,14 +30,82 @@ class VehiclesController extends Controller
         ]);
     }
 
+    public function listDriversDisponibles($startTime, $endTime, $driverId = null)
+    {
+        $query = Driver::with('persona')
+            ->where('status', true)
+            ->whereHas('persona', fn($query) => $query->where('estado', true))
+            ->whereDoesntHave('envios', function ($query) use ($startTime, $endTime) {
+                $query->where(function ($q) use ($startTime, $endTime) {
+                    $q->whereBetween('start_time', [$startTime, $endTime])
+                        ->orWhereBetween('end_time', [$startTime, $endTime])
+                        ->orWhere(function ($q2) use ($startTime, $endTime) {
+                            $q2->where('start_time', '<=', $startTime)
+                                ->where('end_time', '>=', $endTime);
+                        });
+                });
+            });
+
+        if ($driverId) {
+            $query->orWhere('id', $driverId);
+        }
+
+        return $query->get();
+    }
+
+    public function listAvailableVehicles($startTime, $endTime, $carId = null) {
+        $query = Vehicle::has('device') // Solo vehículos con dispositivo
+            ->whereDoesntHave('schedules', function ($query) use ($startTime, $endTime) {
+                $query->where(function ($q) use ($startTime, $endTime) {
+                    $q->whereBetween('start_time', [$startTime, $endTime])
+                        ->orWhereBetween('end_time', [$startTime, $endTime])
+                        ->orWhere(function ($q2) use ($startTime, $endTime) {
+                            $q2->where('start_time', '<=', $startTime)
+                                ->where('end_time', '>=', $endTime);
+                        });
+                });
+            });
+        if ($carId) {
+            $query->orWhere('id', $carId);
+        }
+        return $query->get();
+    }
+
+    public function availableResources(Request $request)
+    {
+        try {
+            // Validar los parámetros de consulta
+            $request->validate([
+                'start_time' => 'required|date',
+                'end_time' => 'required|date|after:start_time',
+                'driver_id' => 'nullable|exists:drivers,id', // Opcional
+                'car_id' => 'nullable|exists:vehicles,id', // Opcional
+            ]);
+
+            // Obtener los valores de las fechas
+            $start_time = $request->start_time;
+            $end_time = $request->end_time;
+            $driverId = $request->driver_id; // Si lo necesitas
+            $carId = $request->car_id; // Si lo necesitas
+
+            // Lógica para obtener conductores y vehículos disponibles
+            $drivers = $this->listDriversDisponibles($start_time, $end_time, $driverId);
+            $vehicles = $this->listAvailableVehicles($start_time, $end_time, $carId);
+
+            return response()->json([
+                'drivers' => $drivers,
+                'vehicles' => $vehicles,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error processing request: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function listSchedules()
     {
-        $vehicles = Vehicle::has('device')->get();
         $list = VehicleSchedule::with(['vehicle', 'driver.persona'])->get();
         return Inertia::render('Admin/Vehicle/Programming/index', [
             'schedules' => $list,
-            'drivers' => $this->listDriversDisponibles(),
-            'vehicles' => $vehicles
         ]);
     }
 
@@ -65,7 +133,7 @@ class VehiclesController extends Controller
     {
         $validatedData = $request->validate([
             'car_id' => 'required|exists:vehicles,id',
-            'start_time' => 'required|date|after_or_equal:now',
+            'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
             'driver_id' => 'required|exists:drivers,id',
         ]);
@@ -221,16 +289,6 @@ class VehiclesController extends Controller
             return redirect()->back()->with('error', 'Ocurrió un error al modificar el estado del usuario.');
         }
     }
-    /**
-     * Obtener a los conductores disponibles
-     */
-    public function listDriversDisponibles()
-    {
-        return Driver::with('persona')
-            ->where('status', true)
-            ->whereHas('persona', fn($query) => $query->where('estado', true))
-            ->get();
-    }
 
     /** Mantenimientos */
     public function listMantenimientos()
@@ -250,7 +308,7 @@ class VehiclesController extends Controller
         $validatedData = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'fecha_inicio' => 'required|date|after_or_equal:now',
-            'observaciones' => 'required|string|max:255',
+            'observaciones' => 'nullable|string|max:255',
             'tipo' => 'required|numeric|exists:tipo_mantenimientos,id'
         ]);
         try {
@@ -266,7 +324,7 @@ class VehiclesController extends Controller
         $validatedData = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'fecha_inicio' => 'required|date|after_or_equal:now',
-            'observaciones' => 'required|string|max:255',
+            'observaciones' => 'nullable|string|max:255',
             'tipo' => 'required|numeric|exists:tipo_mantenimientos,id'
         ]);
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import NavLink from "@/Components/NavLink";
-import Logo from "@/assets/images/logo.png";
+import Logo from "@/assets/images/logo.webp";
 import { roleNavItems } from "@/routes";
 
 interface SidebarProps {

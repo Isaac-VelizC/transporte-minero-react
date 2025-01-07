@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import DropdownNotification from './DropdownNotification';
 import DropdownUser from './DropdownUser';
-import LogoIcon from '@/assets/images/logo.png';
+import LogoIcon from '@/assets/images/logo.webp';
 import LogoMenu from '@/Components/LogoMenu';
 
 const Header = (props: {

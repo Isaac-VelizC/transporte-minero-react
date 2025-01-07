@@ -104,8 +104,8 @@ export default function drivers({ isEditing, driver }: Props) {
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-900">
                         {isEditing
-                            ? "Editar information"
-                            : "Registrar uevo conductor"}
+                            ? "Editar información"
+                            : "Registrar nuevo conductor"}
                     </h2>
                     <br />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -133,7 +133,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <TextInput
                                 id="ap_pat"
                                 className="mt-1 block w-full"
-                                value={data.ap_pat} // Cambia esto a 'data.ap_pat'
+                                value={data.ap_pat}
                                 onChange={(e) =>
                                     setData("ap_pat", e.target.value)
                                 }
@@ -191,9 +191,9 @@ export default function drivers({ isEditing, driver }: Props) {
                             />
                             <TextInput
                                 id="ci"
-                                className="mt-1 block w-full"
+                                className="mt-1 block w-full uppercase"
                                 value={data.ci}
-                                onChange={(e) => setData("ci", e.target.value)}
+                                onChange={(e) => setData("ci", e.target.value.toUpperCase())}
                                 required
                                 isFocused
                             />

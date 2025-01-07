@@ -5,18 +5,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import DataTableComponent from "@/Components/Table";
 import toast from "react-hot-toast";
 import SecondaryButton from "@/Components/Buttons/SecondaryButton";
-import { VehicleInterface } from "@/interfaces/Vehicle";
 import { FormScheduleType, ScheduleInterface } from "@/interfaces/schedule";
 import ModalFormSchedule from "./ModalFormSchedule";
-import { DriverInterface } from "@/interfaces/Driver";
 
 type Props = {
     schedules: ScheduleInterface[];
-    vehicles: VehicleInterface[];
-    drivers: DriverInterface[];
 };
 
-const index: React.FC<Props> = ({ schedules, vehicles, drivers }) => {
+const index: React.FC<Props> = ({ schedules }) => {
     const [openModalSchedule, setOpenModalSchedule] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [scheduleData, setScheduleData] = useState<FormScheduleType | null>(
@@ -92,6 +88,8 @@ const index: React.FC<Props> = ({ schedules, vehicles, drivers }) => {
             start_time: row.start_time,
             end_time: row.end_time,
             driver_id: row.driver.id,
+            conductor: row.driver.persona.nombre +' '+row.driver.persona.ap_pat,
+            matricula: row.vehicle.matricula
         };
         setScheduleData(data);
         setOpenModalSchedule(true);
@@ -110,11 +108,11 @@ const index: React.FC<Props> = ({ schedules, vehicles, drivers }) => {
 
     return (
         <Authenticated>
-            <Head title="Mantenimiento" />
+            <Head title="Asignados" />
             <Breadcrumb
                 breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
-                    { name: "Lista Vehiculos en Mantenimiento" },
+                    { name: "Lista Vehiculos asigandos" },
                 ]}
             />
             <div className="flex justify-end items-center gap-4 my-10">
@@ -127,9 +125,7 @@ const index: React.FC<Props> = ({ schedules, vehicles, drivers }) => {
             <ModalFormSchedule
                 show={openModalSchedule}
                 onClose={closeModal}
-                drivers={drivers}
-                vehicles={vehicles}
-                schecule={scheduleData || undefined}
+                schedule={scheduleData || undefined}
                 isEditing={isEditing}
             />
         </Authenticated>

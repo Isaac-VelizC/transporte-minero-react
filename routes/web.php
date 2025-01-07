@@ -58,6 +58,8 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::post('/vehicle/programming', [VehiclesController::class, 'registerConductorVehicle'])->name('vehicle.programming');
     Route::patch('/vehicle/programming/{id}', [VehiclesController::class, 'updateConductorVehicle'])->name('vehicle.programming.update');
     Route::get('/vehicle/programming/{id}/cancel', [VehiclesController::class, 'cancelScheduleVehicle'])->name('vehicle.programming.cancel');
+    Route::get('/api/available-resources', [VehiclesController::class, 'availableResources']);
+
     // Mantenimientos
     Route::get('/vehicle/mantenimientos', [VehiclesController::class, 'listMantenimientos'])->name('mantenimiento.list');
     Route::post('/vehicle/mantenimiento',[VehiclesController::class, 'storeMantenimientoVehicle'])->name('mantenimiento.store');

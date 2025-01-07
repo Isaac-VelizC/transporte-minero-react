@@ -111,14 +111,16 @@ const FormModal: React.FC<Props> = ({
                     </div>
                     <div>
                         <InputLabel htmlFor="type" value="Tipo de SO" />
-                        <TextInput
-                            id="type"
-                            value={data.type}
+                        <SelectInput
+                            required
                             className="mt-1 block w-full"
                             onChange={(e) => setData("type", e.target.value)}
-                            required
-                            isFocused
-                        />
+                            value={data.type || ""}
+                        >
+                            <option value="" disabled>Seleccionar SO</option>
+                            <option value="Android">Android</option>
+                            <option value="IOS">IOS</option>
+                        </SelectInput>
                         <InputError className="mt-2" message={errors.type} />
                     </div>
                     <div>
@@ -131,9 +133,9 @@ const FormModal: React.FC<Props> = ({
                             required
                             className="mt-1 block w-full"
                             onChange={(e) => setData("status", e.target.value)}
-                            value={data.status}
-                            defaultValue={"activo"}
+                            value={data.status || ""}
                         >
+                            <option value="" disabled>Seleccionar estado</option>
                             <option value="activo">Activo</option>
                             <option value="inactivo">Inactivo</option>
                         </SelectInput>

@@ -17,7 +17,7 @@ type Props = {
     marcas: MarksInterface[];
     typesVehicle: TypeInterface[];
     vehicle: FormVehicleType;
-    devices: DeviceInterface[]
+    devices: DeviceInterface[];
     isEditing: boolean;
 };
 
@@ -92,7 +92,7 @@ const showVehicle: React.FC<Props> = ({
                                 className="mt-1 block w-full uppercase"
                                 value={data.matricula}
                                 onChange={(e) =>
-                                    setData("matricula", e.target.value)
+                                    setData("matricula", e.target.value.toUpperCase())
                                 }
                                 required
                             />
@@ -113,8 +113,7 @@ const showVehicle: React.FC<Props> = ({
                                 onChange={(e) =>
                                     setData("mark_id", parseInt(e.target.value))
                                 }
-                                value={data.mark_id}
-                                defaultValue={""}
+                                value={data.mark_id || ""}
                             >
                                 <option value="" disabled>
                                     {marcas && marcas.length > 0
@@ -146,8 +145,7 @@ const showVehicle: React.FC<Props> = ({
                                 onChange={(e) =>
                                     setData("type_id", parseInt(e.target.value))
                                 }
-                                value={data.type_id}
-                                defaultValue={""}
+                                value={data.type_id || ""}
                             >
                                 <option value="" disabled>
                                     {typesVehicle && typesVehicle.length > 0
@@ -238,9 +236,12 @@ const showVehicle: React.FC<Props> = ({
                                 isFocused
                                 className="mt-1 block w-full"
                                 onChange={(e) =>
-                                    setData("device_id", parseInt(e.target.value))
+                                    setData(
+                                        "device_id",
+                                        parseInt(e.target.value)
+                                    )
                                 }
-                                value={data.device_id || ''}
+                                value={data.device_id || ""}
                             >
                                 <option value="" disabled>
                                     {devices && devices.length > 0
@@ -314,18 +315,24 @@ const showVehicle: React.FC<Props> = ({
                                 onChange={(e) =>
                                     setData("status", e.target.value)
                                 }
-                                value={data.status}
-                                defaultValue={"activo"}
+                                value={data.status || ""}
                             >
-                                {estadosVehiculos.map((item, index) => (
-                                    <option
-                                        key={index}
-                                        value={item.value}
-                                        selected={item.value === data.status}
-                                    >
-                                        {item.name}
-                                    </option>
-                                ))}
+                                <option value="" disabled>
+                                    {estadosVehiculos &&
+                                    estadosVehiculos.length > 0
+                                        ? "Selecciona Estado"
+                                        : "No hay datos disponibles"}
+                                </option>
+                                {estadosVehiculos && estadosVehiculos.length > 0
+                                    ? estadosVehiculos.map((item, index) => (
+                                          <option
+                                              key={index}
+                                              value={item.value}
+                                          >
+                                              {item.name}
+                                          </option>
+                                      ))
+                                    : null}
                             </SelectInput>
                             <InputError
                                 className="mt-2"
