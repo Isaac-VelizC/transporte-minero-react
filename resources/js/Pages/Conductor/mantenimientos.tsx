@@ -19,7 +19,10 @@ type Props = {
 export default function mantenimientos({ mantenimientos }: Props) {
     const { flash } = usePage().props;
     const [openModalStatus, setOpenModalStatus] = useState(false);
-
+    const { data, setData, patch, processing, reset, errors } = useForm({
+        status: "",
+    });
+    const [dataSelect, setDataSelect] = useState<MantenimientoInterface>();
     const columns = useMemo(
         () => [
             {
@@ -60,21 +63,18 @@ export default function mantenimientos({ mantenimientos }: Props) {
                 width: "150px",
             },
             {
-                cell: (row: MantenimientoInterface) => (
-                    <button onClick={() => handleEditMantenimiento(row)}>
-                        <i className="bi bi-check"></i>
-                    </button>
-                ),
+                cell: (row: MantenimientoInterface) =>
+                    row.estado != "terminado" ? (
+                        <button onClick={() => handleMantenimientoConfirm(row)}>
+                            <i className="bi bi-check"></i>
+                        </button>
+                    ) : null,
                 ignoreRowClick: true,
                 width: "80px",
             },
         ],
         []
     );
-
-    const { data, setData, processing, reset, errors, clearErrors } = useForm({
-        status: "",
-    });
 
     useEffect(() => {
         if (flash.success) {
@@ -85,22 +85,37 @@ export default function mantenimientos({ mantenimientos }: Props) {
         }
     }, [flash]);
 
-    const handleEditMantenimiento = (row: MantenimientoInterface) => {
+    const handleMantenimientoConfirm = (row: MantenimientoInterface) => {
         setOpenModalStatus(true);
+        setDataSelect(row);
     };
 
     const closeModal = () => {
+        reset();
         setOpenModalStatus(false);
     };
 
-    const handleConfirm = async () => {
+    const handleConfirm = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
         try {
-            /*await router.delete(route("mantenimiento.delete", id), {
-                preserveScroll: true,
-            });*/
-        } catch (errors) {
-            console.log("Error al eliminar el mantenimiento:", errors);
-            toast.error("Error al eliminar el mantenimiento");
+            if (dataSelect) {
+                // Asegúrate de establecer el status antes de enviar
+                await patch(route("driver.confirm.status", dataSelect.id), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        closeModal();
+                    },
+                    onError: () => {
+                        toast.error(
+                            "Error al registrar o actualizar el dispositivo"
+                        );
+                    },
+                });
+            }
+        } catch (error) {
+            console.error("Error al confirmar el mantenimiento:", error);
+            toast.error("Error al confirmar el mantenimiento");
         }
     };
 
@@ -133,7 +148,7 @@ export default function mantenimientos({ mantenimientos }: Props) {
                             value={data.status || ""}
                         >
                             <option value="">Seleccionar Estado</option>
-                            <option value="En curso">En curso</option>
+                            <option value="proceso">En proceso</option>
                             <option value="terminado">Terminado</option>
                         </SelectInput>
                         <InputError message={errors.status} className="mt-2" />

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('fecha_inicio');
             $table->date('fecha_fin')->nullable();
             $table->text('observaciones')->nullable();
-            $table->enum('estado', ['pendiente', 'en curso', 'terminado'])->default('pendiente');
+            $table->enum('estado', ['pendiente', 'proceso', 'terminado'])->default('pendiente');
             $table->unsignedBigInteger('tipo')->nullable();
             $table->foreign('tipo')->references('id')->on('tipo_mantenimientos')->onDelete('cascade');
             $table->timestamps();

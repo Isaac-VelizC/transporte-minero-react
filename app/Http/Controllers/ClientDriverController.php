@@ -21,7 +21,7 @@ class ClientDriverController extends Controller
         try {
             $envio = CargoShipment::with(['vehicle', 'client', 'conductor.driver'])->findOrFail($id);
             $item = AltercationReport::where('envio_id', $id)->get();
-        
+
             return Inertia::render('Conductor/showEnvio', [
                 'dataCarga' => $envio,
                 'altercados' => $item
@@ -88,7 +88,7 @@ class ClientDriverController extends Controller
                 'client',
                 'geocerca'
             ])->findOrFail($id);
-            
+
             $geocerca = Geocerca::findOrFail($envio->geofence_id);
             $device = Device::find($envio->vehicle->device_id);
 
@@ -136,7 +136,7 @@ class ClientDriverController extends Controller
             ]);
         }
         $idDriver = $user->persona->driver->id;
-        
+
         $vehicleSchedule = VehicleSchedule::where('end_time', '>', now())
             ->where('driver_id', $idDriver)
             ->first();
@@ -151,6 +151,31 @@ class ClientDriverController extends Controller
             'mantenimientos' => $list,
             'message' => $list->isEmpty() ? 'No hay mantenimientos disponibles.' : null
         ]);
+    }
+
+    public function updateEstatusMantenimiento(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:proceso,terminado',
+        ]);
+        try {
+            // Encuentra el elemento o lanza un error si no existe
+            $item = VehiculoMantenimiento::findOrFail($id);
+            $item->estado = $validated['status'];
+            $item->save();
+            return back()->with([
+                'success' => 'Confirmación exitosa',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->with([
+                'error' => 'Vehículo no encontrado'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Error actualizando el estado: ', ['error' => $e]);
+            return back()->with([
+                'error' => 'Error al confirmar estado'
+            ], 500);
+        }
     }
 
     public function updateLocationDevice(Request $request, $id)
@@ -176,7 +201,8 @@ class ClientDriverController extends Controller
         }
     }
 
-    public function storeReporteAltercados(Request $request) {
+    public function storeReporteAltercados(Request $request)
+    {
         $validatedData = $request->validate([
             'car_id' => 'required|exists:vehicles,id',
             'driver_id' => 'required|exists:drivers,id',
