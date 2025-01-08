@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import { DeviceInterface } from "@/interfaces/Device";
 import { Head } from "@inertiajs/react";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import L from "leaflet";
 import {
     MapContainer,
     Marker,
@@ -14,30 +13,18 @@ import {
     Popup,
     TileLayer,
 } from "react-leaflet";
+import { customIcon } from "@/Components/IconMap";
 //import { LatLngExpression } from "leaflet";
-
-const customIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854866.png", // URL de la imagen del ícono
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
-});
-
-/*const vehicleIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854866.png", // URL de la imagen del ícono
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
-});*/
 
 type Props = {
     envio: ShipmentInterface;
     geocerca: GeocercaInterface;
     device: DeviceInterface;
 };
-const CERRO_RICO_COORDS: [number, number] = [-19.5836, -65.7532];
+const CERRO_RICO_COORDS: [number, number] = [-19.619227, -65.750071];
 
 export default function ShowMapa({ envio, geocerca, device }: Props) {
+    const [loading, setLoading] = useState(false);
     const [deviceLocation, setDeviceLocation] = useState<
         [number, number] | null
     >(
@@ -52,6 +39,12 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
     const geocercaCoords: [number, number][] = JSON.parse(
         geocerca.polygon_coordinates
     );
+
+    const memoizedGeocercaCoords = useMemo(
+        () => geocercaCoords,
+        [geocercaCoords]
+    );
+
     const envioCoords: [number, number] = [
         envio.client_latitude,
         envio.client_longitude,
@@ -78,16 +71,22 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
     // Obtiene la posición actual del dispositivo
     const getCurrentPosition =
         useCallback(async (): Promise<GeolocationCoordinates | null> => {
+            setLoading(true);
             return new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => resolve(position.coords),
-                    (err) => reject(err),
+                    (position) => {
+                        setLoading(false);
+                        resolve(position.coords);
+                    },
+                    (err) => {
+                        setLoading(false);
+                        reject(err);
+                    },
                     { enableHighAccuracy: true }
                 );
             });
         }, []);
 
-    // Enviar ubicación al backend solo si hay un cambio significativo
     const updateLocation = useCallback(
         async (latitude: number, longitude: number) => {
             try {
@@ -101,7 +100,7 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
                         latitude,
                         longitude,
                     });
-                    setDeviceLocation([latitude, longitude]); // Actualiza el estado local
+                    setDeviceLocation([latitude, longitude]);
                     console.log("Ubicación actualizada en el servidor");
                 }
             } catch (error) {
@@ -112,8 +111,6 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
         [device.id, deviceLocation]
     );
 
-    /*useEffect(() => {
-    })*/
     // Actualiza la ubicación periódicamente
     useEffect(() => {
         //fetchRoute();
@@ -131,7 +128,7 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
                     setError("No se pudo obtener la ubicación");
                 }
             }
-        }, 20000);
+        }, 60000);
 
         return () => {
             isMounted = false;
@@ -144,6 +141,7 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
             <Head title="Show Mapa" />
             <h1 className="text-xl font-semibold">Mapa de Envío</h1>
             {error && <p className="text-red-500 text-sm">{error}</p>}
+            {loading && <p>Cargando ubicación...</p>}
             <div className="mt-4">
                 <MapContainer
                     center={envioCoords}
@@ -154,8 +152,9 @@ export default function ShowMapa({ envio, geocerca, device }: Props) {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     />
+
                     <Polygon
-                        positions={geocercaCoords}
+                        positions={memoizedGeocercaCoords}
                         color={geocerca.color}
                         weight={2}
                     />

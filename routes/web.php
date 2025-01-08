@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ShipmentsController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\VehiclesController;
 use App\Http\Controllers\ClientDriverController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -22,9 +23,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [HomeController::class, 'dashboardPage'])->middleware(['auth', 'verified'])->name('dashboard');
 
 
 Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->group(function () {
@@ -78,7 +77,7 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     //Map
-    Route::get('/map', [GeocercasController::class, 'showMap'])->name('view.map');
+    Route::get('/map/{id}/envio', [GeocercasController::class, 'showMap'])->name('view.map');
     Route::get('/geocerca', [GeocercasController::class, 'index'])->name('geocerca.list');
     Route::get('/geocerca/form', [GeocercasController::class, 'create'])->name('geocerca.create');
     Route::post('/geocerca/store', [GeocercasController::class, 'store'])->name('geocerca.store');

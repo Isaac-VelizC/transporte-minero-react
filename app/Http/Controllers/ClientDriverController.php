@@ -40,8 +40,9 @@ class ClientDriverController extends Controller
         try {
             $idUser = Auth::user()->persona->id;
             $envio = CargoShipment::with([
-                'vehicle',
-                'client'
+                'vehicle.device',
+                'client',
+                'geocerca'
             ])->where('client_id', $idUser)
                 ->findOrFail($id);;
 

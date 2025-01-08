@@ -1,6 +1,6 @@
 import { AccordionItem } from "@/Components/Accordeon";
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
-import Card from "@/Components/Card";
+import Card from "@/Components/Cards/Card";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";

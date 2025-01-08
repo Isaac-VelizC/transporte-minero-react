@@ -102,11 +102,11 @@ export const roleNavItems: Record<
             icon: <i className="bi bi-truck"></i>,
             label: "Envios",
         },
-        {
+        /*{
             href: "view.map",
             icon: <i className="bi bi-journals"></i>,
             label: "Reporte de Cambios",
-        },
+        },*/
     ],
     Conductor: [
         {

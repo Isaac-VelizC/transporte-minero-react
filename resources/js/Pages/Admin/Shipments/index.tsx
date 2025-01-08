@@ -27,7 +27,12 @@ function index({ envios }: Props) {
         },
         {
             name: "Cliente",
-            cell: (row: ShipmentInterface) => row.client.nombre+' '+row.client.ap_pat+' '+row.client.ap_mat,
+            cell: (row: ShipmentInterface) =>
+                row.client.nombre +
+                " " +
+                row.client.ap_pat +
+                " " +
+                row.client.ap_mat,
             sortable: true,
         },
         {
@@ -60,12 +65,16 @@ function index({ envios }: Props) {
             name: "Acciones",
             cell: (row: ShipmentInterface) => (
                 <div className="flex gap-2">
-                    <Link href={route("envios.show", row.id)}>
-                        <i className="bi bi-geo-fill"></i>
-                    </Link>
                     {row.status === "entregado" ||
-                    rol == "Encargado_Control" ? null : (
+                    rol == "Encargado_Control" ? (
+                        <Link href={route("view.map", row.id)}>
+                            <i className="bi bi-geo-fill"></i>
+                        </Link>
+                    ) : (
                         <>
+                            <Link href={route("envios.show", row.id)}>
+                                <i className="bi bi-geo-fill"></i>
+                            </Link>
                             <Link href={route("envios.edit", row.id)}>
                                 <i className="bi bi-pencil"></i>
                             </Link>
@@ -123,24 +132,22 @@ function index({ envios }: Props) {
             toast.error(flash.error);
         }
     }, [flash]);
-    
 
     return (
         <Authenticated>
             <Head title="Envios" />
-            <Breadcrumb breadcrumbs={[
+            <Breadcrumb
+                breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
-                    { name: "Lista de Envios"},
-                ]} />
+                    { name: "Lista de Envios" },
+                ]}
+            />
             {rol === "Encargado_Control" ? null : (
                 <div className="flex justify-end my-4">
                     <LinkButton href={"envios.create.form"}>Nuevo</LinkButton>
                 </div>
             )}
-            <DataTableComponent
-                columns={columns}
-                data={envios}
-            />
+            <DataTableComponent columns={columns} data={envios} />
             <ModalDelete
                 title={`¿Estás seguro de que quieres ${
                     status ? "cancelar" : "reactivar"

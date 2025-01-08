@@ -1,5 +1,5 @@
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
-import CardService from "@/Components/CardService";
+import CardService from "@/Components/Cards/CardService";
 import { PageProps } from "@/types";
 import { Head, Link } from "@inertiajs/react";
 import React, { useState } from "react";

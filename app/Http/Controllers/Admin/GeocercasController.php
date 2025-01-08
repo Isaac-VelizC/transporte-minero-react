@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Geocerca\GeocercaCreateResquest;
 use App\Http\Requests\Geocerca\GeocercaUpdateResquest;
+use App\Models\CargoShipment;
 use App\Models\Geocerca;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -25,11 +26,20 @@ class GeocercasController extends Controller
     /**
      * Mostrar geocercas en el mapa
      */
-    public function showMap()
+    public function showMap($id)
     {
-        $geocercas = Geocerca::where('is_active', true)->get();
+        $envio = CargoShipment::with([
+            'vehicle',
+            'geocerca'
+        ])->findOrFail($id);
+
+        
+        if (is_null($envio->vehicle->device)) {
+            return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
+        }
+
         return Inertia::render('Admin/Map/index', [
-            'geocercas' => $geocercas
+            'envio' => $envio
         ]);
     }
     /**

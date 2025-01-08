@@ -26,6 +26,7 @@
         "vite": "^5.0"
     },
     "dependencies": {
+        "@turf/turf": "^7.2.0",
         "leaflet": "^1.9.4",
         "react-data-table-component": "^7.6.2",
         "react-hot-toast": "^2.4.1",

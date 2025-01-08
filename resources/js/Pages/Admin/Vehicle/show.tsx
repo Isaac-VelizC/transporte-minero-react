@@ -5,7 +5,7 @@ import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import React from "react";
-import Card from "@/Components/Card";
+import Card from "@/Components/Cards/Card";
 import { MantenimientoInterface } from "@/interfaces/Mantenimiento";
 
 type Props = {

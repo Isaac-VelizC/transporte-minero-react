@@ -1,7 +1,7 @@
 import { AccordionItem } from "@/Components/Accordeon";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import SecondaryButton from "@/Components/Buttons/SecondaryButton";
-import Card from "@/Components/Card";
+import Card from "@/Components/Cards/Card";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
