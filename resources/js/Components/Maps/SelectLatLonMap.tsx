@@ -12,7 +12,7 @@ import { GeocercaInterface } from "@/interfaces/Geocerca";
 type Props = {
     latitud: number | null;
     longitud: number | null;
-    geocercas: GeocercaInterface[]; // Añadir geocercas como prop
+    geocercas?: GeocercaInterface[];
     onChange: (lat: number, lon: number) => void;
 };
 
@@ -53,7 +53,7 @@ const SelectLatLonMap: React.FC<Props> = ({
             )}
 
             {/* Mostrar geocercas */}
-            {geocercas.map((geocerca) => (
+            {geocercas && geocercas.map((geocerca) => (
                 <Polygon
                     key={geocerca.id}
                     positions={JSON.parse(geocerca.polygon_coordinates)}

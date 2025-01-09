@@ -1,6 +1,7 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import LinkButton from "@/Components/Buttons/LinkButton";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
+import Checkbox from "@/Components/Forms/Checkbox";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import SelectInput from "@/Components/Forms/SelectInput";
@@ -14,7 +15,6 @@ import toast from "react-hot-toast";
 
 type TypesGeocerca = {
     value: string;
-    color: string;
 };
 
 type Props = {
@@ -31,6 +31,7 @@ export default function form({ isEditing, geocerca, types }: Props) {
         type: "",
         description: "",
         color: "",
+        is_active: true,
     };
 
     const { data, setData, post, patch, errors, processing } =
@@ -65,16 +66,6 @@ export default function form({ isEditing, geocerca, types }: Props) {
             polygon_coordinates: JSON.stringify(coordinates),
         }));
     };
-
-    /*const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedType = e.target.value;
-        const selectedColor =
-            types.find((type) => type.value === selectedType)?.color || "";
-        
-        // Actualiza el tipo y el color en el estado
-        setData("type", selectedType);
-        setData("color", selectedColor);
-    };*/
 
     return (
         <Authenticated>
@@ -170,6 +161,43 @@ export default function form({ isEditing, geocerca, types }: Props) {
                             <InputError
                                 className="mt-2"
                                 message={errors.polygon_coordinates}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
+                                htmlFor="color"
+                                value="Color de la Geocerca"
+                            />
+                            <TextInput
+                                id="color"
+                                className="mt-1 block w-full"
+                                value={data.color || '#36f239'}
+                                type="color"
+                                onChange={(e) =>
+                                    setData("color", e.target.value)
+                                }
+                                required
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.color}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
+                                htmlFor="is_active"
+                                value="Estado de la Geocerca"
+                            />
+                            <Checkbox
+                                id="is_active"
+                                checked={data.is_active}
+                                onChange={(e) =>
+                                    setData("is_active", e.target.checked)
+                                }
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.is_active}
                             />
                         </div>
                     </div>

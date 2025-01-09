@@ -1,15 +1,12 @@
 import { AccordionItem } from "@/Components/Accordeon";
-import PrimaryButton from "@/Components/Buttons/PrimaryButton";
+import LinkButton from "@/Components/Buttons/LinkButton";
 import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import Card from "@/Components/Cards/Card";
-import InputError from "@/Components/Forms/InputError";
-import InputLabel from "@/Components/Forms/InputLabel";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
-import { useCallback, useMemo, useState } from "react";
-import toast from "react-hot-toast";
+import { Head, Link } from "@inertiajs/react";
+import { useCallback, useState } from "react";
 
 type Props = {
     dataCarga: ShipmentInterface;
@@ -17,46 +14,13 @@ type Props = {
 };
 
 export default function showEnvio({ dataCarga, altercados }: Props) {
-    const [dateSelect, setDataSelect] = useState();
     const [openIndex, setOpenIndex] = useState<number | null>(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const initialData = useMemo(
-        () =>
-            dateSelect || {
-                id: null,
-                driver_id: dataCarga.conductor.driver?.id,
-                car_id: dataCarga.vehicle.id,
-                envio_id: dataCarga.id,
-                description: "",
-            },
-        [dateSelect]
-    );
-
     const handleToggle = useCallback(
         (index: number) => {
             setOpenIndex(openIndex === index ? null : index);
         },
         [openIndex]
     );
-
-    const { data, setData, post, patch, errors, processing, reset } =
-        useForm(initialData);
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const action = isEditing && data.id ? patch : post;
-        const routeName =
-            isEditing && data.id
-                ? "mantenimiento.update"
-                : "driver.store.altercado";
-        action(route(routeName, `${data?.id}`), {
-            onSuccess: ({ props: { flash } }) => {
-                reset()
-                if (flash?.success) toast.success(flash.success);
-                console.log("exito");
-            },
-        });
-    };
 
     return (
         <Authenticated>
@@ -99,48 +63,9 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
                             {dataCarga.notas}
                         </p>
                     </div>
-                    <form className="sm:p-6" onSubmit={handleSubmit}>
-                        <h2 className="text-lg font-semibold">
-                            Reportar un altercado
-                        </h2>
-                        <div>
-                            <InputLabel
-                                htmlFor="description"
-                                value="Descripción de altercado"
-                            />
-                            <textarea
-                                id="description"
-                                rows={4}
-                                className="mt-1 block w-full rounded-md"
-                                onChange={(e) =>
-                                    setData("description", e.target.value)
-                                }
-                                value={data.description}
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.description}
-                            />
-                        </div>
-                        <div className="mt-6 flex justify-end">
-                            <SecondaryButton
-                                type="button"
-                                onClick={() => reset()}
-                            >
-                                Cancelar
-                            </SecondaryButton>
-
-                            <PrimaryButton
-                                type="submit"
-                                className="ms-3"
-                                disabled={processing}
-                            >
-                                {processing
-                                    ? "Processing..."
-                                    : "Reportar Altercado"}
-                            </PrimaryButton>
-                        </div>
-                    </form>
+                    <div className="flex items-center justify-center h-16">
+                        <Link href={route('create.altercation', dataCarga.id)} className="bg-white rounded-md px-4 py-1">Registrar altercado</Link>
+                    </div>
                 </Card>
                 <Card>
                     <div className="py-4 text-center">

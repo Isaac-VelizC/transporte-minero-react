@@ -10,7 +10,7 @@ export interface AltercationReportInterface {
     driver: DriverInterface;
     description: string;
     fecha: string;
-    last_latitude: string;
-    last_longitude: string;
+    last_latitude: number;
+    last_longitude: number;
     [key: string]: unknown;
 }

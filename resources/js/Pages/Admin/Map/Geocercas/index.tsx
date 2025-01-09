@@ -1,144 +1,116 @@
+import React, { useEffect } from "react";
+import { Head, Link, usePage } from "@inertiajs/react";
+import { MapContainer, Marker, Polygon, Popup, TileLayer } from "react-leaflet";
+import toast from "react-hot-toast";
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import LinkButton from "@/Components/Buttons/LinkButton";
-import ModalDelete from "@/Components/Modal/ModalDelete";
-import DataTableComponent from "@/Components/Table";
-import { GeocercaInterface } from "@/interfaces/Geocerca";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router, usePage } from "@inertiajs/react";
-import { useState, useCallback, useMemo, useEffect } from "react";
-import toast from "react-hot-toast";
+import { GeocercaInterface } from "@/interfaces/Geocerca";
 
-type Props = {
+// Define props type
+interface Props {
     geocercas: GeocercaInterface[];
-};
+}
 
-export default function Index({ geocercas }: Props) {
-    const [openModal, setOpenModal] = useState(false);
-    const [itemIdToSelect, setItemIdToSelect] = useState<number | null>(null);
-    const [ status, setStatus ] = useState<boolean>(false);
-    const columns = useMemo(
-        () => [
-            {
-                name: "#",
-                cell: (_: GeocercaInterface, index: number) => index + 1,
-            },
-            {
-                name: "Creador",
-                selector: (row: GeocercaInterface) => row.creator.email,
-                sortable: true,
-            },
-            {
-                name: "Nombre de la Geocerca",
-                selector: (row: GeocercaInterface) => row.name,
-                sortable: true,
-            },
-            {
-                name: "Tipo de Geocerca",
-                selector: (row: GeocercaInterface) => row.type,
-                sortable: true,
-            },
-            {
-                name: "Estado",
-                cell: (row: GeocercaInterface) => (
-                    <span
-                        className={`rounded-lg px-2 font-semibold py-1 text-white ${
-                            row.is_active ? "bg-green-400" : "bg-red-400"
-                        }`}
-                    >
-                        {row.is_active ? "Activo" : "Inactivo"}
-                    </span>
-                )
-            },
-            {
-                name: "Acciones",
-                cell: (row: GeocercaInterface) => (
-                    <div className="flex gap-4">
-                        <Link href={route("geocerca.edit", row.id)}>
-                            <i className="bi bi-pencil"></i>
-                        </Link>
-                        <button onClick={() => confirmDeletion(row.id, row.is_active)}>
-                            <i className="bi bi-trash2"></i>
-                        </button>
-                    </div>
-                ),
-                ignoreRowClick: true,
-            },
-        ],
-        []
-    );
-
-    const confirmDeletion = useCallback((id: number, status: boolean) => {
-        setStatus(status);
-        setItemIdToSelect(id);
-        setOpenModal(true);
-    }, []);
-
-    const closeModal = useCallback(() => {
-        setOpenModal(false);
-        setItemIdToSelect(null);
-    }, []);
-
-    const handleDelete = useCallback(async () => {
-        if (itemIdToSelect !== null) {
-            try {
-                await router.delete(route("geocerca.delete", itemIdToSelect), {
-                    preserveScroll: true,
-                    onSuccess: closeModal,
-                    onError: (errors) => {
-                        toast.error("Error al eliminar la geocerca");
-                        console.log("Error al eliminar la geocerca:", errors);
-                    },
-                    onFinish: () => {
-                        setItemIdToSelect(null);
-                    },
-                });
-            } catch (error) {
-                console.log("Error inesperado al eliminar:", error);
-                toast.error("Error inesperado al eliminar");
-            }
-        } else {
-            toast.error(
-                "No hay un ID de geocerca seleccionado para eliminar."
-            );
-        }
-    }, [itemIdToSelect, closeModal]);
-
-    
+const Index: React.FC<Props> = ({ geocercas }) => {
     const { flash } = usePage().props;
 
+    // Display flash messages
     useEffect(() => {
-        if (flash.success) {
-            toast.success(flash.success);
-        }
-        if (flash.error) {
-            toast.error(flash.error);
-        }
+        if (flash.success) toast.success(flash.success);
+        if (flash.error) toast.error(flash.error);
     }, [flash]);
+
+    // Calculate polygon centroid
+    const calculateCentroid = (coordinates: [number, number][]) => {
+        if (!coordinates.length) return null;
+        const centroid = coordinates.reduce(
+            (acc, coord) => {
+                acc[0] += coord[0];
+                acc[1] += coord[1];
+                return acc;
+            },
+            [0, 0]
+        );
+        return [
+            centroid[0] / coordinates.length,
+            centroid[1] / coordinates.length,
+        ];
+    };
 
     return (
         <Authenticated>
             <Head title="Geocercas" />
-            <Breadcrumb breadcrumbs={[
+
+            <Breadcrumb
+                breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Geocercas", path: "/geocerca" },
-                ]}/>
+                ]}
+            />
+
             <div>
                 <div className="flex justify-end my-4">
-                    
                     <LinkButton href="geocerca.create">Nuevo</LinkButton>
                 </div>
-                <DataTableComponent columns={columns} data={geocercas} />
+
+                <div className="h-150 w-full">
+                    <MapContainer
+                        center={[-19.58361, -65.75306]}
+                        zoom={13}
+                        style={{ height: "100%", width: "100%" }}
+                    >
+                        <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+
+                        {geocercas.map((geocerca) => {
+                            const polygonCoordinates =
+                                geocerca.polygon_coordinates
+                                    ? JSON.parse(geocerca.polygon_coordinates)
+                                    : [];
+                            const centroid =
+                                calculateCentroid(polygonCoordinates);
+
+                            return (
+                                <React.Fragment key={geocerca.id}>
+                                    {polygonCoordinates.length > 0 && (
+                                        <Polygon
+                                            positions={polygonCoordinates}
+                                            color={geocerca.is_active ? geocerca.color : 'red'}
+                                        >
+                                            <Popup>{geocerca.name}</Popup>
+                                        </Polygon>
+                                    )}
+
+                                    {centroid && centroid.length === 2 && (
+                                        <Marker
+                                            position={
+                                                centroid as [number, number]
+                                            }
+                                        >
+                                            <Popup>
+                                                {`Centro de ${geocerca.name}`}{" "}
+                                                <Link
+                                                    href={route(
+                                                        "geocerca.edit",
+                                                        geocerca.id
+                                                    )}
+                                                >
+                                                    <i className="bi bi-pencil"></i>
+                                                </Link>
+                                            </Popup>
+                                        </Marker>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
+                    </MapContainer>
+                </div>
             </div>
-            <ModalDelete
-                title={`${ status ? 'Desactivar' : 'Activar' } Geocerca`}
-                titleButton={ status ? 'Desactivar' : 'Activar' }
-                show={openModal}
-                children={
-                    <p>Por favor, confirma tu decisión pulsando el botón de abajo.</p>
-                }
-                onClose={closeModal}
-                onDelete={handleDelete}
-            />
         </Authenticated>
     );
-}
+};
+
+export default Index;

@@ -68,8 +68,12 @@ class GeocercaUpdateResquest extends FormRequest
                 'max:1000'
             ],
             'color' => [
-                'nullable',
+                'required',
                 'string',
+            ],
+            'is_active' => [
+                'required',
+                'boolean'
             ]
         ];
     }

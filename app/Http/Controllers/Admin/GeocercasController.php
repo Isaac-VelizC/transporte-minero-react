@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Geocerca\GeocercaCreateResquest;
 use App\Http\Requests\Geocerca\GeocercaUpdateResquest;
+use App\Models\AltercationReport;
 use App\Models\CargoShipment;
 use App\Models\Geocerca;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -32,14 +33,15 @@ class GeocercasController extends Controller
             'vehicle',
             'geocerca'
         ])->findOrFail($id);
-
+        $altercados = AltercationReport::where('envio_id', $id)->get();
         
         if (is_null($envio->vehicle->device)) {
             return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
         }
 
         return Inertia::render('Admin/Map/index', [
-            'envio' => $envio
+            'envio' => $envio,
+            'altercados' => $altercados
         ]);
     }
     /**
@@ -48,9 +50,9 @@ class GeocercasController extends Controller
     public function create() {
         return Inertia::render('Admin/Map/Geocercas/form', [
             'types' => [
-                ['value' => 'zona_de_trabajo', 'color' => '#23c825'],
-                ['value' => 'zona_de_peligro', 'color' => '#e52424'],
-                ['value' => 'zona_de_descanso', 'color' => '#304ace']
+                ['value' => 'zona_de_trabajo'],
+                ['value' => 'zona_de_peligro'],
+                ['value' => 'zona_de_descanso']
             ],
             'isEditing' => false
         ]);
@@ -82,9 +84,9 @@ class GeocercasController extends Controller
             return Inertia::render('Admin/Map/Geocercas/form', [
                 'geocerca' => $geocerca,
                 'types' => [
-                    ['value' => 'zona_de_trabajo', 'color' => '#23c825'],
-                    ['value' => 'zona_de_peligro', 'color' => '#e52424'],
-                    ['value' => 'zona_de_descanso', 'color' => '#304ace']
+                    ['value' => 'zona_de_trabajo'],
+                    ['value' => 'zona_de_peligro'],
+                    ['value' => 'zona_de_descanso']
                 ],
                 'isEditing' => true
             ]);

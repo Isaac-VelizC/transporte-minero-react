@@ -1,4 +1,4 @@
-import { customIcon, deviceIcon } from "@/Components/IconMap";
+import { AltercadoIcon, customIcon, deviceIcon } from "@/Components/IconMap";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
@@ -13,12 +13,14 @@ import {
 } from "react-leaflet";
 import * as turf from "@turf/turf";
 import { alertToast } from "@/Components/Alerts/AlertaToast";
+import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 
 type Props = {
     envio: ShipmentInterface;
+    altercados?: AltercationReportInterface[];
 };
 
-const Index: React.FC<Props> = ({ envio }) => {
+const Index: React.FC<Props> = ({ envio, altercados }) => {
     const geocercaCoords: [number, number][] = envio.geocerca
         ?.polygon_coordinates
         ? JSON.parse(envio.geocerca.polygon_coordinates)
@@ -121,6 +123,19 @@ const Index: React.FC<Props> = ({ envio }) => {
                         </Marker>
                     )}
                     {/* Trayecto del dispositivo */}
+                    {altercados &&
+                        altercados.map((item, index) => (
+                            <Marker
+                                key={index}
+                                position={[
+                                    item.last_latitude,
+                                    item.last_longitude,
+                                ]}
+                                icon={AltercadoIcon}
+                            >
+                                <Popup>{item.description}</Popup>
+                            </Marker>
+                        ))}
                     {path.length > 1 && (
                         <Polyline
                             positions={path}

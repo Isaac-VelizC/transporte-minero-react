@@ -202,6 +202,13 @@ class ClientDriverController extends Controller
         }
     }
 
+    public function createAltercado($id) {
+        $envio = CargoShipment::with('vehicle', 'conductor.driver')->findOrFail($id);
+        return Inertia::render('Conductor/createAltercado', [
+            'dataCarga' => $envio
+        ]);
+    }
+
     public function storeReporteAltercados(Request $request)
     {
         $validatedData = $request->validate([
@@ -209,6 +216,8 @@ class ClientDriverController extends Controller
             'driver_id' => 'required|exists:drivers,id',
             'envio_id' => 'required|numeric|exists:cargo_shipments,id',
             'description' => 'required|string|min:10',
+            'last_latitude' => 'required|numeric|between:-90,90',
+            'last_longitude' => 'required|numeric|between:-180,180',
         ]);
         try {
             // Crear la programación del vehículo

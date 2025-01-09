@@ -102,6 +102,7 @@ Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
     Route::get('/driver/mantenimientos/', [ClientDriverController::class, 'mantenimientosVehiculosList'])->name('driver.mantenimientos.list');
     Route::put('/devices/{id}/location', [ClientDriverController::class, 'updateLocationDevice']);
     Route::patch('/driver/mantenimiento/{id}/confirm',[ClientDriverController::class, 'updateEstatusMantenimiento'])->name('driver.confirm.status');
+    Route::get('/driver/create/form/altercado/{id}', [ClientDriverController::class, 'createAltercado'])->name('create.altercation');
     Route::post('driver/store/artercado', [ClientDriverController::class, 'storeReporteAltercados'])->name('driver.store.altercado');
 });
 
