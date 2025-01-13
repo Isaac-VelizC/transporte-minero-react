@@ -81,8 +81,8 @@ export default function form({ isEditing, geocerca, types }: Props) {
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-200 mb-2">
                         {isEditing
-                            ? "Edit geocerca Information"
-                            : "Create New geocerca"}
+                            ? "Editar geocerca Información"
+                            : "Crear nueva geocerca"}
                     </h2>
                     <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
@@ -222,7 +222,6 @@ export default function form({ isEditing, geocerca, types }: Props) {
                     </div>
                     <div className="mt-6 flex justify-end">
                         <LinkButton href={"geocerca.list"}>Cancelar</LinkButton>
-
                         <PrimaryButton
                             type="submit"
                             className="ms-3"

@@ -46,6 +46,11 @@ function index({ envios }: Props) {
             sortable: true,
         },
         {
+            name: "Origén de envio",
+            cell: (row: ShipmentInterface) => row.origen,
+            sortable: true,
+        },
+        {
             name: "Destino de envio",
             cell: (row: ShipmentInterface) => row.destino,
             sortable: true,

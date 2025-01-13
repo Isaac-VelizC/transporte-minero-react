@@ -57,8 +57,8 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::post('/vehicle/programming', [VehiclesController::class, 'registerConductorVehicle'])->name('vehicle.programming');
     Route::patch('/vehicle/programming/{id}', [VehiclesController::class, 'updateConductorVehicle'])->name('vehicle.programming.update');
     Route::get('/vehicle/programming/{id}/cancel', [VehiclesController::class, 'cancelScheduleVehicle'])->name('vehicle.programming.cancel');
+    Route::delete('/vehicle/programming/{id}/delete', [VehiclesController::class, 'deleteScheduleVehicle'])->name('vehicle.programming.delete');
     Route::get('/api/available-resources', [VehiclesController::class, 'availableResources']);
-
     // Mantenimientos
     Route::get('/vehicle/mantenimientos', [VehiclesController::class, 'listMantenimientos'])->name('mantenimiento.list');
     Route::post('/vehicle/mantenimiento',[VehiclesController::class, 'storeMantenimientoVehicle'])->name('mantenimiento.store');
@@ -100,7 +100,7 @@ Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
     Route::get('/driver/envio/show/{id}', [ClientDriverController::class, 'showEnvio'])->name('driver.envio.show');
     Route::get('/driver/show/map/{id}', [ClientDriverController::class, 'showMapMonitoreo'])->name('driver.show.map');
     Route::get('/driver/mantenimientos/', [ClientDriverController::class, 'mantenimientosVehiculosList'])->name('driver.mantenimientos.list');
-    Route::put('/devices/{id}/location', [ClientDriverController::class, 'updateLocationDevice']);
+    Route::put('/devices/{id}/location/{envio_id}', [ClientDriverController::class, 'updateLocationDevice']);
     Route::patch('/driver/mantenimiento/{id}/confirm',[ClientDriverController::class, 'updateEstatusMantenimiento'])->name('driver.confirm.status');
     Route::get('/driver/create/form/altercado/{id}', [ClientDriverController::class, 'createAltercado'])->name('create.altercation');
     Route::post('driver/store/artercado', [ClientDriverController::class, 'storeReporteAltercados'])->name('driver.store.altercado');

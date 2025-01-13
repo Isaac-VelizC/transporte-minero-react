@@ -10,14 +10,19 @@ export interface ShipmentInterface {
     client: PersonaInterface;
     conductor: PersonaInterface;
     peso: string;
+    origen: string;
     destino: string;
     status: string;
     fecha_envio: string;
     fecha_entrega: string;
     notas: string;
+    sub_total: number;
+    total: number;
     geocerca?: GeocercaInterface;
     client_latitude: number;
     client_longitude: number;
+    origen_latitude: number;
+    origen_longitude: number;
     delete: boolean;
     [key: string]: unknown;
 }
@@ -28,9 +33,15 @@ export type FormShipmentType = {
     client_id: number;
     geofence_id: number;
     peso: string;
+    origen: string;
     destino: string;
+    fecha_envio: string;
     fecha_entrega: string;
     notas: string;
+    sub_total: number;
+    total: number;
     client_latitude: number;
     client_longitude: number;
+    origen_latitude: number;
+    origen_longitude: number;
 };

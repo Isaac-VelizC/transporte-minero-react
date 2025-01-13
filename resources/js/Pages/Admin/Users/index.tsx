@@ -1,5 +1,4 @@
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
-import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import React, { useEffect, useMemo, useState } from "react";
 import { Head, router, usePage } from "@inertiajs/react";

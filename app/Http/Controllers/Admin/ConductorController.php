@@ -54,7 +54,6 @@ class ConductorController extends Controller
                 ]
             );
         });
-
         // Retornar un mensaje de éxito más descriptivo
         return redirect()->route('drivers.list')
             ->with('success', 'El conductor ha sido registrado y asignado correctamente.');

@@ -16,8 +16,6 @@ export interface ScheduleInterface {
 export type FormScheduleType = {
     id: number;
     car_id: number;
-    start_time: string;
-    end_time: string;
     driver_id: number;
     conductor?: string;
     matricula?: string;

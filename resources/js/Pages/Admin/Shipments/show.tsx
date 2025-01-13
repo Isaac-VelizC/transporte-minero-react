@@ -49,6 +49,9 @@ function show({ datos, reportes }: Props) {
                             {datos.client.numero}
                         </p>
                         <p>
+                            <strong>Origén:</strong> {datos.origen}
+                        </p>
+                        <p>
                             <strong>Destino:</strong> {datos.destino}
                         </p>
                         <p>
@@ -72,6 +75,13 @@ function show({ datos, reportes }: Props) {
                         <p>
                             <strong>Peso de la Carga:</strong> {datos.peso}{" "}
                             Toneladas
+                        </p>
+                        <p>
+                            <strong>Costo por Tonelada:</strong>{" "}
+                            {datos.sub_total}bs.
+                        </p>
+                        <p>
+                            <strong>Total de envio:</strong> {datos.total}bs.
                         </p>
                         <p>
                             <strong>Status:</strong>

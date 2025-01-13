@@ -1,12 +1,11 @@
 import { AccordionItem } from "@/Components/Accordeon";
-import LinkButton from "@/Components/Buttons/LinkButton";
-import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import Card from "@/Components/Cards/Card";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
-import { useCallback, useState } from "react";
+import { Head, Link, usePage } from "@inertiajs/react";
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
     dataCarga: ShipmentInterface;
@@ -15,12 +14,23 @@ type Props = {
 
 export default function showEnvio({ dataCarga, altercados }: Props) {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
+        const { flash } = usePage().props;
     const handleToggle = useCallback(
         (index: number) => {
             setOpenIndex(openIndex === index ? null : index);
         },
         [openIndex]
     );
+
+    
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <Authenticated>

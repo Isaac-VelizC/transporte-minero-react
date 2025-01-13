@@ -18,7 +18,7 @@ return new class extends Migration
             // Coordenadas poligonales en formato GeoJSON
             $table->json('polygon_coordinates')->nullable();
             // Coordenadas y radio para geocercas circulares
-            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('latitude', 11, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             $table->integer('radius')->nullable();
             // Detalles de la geocerca

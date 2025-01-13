@@ -20,12 +20,13 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('vehicle_id')->nullable();
             $table->foreign('vehicle_id')->references('id')->on('vehicles')->onDelete('cascade');
+            $table->string('taller')->nullable();
             $table->date('fecha_inicio');
             $table->date('fecha_fin')->nullable();
             $table->text('observaciones')->nullable();
             $table->enum('estado', ['pendiente', 'proceso', 'terminado'])->default('pendiente');
             $table->unsignedBigInteger('tipo')->nullable();
-            $table->foreign('tipo')->references('id')->on('tipo_mantenimientos')->onDelete('cascade');
+            $table->foreign('tipo')->references('id')->on('tipo_mantenimientos')->onDelete('set null');
             $table->timestamps();
         });
     }

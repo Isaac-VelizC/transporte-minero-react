@@ -18,12 +18,16 @@ class Device extends Model
         'status',
         'last_latitude',
         'last_longitude',
-        'last_updated_at',
-        'update_interval'
+        'last_updated_at'
     ];
 
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class, 'device_id');
+    }
+
+    public function rutas()
+    {
+        return $this->hasMany(RutaDevice::class, 'device_id');
     }
 }

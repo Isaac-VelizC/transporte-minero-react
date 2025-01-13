@@ -87,7 +87,6 @@ export default function listEnviosConducto({ envios }: Props) {
             try {
                 // Realiza la solicitud para cambiar el estado del envío
                 await router.get(route("driver.envios.status", cargaData.id), {
-                    
                 });
             } catch (error) {
                 toast.error("Error al cambiar el estado del envío");

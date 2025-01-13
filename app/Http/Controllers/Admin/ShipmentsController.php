@@ -18,7 +18,7 @@ use Inertia\Inertia;
 class ShipmentsController extends Controller
 {
     public function index() {
-        $envios = CargoShipment::with(['vehicle', 'client'])->get();
+        $envios = CargoShipment::with(['vehicle', 'client'])->latest()->get();
         return Inertia::render('Admin/Shipments/index', [
             'envios' => $envios
         ]);
@@ -39,7 +39,7 @@ class ShipmentsController extends Controller
             $envios = CargoShipment::with(['vehicle', 'client'])
                 ->whereHas('client', function ($query) use ($idAuth) {
                     $query->where('user_id', $idAuth);
-                })
+                })->latest()
                 ->get();
             return Inertia::render('Client/listEnvios', [
                 'envios' => $envios
@@ -54,7 +54,7 @@ class ShipmentsController extends Controller
     {
         return CargoShipment::with(['vehicle', 'client'])
             ->where('conductor_id', $userId)
-            ->where('delete', true)
+            ->where('delete', true)->latest()
             ->get();
     }
 
@@ -80,14 +80,19 @@ class ShipmentsController extends Controller
         $validatedData['car_id'] = $vehicleSchedule->car_id;
         $validatedData['conductor_id'] = $vehicleSchedule->driver->persona->user_id;
         try {
+            if ($request->peso > $vehicleSchedule->vehicle->capacidad_carga) {
+                return back()->with('error', 'El peso de carga no puede ser mayor a la capacidad de carga del camión');
+            }
             // Crear el envío
-            CargoShipment::create($validatedData);
-            $vehicleSchedule->update(['status' => 'asignado']);
-
+            $item = CargoShipment::create($validatedData);
+            $item->total = $request->sub_total * $request->peso;
+            $item->save();
+            // Actualizar el estado del vehículo
+            $vehicleSchedule->update(['status' => 'pendiente']);
             return redirect()->route('envios.list')->with('success', 'Envío creado exitosamente');
         } catch (\Exception $e) {
+            dd($e);
             Log::error('Error creating envio: ' . $e->getMessage());
-
             return back()->withInput()->with('error', 'No se pudo crear el envío. Intente nuevamente.');
         }
     }
@@ -139,12 +144,17 @@ class ShipmentsController extends Controller
         $validatedData['car_id'] = $vehicleSchedule->car_id;
         $validatedData['conductor_id'] = $vehicleSchedule->driver->persona->user_id;
         try {
-            CargoShipment::findOrFail($id)->update($validatedData);
-            $vehicleSchedule->update(['status' => 'asignado']);
+            if ($request->peso > $vehicleSchedule->vehicle->capacidad_carga) {
+                return back()->with('error', 'El peso de carga no puede ser mayor a la capacidad de carga del camión');
+            }
+            $item = CargoShipment::findOrFail($id);
+            $item->update($validatedData);
+            $item->total = $request->sub_total * $request->peso;
+            $item->save();
+            $vehicleSchedule->update(['status' => 'pendiente']);
             return redirect()->route('envios.list')->with('success', 'Envío actualizado exitosamente');
         } catch (\Exception $e) {
             Log::error('Error creating envio: ' . $e->getMessage());
-
             return back()->withInput()->with('error', 'No se pudo crear el envío. Intente nuevamente.');
         }
     }

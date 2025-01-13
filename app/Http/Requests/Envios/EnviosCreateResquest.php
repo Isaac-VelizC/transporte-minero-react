@@ -28,11 +28,16 @@ class EnviosCreateResquest extends FormRequest
             'conductor_id' => 'nullable|exists:personas,id', // Debe existir en la tabla personas
             'geofence_id' => 'required|exists:geocercas,id', // Debe existir en la tabla personas
             'peso' => 'required|numeric|min:0', // Peso requerido y debe ser un número positivo
+            'origen' => 'required|string|max:255', // Destino requerido y no puede exceder 255 caracteres
             'destino' => 'required|string|max:255', // Destino requerido y no puede exceder 255 caracteres
-            'fecha_entrega' => 'nullable|date|after_or_equal:now', // Fecha de entrega opcional, debe ser una fecha válida y no anterior a la fecha de envío
-            'notas' => 'nullable|string|max:500', // Notas opcionales y no pueden exceder 500 caracteres
+            'fecha_envio' => 'required|date|after_or_equal:today',
+            'fecha_entrega' => 'required|date|after:fecha_envio', 
+            'notas' => 'nullable|string|max:500',
             'client_latitude' => 'required|numeric',
             'client_longitude' => 'required|numeric',
+            'origen_latitude' => 'required|numeric',
+            'origen_longitude' => 'required|numeric',
+            'sub_total' => 'nullable|numeric|min:0'
         ];
     }
 

@@ -33,6 +33,7 @@ function FormModalMantenimieto({
     const initialData = infoData || {
         id: null,
         vehicle_id: null,
+        taller: "",
         fecha_inicio: "",
         observaciones: "",
         tipo: null,
@@ -55,6 +56,7 @@ function FormModalMantenimieto({
         action(route(routeName, `${data?.id}`), {
             onSuccess: () => {
                 onClose();
+                reset();
             },
         });
     };
@@ -62,18 +64,33 @@ function FormModalMantenimieto({
     const handleCancelModal = () => {
         reset();
         onClose();
-    }
+    };
 
     return (
         <Modal show={show} onClose={onClose}>
             <form className="p-6" onSubmit={handleSubmit}>
                 <h2 className="text-lg font-bold mb-2">
                     {isEditing
-                        ? "Editar Información"
+                        ? "Editar Información de mantenimiento de la matricula: "+ infoData?.matricula
                         : "Programar Mantenimiento"}
                 </h2>
                 <div>
-                    <InputLabel htmlFor="fecha_inicio" value="Fecha de mantenimiento" />
+                    <InputLabel htmlFor="taller" value="Nombre del Taller" />
+                    <TextInput
+                        id="taller"
+                        type="text"
+                        className="mt-1 block w-full"
+                        value={data.taller}
+                        onChange={(e) => setData("taller", e.target.value)}
+                        required
+                    />
+                    <InputError className="mt-2" message={errors.taller} />
+                </div>
+                <div>
+                    <InputLabel
+                        htmlFor="fecha_inicio"
+                        value="Fecha de mantenimiento"
+                    />
                     <TextInput
                         id="fecha_inicio"
                         type="date"
@@ -89,32 +106,41 @@ function FormModalMantenimieto({
                         message={errors.fecha_inicio}
                     />
                 </div>
-                <div>
-                    <InputLabel htmlFor="vehicle_id" value="Seleccionar Vehiculo" />
-                    <SelectInput
-                        isFocused
-                        required
-                        className="mt-1 block w-full"
-                        onChange={(e) =>
-                            setData("vehicle_id", parseInt(e.target.value))
-                        }
-                        value={data.vehicle_id || ''}
-                    >
-                        <option value="" disabled>
+                {!isEditing ? (
+                    <div>
+                        <InputLabel
+                            htmlFor="vehicle_id"
+                            value="Seleccionar Vehiculo"
+                        />
+                        <SelectInput
+                            isFocused
+                            required
+                            className="mt-1 block w-full"
+                            onChange={(e) =>
+                                setData("vehicle_id", parseInt(e.target.value))
+                            }
+                            value={data.vehicle_id || ""}
+                        >
+                            <option value="" disabled>
+                                {vehicles && vehicles.length > 0
+                                    ? "Seleccionar matricula"
+                                    : "No hay datos disponibles"}
+                            </option>
                             {vehicles && vehicles.length > 0
-                                ? "Seleccionar matricula"
-                                : "No hay datos disponibles"}
-                        </option>
-                        {vehicles && vehicles.length > 0
-                            ? vehicles.map((item, index) => (
-                                  <option key={index} value={item.id}>
-                                      {item.matricula}
-                                  </option>
-                              ))
-                            : null}
-                    </SelectInput>
-                    <InputError className="mt-2" message={errors.vehicle_id} />
-                </div>
+                                ? vehicles.map((item, index) => (
+                                      <option key={index} value={item.id}>
+                                          {item.matricula}
+                                      </option>
+                                  ))
+                                : null}
+                        </SelectInput>
+                        <InputError
+                            className="mt-2"
+                            message={errors.vehicle_id}
+                        />
+                    </div>
+                ) : null}
+
                 <div>
                     <InputLabel htmlFor="tipo" value="Tipo de mantenimiento" />
                     <SelectInput
@@ -124,7 +150,7 @@ function FormModalMantenimieto({
                         onChange={(e) =>
                             setData("tipo", parseInt(e.target.value))
                         }
-                        value={data.tipo || ''}
+                        value={data.tipo || ""}
                     >
                         <option value="" disabled>
                             {tipos && tipos.length > 0

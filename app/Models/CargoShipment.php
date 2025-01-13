@@ -14,18 +14,23 @@ class CargoShipment extends Model
     protected $fillable = [
         'car_id',
         'programming',
+        'geofence_id',
         'client_id',
         'conductor_id',
-        'geofence_id',
         'peso',
+        'origen',
         'destino',
         'status',
+        'delete',
         'fecha_envio',
         'fecha_entrega',
         'client_latitude',
         'client_longitude',
+        'origen_latitude',
+        'origen_longitude',
         'notas',
-        'delete'
+        'sub_total',
+        'total'
     ];
 
     public function formatFullName(): string
@@ -65,8 +70,4 @@ class CargoShipment extends Model
     public function altercadoReports() {
         return $this->hasMany(AltercationReport::class, 'envio_id');
     }
-
-    /*public function satisfacion() {
-        return $this->hasOne(CustomerSatisfaction::class, 'cargo_id');
-    }*/
 }

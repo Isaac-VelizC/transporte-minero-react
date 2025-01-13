@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('type_id')->nullable();
             $table->foreign('type_id')->references('id')->on('type_vehicles')->onDelete('cascade');
             $table->unsignedBigInteger('device_id')->nullable();
-            $table->foreign('device_id')->references('id')->on('devices')->onDelete('cascade');
+            $table->foreign('device_id')->references('id')->on('devices')->onDelete('set null');
             
             // Nuevos campos relevantes
             $table->string('modelo', 50); // Marca del vehículo

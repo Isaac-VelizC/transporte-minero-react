@@ -3,7 +3,7 @@ import DataTableComponent from "@/Components/Table";
 import { DeviceInterface } from "@/interfaces/Device";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import FormModal from "./formModal";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 

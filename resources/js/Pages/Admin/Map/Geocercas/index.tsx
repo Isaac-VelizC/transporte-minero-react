@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
 import { Head, Link, usePage } from "@inertiajs/react";
-import { MapContainer, Marker, Polygon, Popup, TileLayer } from "react-leaflet";
+import { Marker, Polygon, Popup } from "react-leaflet";
 import toast from "react-hot-toast";
 import Breadcrumb from "@/Components/Breadcrumbs/Breadcrumb";
 import LinkButton from "@/Components/Buttons/LinkButton";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
+import Map from "@/Components/Maps/Map";
 
 // Define props type
 interface Props {
@@ -14,13 +15,11 @@ interface Props {
 
 const Index: React.FC<Props> = ({ geocercas }) => {
     const { flash } = usePage().props;
-
     // Display flash messages
     useEffect(() => {
         if (flash.success) toast.success(flash.success);
         if (flash.error) toast.error(flash.error);
     }, [flash]);
-
     // Calculate polygon centroid
     const calculateCentroid = (coordinates: [number, number][]) => {
         if (!coordinates.length) return null;
@@ -41,30 +40,18 @@ const Index: React.FC<Props> = ({ geocercas }) => {
     return (
         <Authenticated>
             <Head title="Geocercas" />
-
             <Breadcrumb
                 breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Geocercas", path: "/geocerca" },
                 ]}
             />
-
             <div>
                 <div className="flex justify-end my-4">
                     <LinkButton href="geocerca.create">Nuevo</LinkButton>
                 </div>
-
                 <div className="h-150 w-full">
-                    <MapContainer
-                        center={[-19.58361, -65.75306]}
-                        zoom={13}
-                        style={{ height: "100%", width: "100%" }}
-                    >
-                        <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        />
-
+                    <Map zoom={13} center={[-19.58361, -65.75306]}>
                         {geocercas.map((geocerca) => {
                             const polygonCoordinates =
                                 geocerca.polygon_coordinates
@@ -78,7 +65,11 @@ const Index: React.FC<Props> = ({ geocercas }) => {
                                     {polygonCoordinates.length > 0 && (
                                         <Polygon
                                             positions={polygonCoordinates}
-                                            color={geocerca.is_active ? geocerca.color : 'red'}
+                                            color={
+                                                geocerca.is_active
+                                                    ? geocerca.color
+                                                    : "red"
+                                            }
                                         >
                                             <Popup>{geocerca.name}</Popup>
                                         </Polygon>
@@ -106,7 +97,7 @@ const Index: React.FC<Props> = ({ geocercas }) => {
                                 </React.Fragment>
                             );
                         })}
-                    </MapContainer>
+                    </Map>
                 </div>
             </div>
         </Authenticated>

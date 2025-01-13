@@ -37,7 +37,7 @@ class Driver extends Model
     }
 
     public function altercadosReports() {
-        return $this->hasMany(AltercationRecport::class, 'driver_id');
+        return $this->hasMany(AltercationReport::class, 'driver_id');
     }
 
 }

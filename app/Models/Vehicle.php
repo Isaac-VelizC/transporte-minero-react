@@ -24,6 +24,10 @@ class Vehicle extends Model
         'responsable_id',
         'capacidad_carga',
     ];
+    
+    public function driver() {
+        return $this->belongsTo(Persona::class, 'responsable_id');
+    }
 
     public function marca() {
         return $this->belongsTo(Mark::class, 'mark_id');

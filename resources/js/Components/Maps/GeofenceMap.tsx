@@ -3,10 +3,11 @@ import { EditControl } from "react-leaflet-draw";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { useEffect, useState } from "react";
+import Map from "./Map";
 
 interface GeofenceMapProps {
-    initialCoordinates?: number[][]; // Coordenadas iniciales del polígono
-    onPolygonUpdated: (coordinates: number[][]) => void; // Callback para actualizar el polígono
+    initialCoordinates?: number[][];
+    onPolygonUpdated: (coordinates: number[][]) => void;
 }
 
 const GeofenceMap: React.FC<GeofenceMapProps> = ({
@@ -58,19 +59,14 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({
 
     return (
         <div style={{ height: "400px", width: "100%" }}>
-            <MapContainer
+            <Map
                 center={
                     initialCoordinates.length > 0 && initialCoordinates[0].length === 2
                         ? (initialCoordinates[0] as [number, number])
                         : [-19.58361, -65.75306]
                 }
                 zoom={13}
-                style={{ height: "100%", width: "100%" }}
             >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
                 <FeatureGroup>
                     <EditControl
                         position="topright"
@@ -96,7 +92,7 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({
                         />
                     )}
                 </FeatureGroup>
-            </MapContainer>
+            </Map>
         </div>
     );
 };

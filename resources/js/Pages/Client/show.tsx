@@ -3,22 +3,26 @@ import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
 
-import { customIcon, deviceIcon } from "@/Components/IconMap";
+import { AltercadoIcon, customIcon, deviceIcon } from "@/Components/IconMap";
 import { MapContainer, TileLayer, Marker, Popup, Polygon } from "react-leaflet";
+import { AltercationReportInterface } from "@/interfaces/AltercationReport";
+import Map from "@/Components/Maps/Map";
+
 
 type Props = {
     envio: ShipmentInterface;
+    altercados?: AltercationReportInterface[];
 };
 
-export default function show({ envio }: Props) {
-    const geocercaCoords: [number, number][] = envio.geocerca
-        ?.polygon_coordinates
-        ? JSON.parse(envio.geocerca.polygon_coordinates)
-        : [];
-
+export default function Show({ envio, altercados }: Props) {
     const envioCoords: [number, number] = [
         envio.client_latitude,
         envio.client_longitude,
+    ];
+
+    const origenCoords: [number, number] = [
+        envio.origen_latitude,
+        envio.origen_longitude,
     ];
 
     const deviceLocation: [number, number] | null =
@@ -29,6 +33,7 @@ export default function show({ envio }: Props) {
                   JSON.parse(envio.vehicle.device.last_longitude),
               ]
             : null;
+
     return (
         <Authenticated>
             <Head title="Show Envio" />
@@ -38,27 +43,55 @@ export default function show({ envio }: Props) {
                         Información del envio de carga
                     </h1>
                 </div>
-                <div className="pl-4 space-y-1">
-                    <p>
-                        <strong>Cliente: </strong>
-                        {envio.client.nombre + " " + envio.client.ap_pat}
-                    </p>
-                    <p>
-                        <strong>Peso en toneldas: </strong>
-                        {envio.peso} t.
-                    </p>
-                    <p>
-                        <strong>Destino: </strong>
-                        {envio.destino}
-                    </p>
-                    <p>
-                        <strong>Fecha de Entrega: </strong>
-                        {envio.fecha_entrega}
-                    </p>
-                    <p>
-                        <strong>Notas: </strong>
-                        {envio.notas}
-                    </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2">
+                    <div className="pl-4 space-y-1">
+                        <p>
+                            <strong>Cliente: </strong>
+                            {envio.client.nombre + " " + envio.client.ap_pat}
+                        </p>
+                        <p>
+                            <strong>Peso en toneldas: </strong>
+                            {envio.peso} t.
+                        </p>
+                        <p>
+                            <strong>Destino: </strong>
+                            {envio.destino}
+                        </p>
+                        <p>
+                            <strong>Fecha de envio: </strong>
+                            {envio.fecha_envio}
+                        </p>
+                        <p>
+                            <strong>Fecha de Entrega: </strong>
+                            {envio.fecha_entrega}
+                        </p>
+                        <p>
+                            <strong>Notas: </strong>
+                            {envio.notas}
+                        </p>
+                    </div>
+                    <div className="pl-4 space-y-1">
+                        <p>
+                            <strong>Matricula de Vehiculo: </strong>
+                            {envio.vehicle.matricula}
+                        </p>
+                        <p>
+                            <strong>Color: </strong>
+                            {envio.vehicle.color}
+                        </p>
+                        <p>
+                            <strong>Capacidad de Carga: </strong>
+                            {envio.vehicle.capacidad_carga}
+                        </p>
+                        <p>
+                            <strong>Sub Total por tonelada: </strong>
+                            {envio.sub_total}bs.
+                        </p>
+                        <p>
+                            <strong>Total costo: </strong>
+                            {envio.total}bs.
+                        </p>
+                    </div>
                 </div>
             </Card>
             <br />
@@ -70,27 +103,24 @@ export default function show({ envio }: Props) {
                         </h1>
                     </div>
                     <div className="h-150">
-                        <MapContainer
+                        <Map
                             center={envioCoords}
                             zoom={13}
-                            style={{ height: "100%", width: "100%" }}
                         >
-                            <TileLayer
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            />
-                            {/* Renderizar geocerca */}
-                            {geocercaCoords.length > 0 && (
-                                <Polygon
-                                    positions={geocercaCoords}
-                                    color={envio.geocerca?.color || "blue"}
-                                    weight={2}
-                                />
-                            )}
-                            {/* Coordenadas del destino */}
-                            <Marker position={envioCoords} icon={customIcon}>
-                                <Popup>{envio.destino}</Popup>
-                            </Marker>
+                            {/* Trayecto del dispositivo */}
+                            {altercados &&
+                                altercados.map((item, index) => (
+                                    <Marker
+                                        key={index}
+                                        position={[
+                                            item.last_latitude,
+                                            item.last_longitude,
+                                        ]}
+                                        icon={AltercadoIcon}
+                                    >
+                                        <Popup>{item.description}</Popup>
+                                    </Marker>
+                                ))}
                             {/* Ubicación del dispositivo */}
                             {deviceLocation && (
                                 <Marker
@@ -103,16 +133,12 @@ export default function show({ envio }: Props) {
                                     </Popup>
                                 </Marker>
                             )}
-                            {/* Trayecto del dispositivo */}
-                            {/*path.length > 1 && (
-                                <Polyline
-                                    positions={path}
-                                    color="green"
-                                    weight={3}
-                                    dashArray="5, 10"
-                                />
-                            )*/}
-                        </MapContainer>
+                            {/* Ruta entre origen y destino */}
+                            {/*<RoutingMachine
+                                origenCoords={origenCoords}
+                                destinoCoords={envioCoords}
+                            />*/}
+                        </Map>
                     </div>
                 </div>
             </Card>

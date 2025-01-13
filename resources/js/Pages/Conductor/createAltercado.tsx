@@ -1,12 +1,11 @@
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
-import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import Card from "@/Components/Cards/Card";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import SelectLatLonMap from "@/Components/Maps/SelectLatLonMap";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, Link, useForm } from "@inertiajs/react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -14,7 +13,7 @@ type Props = {
     dataCarga: ShipmentInterface;
 };
 
-export default function ShowEnvio({ dataCarga }: Props) {
+export default function createAltercation({ dataCarga }: Props) {
     const initialData = {
         id: null,
         driver_id: dataCarga.conductor.driver?.id,
@@ -115,12 +114,11 @@ export default function ShowEnvio({ dataCarga }: Props) {
                             />
                         </div>
                         <div className="mt-6 flex justify-end">
-                            <SecondaryButton
-                                type="button"
-                                onClick={() => reset()}
+                            <Link
+                                href={route("driver.envio.show", dataCarga.id)}
                             >
                                 Cancelar
-                            </SecondaryButton>
+                            </Link>
                             <PrimaryButton
                                 type="submit"
                                 className="ms-3"

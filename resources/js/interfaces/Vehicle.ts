@@ -11,7 +11,8 @@ export interface VehicleInterface {
     color: string;
     fecha_compra: string;
     status: string;
-    responsable?: string;
+    driver?: string;
+    responsable_id: number;
     kilometrage: number;
     capacidad_carga: string;
     device?: DeviceInterface;

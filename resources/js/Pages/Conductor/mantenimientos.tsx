@@ -8,7 +8,7 @@ import Modal from "@/Components/Modal/Modal";
 import DataTableComponent from "@/Components/Table";
 import { MantenimientoInterface } from "@/interfaces/Mantenimiento";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, router, useForm, usePage } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 

@@ -76,9 +76,6 @@ class ReportController extends Controller
                 'results' => $results,
             ]);
         } catch (\Throwable $th) {
-            // Registrar el error para depuración
-            Log::error('Error filtering cargo shipments: ', ['error' => $th]);
-            dd($th);
             // Retornar un error manejado
             return redirect()->back()->withErrors(['error' => 'Error al realizar la consulta: ' . $th->getMessage()]);
         }

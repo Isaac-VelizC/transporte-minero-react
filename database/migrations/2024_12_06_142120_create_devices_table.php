@@ -20,7 +20,6 @@ return new class extends Migration
             $table->decimal('last_latitude', 10, 7)->nullable();
             $table->decimal('last_longitude', 10, 7)->nullable();
             $table->timestamp('last_updated_at')->nullable();
-            $table->integer('update_interval')->default(60);
             $table->timestamps();
         });
     }

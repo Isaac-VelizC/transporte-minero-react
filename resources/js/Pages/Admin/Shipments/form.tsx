@@ -5,15 +5,14 @@ import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
-import SelectLatLonMap from "@/Components/Maps/SelectLatLonMap";
+import SelectOrigenDestinoMap from "@/Components/Maps/SelectOrigenDestino";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import { PersonaInterface } from "@/interfaces/Persona";
 import { ScheduleInterface } from "@/interfaces/schedule";
 import { FormShipmentType } from "@/interfaces/Shipment";
-import { UserInterface } from "@/interfaces/User";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 type Props = {
@@ -39,11 +38,17 @@ export default function form({
                 client_id: null,
                 geofence_id: null,
                 peso: "",
+                origen: "",
                 destino: "",
                 fecha_entrega: "",
+                fecha_envio: "",
                 notas: "",
+                sub_total: null,
+                total: null,
                 client_latitude: null,
                 client_longitude: null,
+                origen_latitude: null,
+                origen_longitude: null,
             },
         [shipment]
     );
@@ -52,13 +57,17 @@ export default function form({
     const { data, setData, post, patch, errors, processing } =
         useForm(initialData);
 
-    // Memoización del handler de cambio de mapa
+    const [selectionType, setSelectionType] = useState<"origen" | "destino">(
+        "destino"
+    );
+
     const handleMapChange = useCallback(
-        (lat: number, lon: number) => {
+        (lat: number, lon: number, type: "origen" | "destino") => {
             setData((prevData) => ({
                 ...prevData,
-                client_latitude: lat,
-                client_longitude: lon,
+                ...(type === "origen"
+                    ? { origen_latitude: lat, origen_longitude: lon }
+                    : { client_latitude: lat, client_longitude: lon }),
             }));
         },
         [setData]
@@ -68,7 +77,12 @@ export default function form({
         (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
 
-            if (!data.client_latitude || !data.client_longitude) {
+            if (
+                !data.client_latitude ||
+                !data.client_longitude ||
+                !data.origen_latitude ||
+                !data.origen_longitude
+            ) {
                 toast.error("Debe seleccionar una ubicación");
                 return;
             }
@@ -77,6 +91,8 @@ export default function form({
                 isEditing && data?.id
                     ? route("envios.update.form", data.id)
                     : route("envios.store.form");
+             console.log(data);
+             
 
             const submitMethod = isEditing && data?.id ? patch : post;
 
@@ -155,7 +171,7 @@ export default function form({
                         <div>
                             <InputLabel
                                 htmlFor="programming"
-                                value="Seleccionar el Vehiculo"
+                                value="Vehiculo mas capacidad de Carga"
                             />
                             <SelectInput
                                 isFocused
@@ -177,7 +193,10 @@ export default function form({
                                 {schedules && schedules.length > 0
                                     ? schedules.map((item) => (
                                           <option key={item.id} value={item.id}>
-                                              {item.vehicle.matricula}
+                                              {item.vehicle.matricula +
+                                                  " <= " +
+                                                  item.vehicle.capacidad_carga +
+                                                  "T."}
                                           </option>
                                       ))
                                     : null}
@@ -202,7 +221,7 @@ export default function form({
                                         parseFloat(e.target.value)
                                     )
                                 }
-                                value={data.geofence_id || ''}
+                                value={data.geofence_id || ""}
                             >
                                 <option value="" disabled>
                                     {geocercas && geocercas.length > 0
@@ -223,20 +242,23 @@ export default function form({
                             />
                         </div>
                         <div>
-                            <InputLabel htmlFor="peso" value="Peso de carga" />
+                            <InputLabel
+                                htmlFor="origen"
+                                value="Origen de entrega"
+                            />
                             <TextInput
-                                id="peso"
-                                type="number"
+                                id="origen"
                                 className="mt-1 block w-full"
-                                value={data.peso}
+                                value={data.origen || ""}
                                 onChange={(e) =>
-                                    setData("peso", e.target.value)
+                                    setData("origen", e.target.value)
                                 }
                                 required
+                                isFocused
                             />
                             <InputError
                                 className="mt-2"
-                                message={errors.peso}
+                                message={errors.origen}
                             />
                         </div>
                         <div>
@@ -247,7 +269,7 @@ export default function form({
                             <TextInput
                                 id="destino"
                                 className="mt-1 block w-full"
-                                value={data.destino}
+                                value={data.destino || ""}
                                 onChange={(e) =>
                                     setData("destino", e.target.value)
                                 }
@@ -261,6 +283,27 @@ export default function form({
                         </div>
                         <div>
                             <InputLabel
+                                htmlFor="fecha_envio"
+                                value="Fecha de Envio"
+                            />
+                            <TextInput
+                                id="fecha_envio"
+                                type="datetime-local"
+                                className="mt-1 block w-full"
+                                value={data.fecha_envio || ""}
+                                onChange={(e) =>
+                                    setData("fecha_envio", e.target.value)
+                                }
+                                required
+                                isFocused
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.fecha_envio}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
                                 htmlFor="fecha_entrega"
                                 value="Fecha de Entrega"
                             />
@@ -268,7 +311,7 @@ export default function form({
                                 id="fecha_entrega"
                                 type="datetime-local"
                                 className="mt-1 block w-full"
-                                value={data.fecha_entrega}
+                                value={data.fecha_entrega || ""}
                                 onChange={(e) =>
                                     setData("fecha_entrega", e.target.value)
                                 }
@@ -278,6 +321,47 @@ export default function form({
                             <InputError
                                 className="mt-2"
                                 message={errors.fecha_entrega}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
+                                htmlFor="sub_total"
+                                value="Costo por Tonelada"
+                            />
+                            <TextInput
+                                id="sub_total"
+                                type="number"
+                                className="mt-1 block w-full"
+                                value={data.sub_total || ""}
+                                onChange={(e) =>
+                                    setData(
+                                        "sub_total",
+                                        parseFloat(e.target.value)
+                                    )
+                                }
+                                required
+                                isFocused
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.sub_total}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="peso" value="Peso de carga" />
+                            <TextInput
+                                id="peso"
+                                type="number"
+                                className="mt-1 block w-full"
+                                value={data.peso || ""}
+                                onChange={(e) =>
+                                    setData("peso", e.target.value)
+                                }
+                                required
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.peso}
                             />
                         </div>
                     </div>
@@ -293,17 +377,41 @@ export default function form({
                         <InputError className="mt-2" message={errors.notas} />
                     </div>
                     <div className="my-4">
-                        <h1 className="text-lg font-semibold">
+                        <h1 className="text-lg font-semibold text-gray-300">
                             Seleccionar ubicación
                         </h1>
-                        <SelectLatLonMap
+                        <div className="flex gap-4 mb-4">
+                            <button
+                                className={`px-2 py-1 rounded-lg text-sm ${
+                                    selectionType === "origen"
+                                        ? "bg-green-500 text-white"
+                                        : "bg-gray-500"
+                                }`}
+                                onClick={() => setSelectionType("origen")}
+                            >
+                                Seleccionar Origen
+                            </button>
+                            <button
+                                className={`px-2 py-1 rounded-lg text-sm ${
+                                    selectionType === "destino"
+                                        ? "bg-blue-500 text-white"
+                                        : "bg-gray-500"
+                                }`}
+                                onClick={() => setSelectionType("destino")}
+                            >
+                                Seleccionar Destino
+                            </button>
+                        </div>
+                        <SelectOrigenDestinoMap
                             latitud={data.client_latitude}
                             longitud={data.client_longitude}
+                            origenLatitud={data.origen_latitude}
+                            origenLongitud={data.origen_longitude}
                             onChange={handleMapChange}
                             geocercas={geocercas}
+                            selectionType={selectionType}
                         />
                     </div>
-
                     <div className="mt-6 flex justify-end">
                         <LinkButton href={"envios.list"}>Cancelar</LinkButton>
 

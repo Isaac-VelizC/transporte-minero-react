@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('driver_id')->nullable();
             $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null');
             // Información adicional
-            $table->enum('status', ['pendiente', 'asignado', 'libre'])->default('libre');
+            $table->enum('status', ['libre', 'pendiente', 'cerrado'])->default('libre');
             $table->boolean('status_time')->default(true);
             // Timestamps
             $table->timestamps();

@@ -3,17 +3,11 @@ import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import React, { useEffect, useState, useMemo } from "react";
-import {
-    MapContainer,
-    TileLayer,
-    Marker,
-    Popup,
-    Polygon,
-    Polyline,
-} from "react-leaflet";
+import { Marker, Popup, Polygon, Polyline } from "react-leaflet";
 import * as turf from "@turf/turf";
 import { alertToast } from "@/Components/Alerts/AlertaToast";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
+import Map from "@/Components/Maps/Map";
 
 type Props = {
     envio: ShipmentInterface;
@@ -92,15 +86,7 @@ const Index: React.FC<Props> = ({ envio, altercados }) => {
         <Authenticated>
             <Head title="Mapa" />
             <div className="h-150 w-full">
-                <MapContainer
-                    center={envioCoords}
-                    zoom={13}
-                    style={{ height: "100%", width: "100%" }}
-                >
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    />
+                <Map center={envioCoords} zoom={13}>
                     {/* Renderizar geocerca */}
                     {closedGeocercaCoords.length > 0 && (
                         <Polygon
@@ -144,7 +130,7 @@ const Index: React.FC<Props> = ({ envio, altercados }) => {
                             dashArray="5, 10"
                         />
                     )}
-                </MapContainer>
+                </Map>
             </div>
         </Authenticated>
     );

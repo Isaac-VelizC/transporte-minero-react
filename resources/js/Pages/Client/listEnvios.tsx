@@ -39,8 +39,8 @@ export default function listEnvios({ envios }: Props) {
             sortable: true,
         },
         {
-            name: "Destino de envio",
-            cell: (row) => row.destino,
+            name: "Origén de envio",
+            cell: (row) => row.origen,
             sortable: true,
         },
         {
@@ -88,13 +88,11 @@ export default function listEnvios({ envios }: Props) {
                     route("client.envios.status", cargaData.id),
                     {
                         preserveScroll: true,
-                        
                     }
                 );
                 closeModal();
             } catch (error) {
                 toast.error("Error al cancelar el envío");
-                // Aquí puedes mostrar un mensaje al usuario si es necesario
             }
         } else {
             toast.error("No hay un ID de envío seleccionado para cancelar.");

@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('altercation_reports', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('car_id')->nullable();
-            $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
+            $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('set null');
             $table->unsignedBigInteger('envio_id')->nullable();
             $table->foreign('envio_id')->references('id')->on('cargo_shipments')->onDelete('cascade');
             $table->unsignedBigInteger('driver_id')->nullable();
-            $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('cascade');
+            $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null');
             $table->text('description');
             $table->dateTime('fecha')->default(now());
             $table->decimal('last_latitude', 10, 7)->nullable();

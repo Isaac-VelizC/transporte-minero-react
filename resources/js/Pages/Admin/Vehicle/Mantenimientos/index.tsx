@@ -104,9 +104,11 @@ const index: React.FC<Props> = ({ mantenimientos, tipos, vehicles }) => {
         const data = {
             id: row.id,
             vehicle_id: row.vehicle.id,
+            taller: row.taller,
             fecha_inicio: row.fecha_inicio,
             observaciones: row.observaciones,
             tipo: row.tipo.id,
+            matricula: row.vehicle.matricula
         };
 
         setMantenimientoData(data);

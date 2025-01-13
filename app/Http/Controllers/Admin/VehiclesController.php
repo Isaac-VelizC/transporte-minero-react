@@ -30,71 +30,15 @@ class VehiclesController extends Controller
         ]);
     }
 
-    public function listDriversDisponibles($startTime, $endTime, $driverId = null)
-    {
-        $query = Driver::with('persona')
-            ->where('status', true)
-            ->whereHas('persona', fn($query) => $query->where('estado', true))
-            ->whereDoesntHave('envios', function ($query) use ($startTime, $endTime) {
-                $query->where(function ($q) use ($startTime, $endTime) {
-                    $q->whereBetween('start_time', [$startTime, $endTime])
-                        ->orWhereBetween('end_time', [$startTime, $endTime])
-                        ->orWhere(function ($q2) use ($startTime, $endTime) {
-                            $q2->where('start_time', '<=', $startTime)
-                                ->where('end_time', '>=', $endTime);
-                        });
-                });
-            });
-
-        if ($driverId) {
-            $query->orWhere('id', $driverId);
-        }
-
-        return $query->get();
-    }
-
-    public function listAvailableVehicles($startTime, $endTime, $carId = null) {
-        $query = Vehicle::has('device') // Solo vehículos con dispositivo
-            ->whereDoesntHave('schedules', function ($query) use ($startTime, $endTime) {
-                $query->where(function ($q) use ($startTime, $endTime) {
-                    $q->whereBetween('start_time', [$startTime, $endTime])
-                        ->orWhereBetween('end_time', [$startTime, $endTime])
-                        ->orWhere(function ($q2) use ($startTime, $endTime) {
-                            $q2->where('start_time', '<=', $startTime)
-                                ->where('end_time', '>=', $endTime);
-                        });
-                });
-            });
-        if ($carId) {
-            $query->orWhere('id', $carId);
-        }
-        return $query->get();
-    }
-
-    public function availableResources(Request $request)
+    public function availableResources()
     {
         try {
-            // Validar los parámetros de consulta
-            $request->validate([
-                'start_time' => 'required|date',
-                'end_time' => 'required|date|after:start_time',
-                'driver_id' => 'nullable|exists:drivers,id', // Opcional
-                'car_id' => 'nullable|exists:vehicles,id', // Opcional
-            ]);
-
-            // Obtener los valores de las fechas
-            $start_time = $request->start_time;
-            $end_time = $request->end_time;
-            $driverId = $request->driver_id; // Si lo necesitas
-            $carId = $request->car_id; // Si lo necesitas
-
-            // Lógica para obtener conductores y vehículos disponibles
-            $drivers = $this->listDriversDisponibles($start_time, $end_time, $driverId);
-            $vehicles = $this->listAvailableVehicles($start_time, $end_time, $carId);
+            $drivers = Driver::with('persona')
+                ->where('status', true)
+                ->whereHas('persona', fn($query) => $query->where('estado', true))->get();
 
             return response()->json([
                 'drivers' => $drivers,
-                'vehicles' => $vehicles,
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error processing request: ' . $e->getMessage()], 500);
@@ -113,19 +57,17 @@ class VehiclesController extends Controller
     {
         $validatedData = $request->validate([
             'car_id' => 'required|exists:vehicles,id',
-            'start_time' => 'required|date|after_or_equal:now',
-            'end_time' => 'required|date|after:start_time',
             'driver_id' => 'required|exists:drivers,id',
         ]);
-
         try {
-            // Crear la programación del vehículo
             VehicleSchedule::create($validatedData);
-            Driver::findOrFail($validatedData['driver_id'])->update(['status' => false]);
-            return redirect()->back()->with(['success' => 'Conductor asignado a vehiculo exitosamente.'], 201);
+            $driver = Driver::findOrFail($validatedData['driver_id']);
+            $driver->update(['status' => false]);
+            Vehicle::findOrFail($validatedData['car_id'])->update(['responsable_id' => $driver->persona->id]);
+            return redirect()->back()->with(['success' => 'Conductor asignado a vehículo exitosamente.']);
         } catch (\Throwable $th) {
             // Manejo de errores
-            return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()], 500);
+            return redirect()->back()->with(['error' => 'Error al asignar vehículo: ' . $th->getMessage()]);
         }
     }
 
@@ -133,22 +75,18 @@ class VehiclesController extends Controller
     {
         $validatedData = $request->validate([
             'car_id' => 'required|exists:vehicles,id',
-            'start_time' => 'required|date',
-            'end_time' => 'required|date|after:start_time',
             'driver_id' => 'required|exists:drivers,id',
         ]);
-
         try {
             DB::beginTransaction();
             $item = VehicleSchedule::findOrFail($id);
-            // Cambiar el estado del conductor solo si es necesario
             if ($validatedData['driver_id'] !== $item->driver_id) {
                 Driver::where('id', $item->driver_id)->update(['status' => true]);
-                Driver::where('id', $validatedData['driver_id'])->update(['status' => false]);
+                $newDriver = Driver::findOrFail($validatedData['driver_id']);
+                $newDriver->update(['status' => false]);
+                Vehicle::findOrFail($validatedData['car_id'])->update(['responsable_id' => $newDriver->persona->id]);
             }
-            // Actualizar la programación del vehículo
             $item->update($validatedData);
-            // Confirmar la transacción
             DB::commit();
             return redirect()->back()->with('success', 'Información actualizada exitosamente.');
         } catch (\Throwable $th) {
@@ -159,19 +97,37 @@ class VehiclesController extends Controller
         }
     }
 
+    public function deleteScheduleVehicle($id)
+    {
+        try {
+            $item = VehicleSchedule::findOrFail($id);
+            if ($item->cargas()->where('status', '!=', 'entregado')->where('status', '!=', 'cancelado')->exists()) {
+                return back()->with('error', 'Hay cargas pendientes.');
+            }
+            Driver::where('id', $item->driver_id)->update(['status' => true]);
+            Vehicle::findOrFail($item->car_id)->update(['responsable_id' => null]);
+            $item->delete();
+            return redirect()->back()->with('success', 'Eliminado correctamente');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->back()->with('error', 'No encontrado.');
+        } catch (\Exception $e) {
+            Log::error('Error al modificar estado: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Ocurrió un error al modificar el estado.');
+        }
+    }
+
     public function cancelScheduleVehicle($id)
     {
         try {
             $item = VehicleSchedule::findOrFail($id);
             if ($item->cargas()->where('status', '!=', 'entregado')->where('status', '!=', 'cancelado')->exists()) {
-                return back()->with('error', 'Hay cargas con estado diferente a entregado o pendiente.');
+                return back()->with('error', 'Hay cargas pendientes.');
             }
             $item->status_time = !$item->status_time;
-            $item->update();
-            $message = $item->status_time
-                ? 'Reactivado correctamente'
-                : 'Desactivado correctamente';
-            return redirect()->back()->with('success', $message);
+            Driver::where('id', $item->driver_id)->update(['status' => true]);
+            Vehicle::findOrFail($item->car_id)->update(['responsable_id' => null]);
+            $item->save();
+            return redirect()->back()->with('success', 'Desactivado correctamente');
         } catch (ModelNotFoundException $e) {
             return redirect()->back()->with('error', 'No encontrado.');
         } catch (\Exception $e) {
@@ -200,7 +156,6 @@ class VehiclesController extends Controller
             $data = $request->validated();
             // Crear un nuevo vehículo
             $vehicle = new Vehicle($data);
-            $vehicle->responsable_id = Auth::user()->id; // Asignar el responsable
             $vehicle->save();
             // Actualizar el estado del dispositivo si se proporciona device_id
             if (!empty($data['device_id'])) {
@@ -293,7 +248,11 @@ class VehiclesController extends Controller
     /** Mantenimientos */
     public function listMantenimientos()
     {
-        $vehicles = Vehicle::all();
+        // Obtener los IDs de los vehículos que tienen mantenimientos pendientes
+        $vehiclesWithPendingMaintenance = VehiculoMantenimiento::whereIn('estado', ['pendiente', 'proceso'])
+            ->pluck('vehicle_id');
+        // Obtener todos los vehículos que no están en la lista anterior
+        $vehicles = Vehicle::whereNotIn('id', $vehiclesWithPendingMaintenance)->get();
         $list = VehiculoMantenimiento::with(['vehicle', 'tipo'])->get();
         $tipos = TipoMantenimiento::all();
         return Inertia::render('Admin/Vehicle/Mantenimientos/index', [
@@ -306,6 +265,7 @@ class VehiclesController extends Controller
     public function storeMantenimientoVehicle(Request $request)
     {
         $validatedData = $request->validate([
+            'taller' => 'required|string',
             'vehicle_id' => 'required|exists:vehicles,id',
             'fecha_inicio' => 'required|date|after_or_equal:now',
             'observaciones' => 'nullable|string|max:255',
@@ -322,6 +282,7 @@ class VehiclesController extends Controller
     public function updateMantenimientoVehicle(Request $request, $id)
     {
         $validatedData = $request->validate([
+            'taller' => 'required|string',
             'vehicle_id' => 'required|exists:vehicles,id',
             'fecha_inicio' => 'required|date|after_or_equal:now',
             'observaciones' => 'nullable|string|max:255',

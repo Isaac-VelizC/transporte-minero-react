@@ -120,11 +120,8 @@ class GeocercasController extends Controller
             }
             return redirect()->back()->with('info', 'No se detectaron cambios en la geocerca');
         } catch (ModelNotFoundException $e) {
-            return back()
-                ->with('error', 'Geocerca no encontrada');
+            return back()->with('error', 'Geocerca no encontrada');
         } catch (\Exception $e) {
-            Log::error('Error updating geocerca: ' . $e->getMessage());
-
             return back()
                 ->withInput()
                 ->with('error', 'No se pudo actualizar la geocerca. Intente nuevamente.');
@@ -136,16 +133,13 @@ class GeocercasController extends Controller
     public function destroy(string $id) {
         try {
             $geocerca = Geocerca::findOrFail($id);
-
             // Alternar el estado de activación
             $geocerca->is_active = !$geocerca->is_active;
             $geocerca->save();
-
             // Mensaje dinámico basado en el nuevo estado
             $message = $geocerca->is_active
                 ? 'Geocerca reactivada exitosamente'
                 : 'Geocerca desactivada exitosamente';
-
             return redirect()->back()->with('success', $message);
         } catch (ModelNotFoundException $e) {
             return redirect()->back()->with('error', 'Geocerca no encontrada');

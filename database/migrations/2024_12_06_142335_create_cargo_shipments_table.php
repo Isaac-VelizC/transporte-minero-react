@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             // Relación con vehículos
             $table->unsignedBigInteger('car_id')->nullable();
-            $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
+            $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('set null');
             $table->unsignedBigInteger('programming')->nullable();
-            $table->foreign('programming')->references('id')->on('vehicle_schedules')->onDelete('cascade');
+            $table->foreign('programming')->references('id')->on('vehicle_schedules')->onDelete('set null');
             $table->unsignedBigInteger('geofence_id')->nullable();
             $table->foreign('geofence_id')->references('id')->on('geocercas')->onDelete('set null');
 
@@ -25,21 +25,26 @@ return new class extends Migration
             $table->unsignedBigInteger('client_id')->nullable();
             $table->foreign('client_id')->references('id')->on('personas')->onDelete('cascade');
             $table->unsignedBigInteger('conductor_id')->nullable();
-            $table->foreign('conductor_id')->references('id')->on('personas')->onDelete('cascade');
+            $table->foreign('conductor_id')->references('id')->on('personas')->onDelete('set null');
             
             // Nuevos campos relevantes
-            $table->decimal('peso', 10, 2); // Peso de la carga (en toneladas o kg)
-            $table->string('destino'); // Destino del envío
+            $table->decimal('peso', 10, 2);
+            $table->string('origen');
+            $table->string('destino');
             $table->enum('status', ['pendiente', 'en_transito', 'entregado', 'cancelado'])->default('pendiente');
             $table->boolean('delete')->default(true);
 
             // Información adicional
-            $table->timestamp('fecha_envio')->default(now()); // Fecha y hora del envío
-            $table->timestamp('fecha_entrega')->nullable(); // Fecha y hora de entrega
-            $table->decimal('client_latitude', 10, 8)->nullable(); // Latitud del cliente
-            $table->decimal('client_longitude', 11, 8)->nullable(); // Longitud del cliente
+            $table->timestamp('fecha_envio')->default(now());
+            $table->timestamp('fecha_entrega')->nullable();
+            $table->decimal('client_latitude', 10, 8)->nullable();
+            $table->decimal('client_longitude', 11, 8)->nullable();
+            $table->decimal('origen_latitude', 10, 8)->nullable();
+            $table->decimal('origen_longitude', 11, 8)->nullable();
             $table->text('notas')->nullable();
             
+            $table->integer('sub_total', 11)->default(0);
+            $table->integer('total', 11)->default(0);
             // Timestamps
             $table->timestamps();
         });
