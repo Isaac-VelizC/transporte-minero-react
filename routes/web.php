@@ -112,4 +112,6 @@ Route::middleware(['auth', 'checkRole:Cliente'])->group(function () {
     Route::get('/client/envio/show/{id}', [ClientDriverController::class, 'showEnvioClient'])->name('client.envio.show');
 });
 
+Route::get('/devices/{id}/location/{envio_id}/monitoreo', [DeviceController::class, 'updateDeviceRutMap'])->name('device.monitoreo.put');
+
 require __DIR__.'/auth.php';

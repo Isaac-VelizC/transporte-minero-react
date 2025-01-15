@@ -8,6 +8,7 @@ use App\Http\Requests\Geocerca\GeocercaUpdateResquest;
 use App\Models\AltercationReport;
 use App\Models\CargoShipment;
 use App\Models\Geocerca;
+use App\Models\RutaDevice;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +19,8 @@ class GeocercasController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index() {
+    public function index()
+    {
         $items = Geocerca::with('creator')->get();
         return Inertia::render('Admin/Map/Geocercas/index', [
             'geocercas' => $items
@@ -30,24 +32,29 @@ class GeocercasController extends Controller
     public function showMap($id)
     {
         $envio = CargoShipment::with([
+            'conductor',
             'vehicle',
             'geocerca'
         ])->findOrFail($id);
         $altercados = AltercationReport::where('envio_id', $id)->get();
-        
         if (is_null($envio->vehicle->device)) {
             return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
         }
+        $rutaEnvioDevice = RutaDevice::where('envio_id', $id)
+            ->where('device_id', $envio->vehicle->device->id)
+            ->first();
 
         return Inertia::render('Admin/Map/index', [
             'envio' => $envio,
-            'altercados' => $altercados
+            'altercados' => $altercados,
+            'rutaEnvioDevice' => $rutaEnvioDevice
         ]);
     }
     /**
      * Show the form for creating a new resource.
      */
-    public function create() {
+    public function create()
+    {
         return Inertia::render('Admin/Map/Geocercas/form', [
             'types' => [
                 ['value' => 'zona_de_trabajo'],
@@ -60,7 +67,8 @@ class GeocercasController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(GeocercaCreateResquest $request) {
+    public function store(GeocercaCreateResquest $request)
+    {
         $validatedData = $request->validated();
         $validatedData['created_by'] = Auth::id();
         try {
@@ -78,7 +86,8 @@ class GeocercasController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id) {
+    public function edit($id)
+    {
         try {
             $geocerca = Geocerca::findOrFail($id);
             return Inertia::render('Admin/Map/Geocercas/form', [
@@ -98,7 +107,8 @@ class GeocercasController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(GeocercaUpdateResquest $request, string $id) {
+    public function update(GeocercaUpdateResquest $request, string $id)
+    {
         try {
             $geocerca = Geocerca::findOrFail($id);
             $validatedData = $request->validated();
@@ -130,7 +140,8 @@ class GeocercasController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id) {
+    public function destroy(string $id)
+    {
         try {
             $geocerca = Geocerca::findOrFail($id);
             // Alternar el estado de activación

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\LocationUpdated;
+use App\Events\RutaEnvioDeviceUpdated;
 use App\Models\AltercationReport;
 use App\Models\CargoShipment;
 use App\Models\Device;
@@ -9,6 +11,7 @@ use App\Models\Geocerca;
 use App\Models\RutaDevice;
 use App\Models\VehicleSchedule;
 use App\Models\VehiculoMantenimiento;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +23,7 @@ class ClientDriverController extends Controller
     public function showEnvio($id)
     {
         try {
-            $envio = CargoShipment::with(['vehicle', 'client', 'conductor.driver'])->findOrFail($id);
+            $envio = CargoShipment::with(['vehicle.device', 'client', 'conductor.driver'])->findOrFail($id);
             $item = AltercationReport::where('envio_id', $id)->get();
 
             return Inertia::render('Conductor/showEnvio', [
@@ -145,12 +148,8 @@ class ClientDriverController extends Controller
             ]);
         }
         $idDriver = $user->persona->driver->id;
-
-        $vehicleSchedule = VehicleSchedule::where('end_time', '>', now())
-            ->where('driver_id', $idDriver)
-            ->first();
+        $vehicleSchedule = VehicleSchedule::where('driver_id', $idDriver)->first();
         $list = collect();
-
         if ($vehicleSchedule) {
             $carId = $vehicleSchedule->car_id;
             $list = VehiculoMantenimiento::with('vehicle')->where('vehicle_id', $carId)->get();
@@ -170,6 +169,9 @@ class ClientDriverController extends Controller
         try {
             $item = VehiculoMantenimiento::findOrFail($id);
             $item->estado = $validated['status'];
+            if ($item->estado == 'terminado') {
+                $item->fecha_fin = Carbon::now();
+            }
             $item->save();
             return back()->with([
                 'success' => 'Confirmación exitosa',
@@ -220,12 +222,14 @@ class ClientDriverController extends Controller
             $rutaDevice->save();
 
             // Emitir evento a través de WebSocket
-            //event(new LocationUpdated($device));
+            event(new LocationUpdated($device));
+            event(new RutaEnvioDeviceUpdated($rutaDevice));
 
             return response()->json([
                 'success' => true,
                 'latitude' => $device->last_latitude,
-                'longitude' => $device->last_longitude
+                'longitude' => $device->last_longitude,
+                'coordenadas' => $rutaDevice->coordenadas,
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error actualizando la ubicación: ' . $e->getMessage()], 500);

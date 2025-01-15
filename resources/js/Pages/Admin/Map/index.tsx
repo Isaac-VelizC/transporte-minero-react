@@ -1,20 +1,36 @@
-import { AltercadoIcon, customIcon, deviceIcon } from "@/Components/IconMap";
+import {
+    AltercadoIcon,
+    customIcon,
+    deviceIcon,
+    HomeIcon,
+} from "@/Components/IconMap";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Marker, Popup, Polygon, Polyline } from "react-leaflet";
 import * as turf from "@turf/turf";
-import { alertToast } from "@/Components/Alerts/AlertaToast";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import Map from "@/Components/Maps/Map";
+import { RutaEnvioDeviceInterface } from "@/interfaces/RutaEnvioDevice";
+import axios from "axios";
+import toast from "react-hot-toast";
+import ModalAlerta from "./ModalAlerta";
 
 type Props = {
     envio: ShipmentInterface;
     altercados?: AltercationReportInterface[];
+    rutaEnvioDevice?: RutaEnvioDeviceInterface;
 };
 
-const Index: React.FC<Props> = ({ envio, altercados }) => {
+const Index: React.FC<Props> = ({ envio, altercados, rutaEnvioDevice }) => {
+    const [alertTriggered, setAlertTriggered] = useState(false);
+    const [rutaUpdated, SetRutaUpdate] = useState(rutaEnvioDevice?.coordenadas);
+    const [error, setError] = useState<string | null>(null);
+    const [routeCoordinates, setRouteCoordinates] = useState<
+        [number, number][]
+    >([]);
+    const [alerta, setAlerta] = useState(false);
     const geocercaCoords: [number, number][] = envio.geocerca
         ?.polygon_coordinates
         ? JSON.parse(envio.geocerca.polygon_coordinates)
@@ -25,18 +41,22 @@ const Index: React.FC<Props> = ({ envio, altercados }) => {
         envio.client_longitude,
     ];
 
-    const deviceLocation: [number, number] | null =
+    const origenCoords: [number, number] = [
+        envio.origen_latitude,
+        envio.origen_longitude,
+    ];
+
+    const [deviceLocation, setDeviceLocation] = useState<
+        [number, number] | null
+    >(
         envio.vehicle.device?.last_latitude &&
-        envio.vehicle.device?.last_longitude
+            envio.vehicle.device?.last_longitude
             ? [
                   JSON.parse(envio.vehicle.device.last_latitude),
                   JSON.parse(envio.vehicle.device.last_longitude),
               ]
-            : null;
-
-    const [isInsideGeofence, setIsInsideGeofence] = useState(false);
-    const [path, setPath] = useState<[number, number][]>([]);
-
+            : null
+    );
     // Memorizar la geocerca cerrada para evitar cálculos redundantes
     const closedGeocercaCoords = useMemo(() => {
         if (geocercaCoords.length === 0) return [];
@@ -45,48 +65,99 @@ const Index: React.FC<Props> = ({ envio, altercados }) => {
             : geocercaCoords;
     }, [geocercaCoords]);
 
+    const checkInsideGeofence = useCallback(
+        (coords: [number, number]) => {
+            const point = turf.point(coords);
+            const polygon = turf.polygon([closedGeocercaCoords]);
+            return turf.booleanPointInPolygon(point, polygon);
+        },
+        [geocercaCoords]
+    );
+
     // Verificar si el dispositivo está dentro o fuera de la geocerca
     useEffect(() => {
         if (!deviceLocation || closedGeocercaCoords.length === 0) return;
 
-        const polygon = turf.polygon([closedGeocercaCoords]);
-        const point = turf.point(deviceLocation);
-
-        const inside = turf.booleanPointInPolygon(point, polygon);
-
-        if (inside !== isInsideGeofence) {
-            setIsInsideGeofence(inside);
-            alertToast({
-                message: inside
-                    ? "El dispositivo entró dentro de la geocerca."
-                    : "El dispositivo ha salido de la geocerca.",
-                deviceName: envio.vehicle.device?.name_device || "",
-            });
+        if (!checkInsideGeofence(deviceLocation)) {
+            if (!alertTriggered) {
+                setAlerta(true);
+            }
+        } else {
+            if (alertTriggered) {
+                setAlerta(false);
+                setAlertTriggered(false);
+            }
         }
-    }, [deviceLocation, closedGeocercaCoords, isInsideGeofence]);
+    }, [deviceLocation, closedGeocercaCoords, alertTriggered]);
 
-    // Actualizar el historial del trayecto
+    const handleCloseAlert = () => {
+        setAlerta(false);
+        setAlertTriggered(true);
+    };
+
+    const updateRutaDevice = async () => {
+        try {
+            const response = await axios.get(
+                `/devices/${envio.vehicle.device?.id}/location/${envio.id}/monitoreo`
+            );
+            if (response.status === 200) {
+                const { latitude, longitude, coordenadas } = response.data;
+                setDeviceLocation([latitude, longitude]);
+                SetRutaUpdate(coordenadas);
+            } else {
+                throw new Error("Error al actualizar la ubicación");
+            }
+        } catch (err) {
+            console.error("Error en updateRutaDevice:", err);
+            toast.error("No se pudo actualizar la ubicación");
+        }
+    };
+
     useEffect(() => {
-        if (deviceLocation) {
-            setPath((prevPath) => {
-                const lastPoint = prevPath[prevPath.length - 1];
-                if (
-                    !lastPoint ||
-                    lastPoint[0] !== deviceLocation[0] ||
-                    lastPoint[1] !== deviceLocation[1]
-                ) {
-                    return [...prevPath, deviceLocation];
-                }
-                return prevPath;
-            });
+        let isMounted = true;
+        const intervalId = setInterval(async () => {
+            if (isMounted) await updateRutaDevice();
+        }, 20000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(intervalId);
+        };
+    }, [envio.vehicle.device?.id]);
+
+    // Función para obtener la ruta entre el origen y el destino
+    const fetchRoute = async () => {
+        try {
+            const response = await axios.get(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&access_token=${import.meta.env.TOKEN_MAPBOX_KEY}`
+            );
+            const route = response.data.routes[0].geometry.coordinates.map(
+                (coord: number[]) => [coord[1], coord[0]]
+            );
+            setRouteCoordinates(route);
+        } catch (err) {
+            console.error("Error fetching route:", err);
+            setError("No se pudo obtener la ruta.");
         }
-    }, [deviceLocation]);
+    };
+
+    useEffect(() => {
+        fetchRoute();
+    }, [origenCoords, envioCoords]);
 
     return (
         <Authenticated>
             <Head title="Mapa" />
+            <ModalAlerta
+                show={alerta}
+                onClose={handleCloseAlert}
+                conductor={
+                    envio.conductor?.nombre + " " + envio.conductor?.ap_pat
+                }
+                telefono={envio.conductor?.numero}
+            />
             <div className="h-150 w-full">
-                <Map center={envioCoords} zoom={13}>
+                <Map center={envioCoords} zoom={15}>
                     {/* Renderizar geocerca */}
                     {closedGeocercaCoords.length > 0 && (
                         <Polygon
@@ -98,6 +169,10 @@ const Index: React.FC<Props> = ({ envio, altercados }) => {
                     {/* Coordenadas del destino */}
                     <Marker position={envioCoords} icon={customIcon}>
                         <Popup>{envio.destino}</Popup>
+                    </Marker>
+                    {/* Coordenadas del origen */}
+                    <Marker position={origenCoords} icon={HomeIcon}>
+                        <Popup>{envio.origen}</Popup>
                     </Marker>
                     {/* Ubicación del dispositivo */}
                     {deviceLocation && (
@@ -122,13 +197,16 @@ const Index: React.FC<Props> = ({ envio, altercados }) => {
                                 <Popup>{item.description}</Popup>
                             </Marker>
                         ))}
-                    {path.length > 1 && (
+                    {/** Ruta del Camion o dispositivo */}
+                    {rutaUpdated && rutaUpdated.length > 0 && (
                         <Polyline
-                            positions={path}
-                            color="green"
-                            weight={3}
-                            dashArray="5, 10"
+                            positions={JSON.parse(rutaUpdated)}
+                            color={rutaEnvioDevice?.color}
                         />
+                    )}
+                    {/* Dibuja la ruta en el mapa */}
+                    {routeCoordinates.length > 0 && (
+                        <Polyline positions={routeCoordinates} color="blue" />
                     )}
                 </Map>
             </div>

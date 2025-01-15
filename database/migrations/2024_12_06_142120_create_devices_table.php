@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('devices', function (Blueprint $table) {
             $table->id();
             $table->string('num_serial')->unique();
+            $table->string('visorID')->unique();
             $table->string('name_device')->nullable();
             $table->string('type')->nullable();
             $table->enum('status', ['activo', 'inactivo', 'asignado'])->default('activo');

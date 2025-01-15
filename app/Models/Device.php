@@ -14,6 +14,7 @@ class Device extends Model
     protected $fillable = [
         'num_serial',
         'name_device',
+        'visorID',
         'type',
         'status',
         'last_latitude',

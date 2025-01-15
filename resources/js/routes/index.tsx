@@ -92,6 +92,11 @@ export const roleNavItems: Record<
             icon: <i className="bi bi-truck"></i>,
             label: "Envios",
         },
+        {
+            href: "mantenimiento.list",
+            icon: <i className="bi bi-gear"></i>,
+            label: "Mantenimientos",
+        },
         /*{
             href: "view.map",
             icon: <i className="bi bi-journals"></i>,

@@ -10,6 +10,7 @@ import { VehicleInterface } from "@/interfaces/Vehicle";
 import { useForm } from "@inertiajs/react";
 import React, { useEffect } from "react";
 import toast from "react-hot-toast";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 type Props = {
     show: boolean;
@@ -19,15 +20,11 @@ type Props = {
     isEditing: boolean;
 };
 
-const FormModal: React.FC<Props> = ({
-    show,
-    onClose,
-    device,
-    isEditing,
-}) => {
+const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
     const initialData = device || {
         id: null,
         num_serial: "",
+        visorID: "",
         name_device: "",
         type: "",
         status: "",
@@ -40,25 +37,32 @@ const FormModal: React.FC<Props> = ({
         setData(initialData);
     }, [device]);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        const action = isEditing && data?.id ? patch : post;
-        const routeName =
-            isEditing && data?.id ? "devices.update" : "devices.create";
-        const routeParams = isEditing && data?.id ? data?.id : undefined;
-
-        action(route(routeName, routeParams), {
-            onSuccess: ({ props: { flash } }) => {
-                onClose();
-                reset();
-                if (flash?.success) toast.success(flash.success);
-                if (flash?.error) toast.error(flash.error);
-            },
-            onError: () => {
-                toast.error('Error al registrar o actualizar el dispositivo');
-            },
-        });
+        try {
+            const fp = await FingerprintJS.load();
+            const result = await fp.get();
+            const deviceId = result.visitorId;
+            setData('visorID', deviceId);
+    
+            const action = isEditing && data?.id ? patch : post;
+            const routeName = isEditing && data?.id ? "devices.update" : "devices.create";
+            const routeParams = isEditing && data?.id ? data?.id : undefined;
+    
+            action(route(routeName, routeParams), {
+                onSuccess: ({ props: { flash } }) => {
+                    onClose();
+                    reset();
+                    if (flash?.success) toast.success(flash.success);
+                    if (flash?.error) toast.error(flash.error);
+                },
+                onError: () => {
+                    toast.error("Error al registrar o actualizar el dispositivo");
+                },
+            });
+        } catch (error) {
+            toast.error("No se pudo obtener la información del dispositivo");
+        }
     };
 
     return (
@@ -117,7 +121,9 @@ const FormModal: React.FC<Props> = ({
                             onChange={(e) => setData("type", e.target.value)}
                             value={data.type || ""}
                         >
-                            <option value="" disabled>Seleccionar SO</option>
+                            <option value="" disabled>
+                                Seleccionar SO
+                            </option>
                             <option value="Android">Android</option>
                             <option value="IOS">IOS</option>
                         </SelectInput>
@@ -135,7 +141,9 @@ const FormModal: React.FC<Props> = ({
                             onChange={(e) => setData("status", e.target.value)}
                             value={data.status || ""}
                         >
-                            <option value="" disabled>Seleccionar estado</option>
+                            <option value="" disabled>
+                                Seleccionar estado
+                            </option>
                             <option value="activo">Activo</option>
                             <option value="inactivo">Inactivo</option>
                         </SelectInput>

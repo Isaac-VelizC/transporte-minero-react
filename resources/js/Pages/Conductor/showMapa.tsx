@@ -4,18 +4,12 @@ import { ShipmentInterface } from "@/interfaces/Shipment";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import { DeviceInterface } from "@/interfaces/Device";
 import { Head } from "@inertiajs/react";
-import * as turf from "@turf/turf";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import {
-    Marker,
-    Polygon,
-    Polyline,
-    Popup
-} from "react-leaflet";
+import { Marker, Polygon, Polyline, Popup } from "react-leaflet";
 import { RutaEnvioDeviceInterface } from "@/interfaces/RutaEnvioDevice";
-import { deviceIcon } from "@/Components/IconMap";
+import { customIcon, deviceIcon, HomeIcon } from "@/Components/IconMap";
 import Map from "@/Components/Maps/Map";
-//import { LatLngExpression } from "leaflet";
+import toast from "react-hot-toast";
 
 type Props = {
     envio: ShipmentInterface;
@@ -24,7 +18,7 @@ type Props = {
     rutaEnvioDevice?: RutaEnvioDeviceInterface;
 };
 
-const rutaCoordenadas = [
+/*const rutaCoordenadas = [
     [-19.5638, -65.7391],
     [-19.5642, -65.7387],
     [-19.5645, -65.7383],
@@ -40,7 +34,7 @@ const rutaCoordenadas = [
     [-19.5695, -65.7337],
     [-19.57, -65.7333],
     [-19.5705, -65.7329],
-];
+];*/
 
 export default function ShowMapa({
     envio,
@@ -48,12 +42,10 @@ export default function ShowMapa({
     device,
     rutaEnvioDevice,
 }: Props) {
-    const [currentIndex, setCurrentIndex] = useState(0); // Para rastrear el índice actual prueba borrar
-console.log(rutaEnvioDevice);
-
+    //const [currentIndex, setCurrentIndex] = useState(0); // Para rastrear el índice actual prueba borrar
     const [loading, setLoading] = useState(false);
+    const [rutaUpdated, SetRutaUpdate] = useState(rutaEnvioDevice?.coordenadas);
     const [error, setError] = useState<string | null>(null);
-    const [devicePath, setDevicePath] = useState<[number, number][]>([]);
     const [deviceLocation, setDeviceLocation] = useState<
         [number, number] | null
     >(
@@ -78,25 +70,8 @@ console.log(rutaEnvioDevice);
         envio.client_latitude,
         envio.client_longitude,
     ];
-    /** Control de la geocerca si sale o entra el dispositivo */
-    const closedGeocercaCoords = useMemo(() => {
-        if (memoizedGeocercaCoords.length === 0) return [];
-        return memoizedGeocercaCoords[0] !==
-            memoizedGeocercaCoords[memoizedGeocercaCoords.length - 1]
-            ? [...memoizedGeocercaCoords, memoizedGeocercaCoords[0]]
-            : memoizedGeocercaCoords;
-    }, [memoizedGeocercaCoords]);
 
-    const checkInsideGeofence = useCallback(
-        (coords: [number, number]) => {
-            const point = turf.point(coords);
-            const polygon = turf.polygon([closedGeocercaCoords]);
-            return turf.booleanPointInPolygon(point, polygon);
-        },
-        [memoizedGeocercaCoords]
-    );
-
-    /** Simulacion de movimiento del dispositivo  */
+    /** Simulacion de movimiento del dispositivo para llegar al destino  */
     /*const simulateDeviceMovement = useCallback(() => {
         if (!deviceLocation) return;
 
@@ -130,14 +105,7 @@ console.log(rutaEnvioDevice);
         }
     }, [deviceLocation, envioCoords]);*/
 
-    const updateDevicePath = useCallback(
-        (latitude: number, longitude: number) => {
-            setDevicePath((prevPath) => [...prevPath, [latitude, longitude]]);
-        },
-        []
-    );
-
-    /** Optiene la posision del dispositivo */
+    /** Optiene la posision del dispositivo del navegador */
     const getCurrentPosition =
         useCallback(async (): Promise<GeolocationCoordinates | null> => {
             setLoading(true);
@@ -155,9 +123,9 @@ console.log(rutaEnvioDevice);
                 );
             });
         }, []);
-    /**Prueba borrar despues */
 
-    const updateLocation = async (latitude: number, longitude: number) => {
+    /**Prueba borrar despues */
+    /*const updateLocation = async (latitude: number, longitude: number) => {
         try {
             // Realiza la solicitud PUT para actualizar la ubicación
             const response = await axios.put(
@@ -184,28 +152,28 @@ console.log(rutaEnvioDevice);
         }
     };
 
-    /*useEffect(() => {
+    useEffect(() => {
         let isMounted = true;
-    
+
         const intervalId = setInterval(async () => {
-          if (currentIndex < rutaCoordenadas.length && isMounted) {
-            const [latitude, longitude] = rutaCoordenadas[currentIndex];
-            
-            await updateLocation(latitude, longitude);
-            setCurrentIndex((prevIndex) => prevIndex + 1);
-          } else {
-            clearInterval(intervalId); // Detener el intervalo si se recorrieron todas las coordenadas
-          }
-        }, 30000);
-    
+            if (currentIndex < rutaCoordenadas.length && isMounted) {
+                const [latitude, longitude] = rutaCoordenadas[currentIndex];
+
+                await updateLocation(latitude, longitude);
+                setCurrentIndex((prevIndex) => prevIndex + 1);
+            } else {
+                clearInterval(intervalId); // Detener el intervalo si se recorrieron todas las coordenadas
+            }
+        }, 20000);
+
         return () => {
-          isMounted = false;
-          clearInterval(intervalId);
+            isMounted = false;
+            clearInterval(intervalId);
         };
-      }, [currentIndex]);*/ // Dependemos de `currentIndex`
+    }, [currentIndex]);*/ // Dependemos de `currentIndex`
 
     /** Actualiza la coordenadas del dispositivo en la base de datos */
-    /*const updateLocation = useCallback(
+    const updateLocation = useCallback(
         async (latitude: number, longitude: number) => {
             try {
                 if (
@@ -213,11 +181,21 @@ console.log(rutaEnvioDevice);
                     Math.abs(deviceLocation[0] - latitude) > 0.0001 ||
                     Math.abs(deviceLocation[1] - longitude) > 0.0001
                 ) {
-                    await axios.put(`/devices/${device.id}/location/${envio.id}`, {
-                        latitude,
-                        longitude,
-                    });
-                    setDeviceLocation([latitude, longitude]);
+                    const response = await axios.put(
+                        `/devices/${device.id}/location/${envio.id}`,
+                        {
+                            latitude,
+                            longitude,
+                        }
+                    );
+                    if (response.status === 200) {
+                        const { latitude, longitude, coordenadas } =
+                            response.data;
+                        setDeviceLocation([latitude, longitude]);
+                        setDeviceLocation(coordenadas);
+                    } else {
+                        throw new Error("Error al actualizar la ubicación");
+                    }
                 }
             } catch (err) {
                 console.error("Error al actualizar la ubicación:", err);
@@ -225,29 +203,15 @@ console.log(rutaEnvioDevice);
             }
         },
         [device.id, deviceLocation]
-    );*/
+    );
 
     /*useEffect(() => {
         const intervalId = setInterval(simulateDeviceMovement, 1000);
         return () => clearInterval(intervalId);
     }, [simulateDeviceMovement]);*/
 
-    /** Ejecuta el control de la ubicacion del dispositivo en comparacion a la geocerca */
-    useEffect(() => {
-        if (deviceLocation) {
-            const [latitude, longitude] = deviceLocation;
-            updateDevicePath(latitude, longitude);
-
-            if (!checkInsideGeofence(deviceLocation)) {
-                setError("¡El dispositivo está fuera de la geocerca!");
-            } else {
-                setError(null);
-            }
-        }
-    }, [deviceLocation, updateDevicePath, checkInsideGeofence]);
-
     /** Ejecuta LA funcion para obtener la ubicacion del device y actualizar en la DB */
-    /*useEffect(() => {
+    useEffect(() => {
         let isMounted = true;
         const intervalId = setInterval(async () => {
             try {
@@ -258,13 +222,13 @@ console.log(rutaEnvioDevice);
             } catch (err) {
                 if (isMounted) setError("No se pudo obtener la ubicación");
             }
-        }, 30000);
+        }, 20000);
 
         return () => {
             isMounted = false;
             clearInterval(intervalId);
         };
-    }, [getCurrentPosition, updateLocation]);*/
+    }, [getCurrentPosition, updateLocation]);
 
     return (
         <Authenticated>
@@ -274,12 +238,8 @@ console.log(rutaEnvioDevice);
             </h1>
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {loading && <p>Cargando ubicación...</p>}
-            {rutaEnvioDevice?.coordenadas}
             <div className="mt-4 w-full h-[500px]">
-                <Map
-                    center={origenCoords}
-                    zoom={15}
-                >
+                <Map center={origenCoords} zoom={15}>
                     <Polygon
                         positions={memoizedGeocercaCoords}
                         color={geocerca.color}
@@ -290,24 +250,21 @@ console.log(rutaEnvioDevice);
                             <Popup>Ubicación del vehículo</Popup>
                         </Marker>
                     )}
-                    {/*<RoutingMachine
-                        origenCoords={origenCoords}
-                        destinoCoords={envioCoords}
-                    />*/}
-                    {rutaEnvioDevice &&
-                        rutaEnvioDevice.coordenadas.length > 0 && (
-                            <Polyline
-                                positions={JSON.parse(rutaEnvioDevice.coordenadas)}
-                                color={rutaEnvioDevice.color}
-                            />
-                        )}
-                    {/*<Polyline positions={devicePath} color="green" />*/}
-                    {/*<p>
-                        Coordenadas actuales:{" "}
-                        {JSON.stringify(
-                            rutaCoordenadas[currentIndex - 1] || null
-                        )}
-                    </p>*/}
+                    {/* Coordenadas del destino */}
+                    <Marker position={envioCoords} icon={customIcon}>
+                        <Popup>{envio.destino}</Popup>
+                    </Marker>
+                    {/* Coordenadas del origen */}
+                    <Marker position={origenCoords} icon={HomeIcon}>
+                        <Popup>{envio.origen}</Popup>
+                    </Marker>
+                    {/** Ruta del Camion o dispositivo */}
+                    {rutaUpdated && rutaUpdated.length > 0 && (
+                        <Polyline
+                            positions={JSON.parse(rutaUpdated)}
+                            color={rutaEnvioDevice?.color}
+                        />
+                    )}
                 </Map>
             </div>
         </Authenticated>

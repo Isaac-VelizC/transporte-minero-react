@@ -9,7 +9,7 @@ type Props = {
 const CardCount: React.FC<Props> = ({ title, result, icon }) => {
     return (
         /* From Uiverse.io by EcheverriaJesus */
-        <div className="flex items-center p-3 w-67 h-24 bg-white rounded-xl shadow-lg">
+        <div className="flex items-center p-3 w-full h-24 bg-white rounded-xl shadow-lg">
             <section className="flex justify-center items-center w-14 h-14 rounded-full shadow-md bg-gradient-to-r from-[#F9C97C] to-[#a2c3e9] hover:from-[#C9A9E9] hover:to-[#7EE7FC] hover:cursor-pointer hover:scale-110 duration-300">
             <i className={`bi bi-${icon} text-2xl text-white`}></i>
             </section>

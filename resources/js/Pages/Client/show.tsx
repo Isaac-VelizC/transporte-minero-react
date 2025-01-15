@@ -1,13 +1,16 @@
 import Card from "@/Components/Cards/Card";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
-
-import { AltercadoIcon, customIcon, deviceIcon } from "@/Components/IconMap";
-import { MapContainer, TileLayer, Marker, Popup, Polygon } from "react-leaflet";
+import { Head } from "@inertiajs/react";
+import {
+    AltercadoIcon,
+    customIcon,
+    deviceIcon,
+    HomeIcon,
+} from "@/Components/IconMap";
+import { Marker, Popup } from "react-leaflet";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import Map from "@/Components/Maps/Map";
-
 
 type Props = {
     envio: ShipmentInterface;
@@ -103,10 +106,7 @@ export default function Show({ envio, altercados }: Props) {
                         </h1>
                     </div>
                     <div className="h-150">
-                        <Map
-                            center={envioCoords}
-                            zoom={13}
-                        >
+                        <Map center={envioCoords} zoom={13}>
                             {/* Trayecto del dispositivo */}
                             {altercados &&
                                 altercados.map((item, index) => (
@@ -133,6 +133,21 @@ export default function Show({ envio, altercados }: Props) {
                                     </Popup>
                                 </Marker>
                             )}
+                            {origenCoords && (
+                                <Marker position={origenCoords} icon={HomeIcon}>
+                                    <Popup>{envio.origen}</Popup>
+                                </Marker>
+                            )}
+
+                            {envioCoords && (
+                                <Marker
+                                    position={envioCoords}
+                                    icon={customIcon}
+                                >
+                                    <Popup>{envio.destino}</Popup>
+                                </Marker>
+                            )}
+
                             {/* Ruta entre origen y destino */}
                             {/*<RoutingMachine
                                 origenCoords={origenCoords}

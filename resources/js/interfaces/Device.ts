@@ -2,6 +2,7 @@
 export interface DeviceInterface {
     id: number;
     num_serial: string;
+    visorID: string;
     name_device: string;
     type: string;
     status: string;
