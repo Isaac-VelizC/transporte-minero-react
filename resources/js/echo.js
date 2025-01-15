@@ -1,4 +1,4 @@
-import Echo from 'laravel-echo';
+/*import Echo from 'laravel-echo';
 
 import Pusher from 'pusher-js';
 window.Pusher = Pusher;
@@ -13,4 +13,4 @@ const echo = new Echo({
     enabledTransports: ['ws', 'wss'],
 });
 
-export default echo
+export default echo*/

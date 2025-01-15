@@ -222,8 +222,8 @@ class ClientDriverController extends Controller
             $rutaDevice->save();
 
             // Emitir evento a través de WebSocket
-            event(new LocationUpdated($device));
-            event(new RutaEnvioDeviceUpdated($rutaDevice));
+            //event(new LocationUpdated($device));
+            //event(new RutaEnvioDeviceUpdated($rutaDevice));
 
             return response()->json([
                 'success' => true,

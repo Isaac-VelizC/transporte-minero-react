@@ -26,6 +26,7 @@ type Props = {
 const Index: React.FC<Props> = ({ envio, altercados, rutaEnvioDevice }) => {
     const [alertTriggered, setAlertTriggered] = useState(false);
     const [rutaUpdated, SetRutaUpdate] = useState(rutaEnvioDevice?.coordenadas);
+    let token = 'pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA';
     const [error, setError] = useState<string | null>(null);
     const [routeCoordinates, setRouteCoordinates] = useState<
         [number, number][]
@@ -129,7 +130,7 @@ const Index: React.FC<Props> = ({ envio, altercados, rutaEnvioDevice }) => {
     const fetchRoute = async () => {
         try {
             const response = await axios.get(
-                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&access_token=${import.meta.env.TOKEN_MAPBOX_KEY}`
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&access_token=${token}`
             );
             const route = response.data.routes[0].geometry.coordinates.map(
                 (coord: number[]) => [coord[1], coord[0]]
