@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('destino');
             $table->enum('status', ['pendiente', 'en_transito', 'entregado', 'cancelado'])->default('pendiente');
             $table->boolean('delete')->default(true);
-        
+
             // Información adicional
             $table->timestamp('fecha_envio')->default(now());
             $table->timestamp('fecha_entrega')->nullable();
@@ -33,15 +33,16 @@ return new class extends Migration
             $table->decimal('origen_latitude', 10, 8)->nullable();
             $table->decimal('origen_longitude', 11, 8)->nullable();
             $table->text('notas')->nullable();
-            
+
+            // Eliminar auto_increment de sub_total y total
             $table->integer('sub_total')->default(0);
             $table->integer('total')->default(0);
-            
+
             // Timestamps
             $table->timestamps();
         });
-        
     }
+
 
     /**
      * Reverse the migrations.
