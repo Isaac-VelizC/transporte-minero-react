@@ -30,8 +30,8 @@ class VehicleSchedule extends Model
         return $this->belongsTo(Driver::class, 'driver_id');
     }
 
-    public function cargas()
+    public function cargoShipments()
     {
-        return $this->hasMany(CargoShipment::class, 'programming');
+        return $this->belongsToMany(CargoShipment::class, 'cargo_shipment_vehicle_schedule', 'vehicle_schedule_id', 'cargo_shipment_id');
     }
 }

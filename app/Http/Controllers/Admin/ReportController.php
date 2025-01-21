@@ -59,14 +59,14 @@ class ReportController extends Controller
             $query = CargoShipment::query();
             
             // Aplicar filtros dinámicos según los parámetros presentes
-            $query->when($request->vehiculo, fn($q, $vehiculo) => $q->where('car_id', $vehiculo))
-                ->when($request->cliente, fn($q, $cliente) => $q->where('client_id', $cliente))
-                ->when($request->conductor, fn($q, $conductor) => $q->where('conductor_id', $conductor))
+            $query->when($request->cliente, fn($q, $cliente) => $q->where('client_id', $cliente))
+                //->when($request->vehiculo, fn($q, $vehiculo) => $q->where('car_id', $vehiculo))
+                //->when($request->conductor, fn($q, $conductor) => $q->where('conductor_id', $conductor))
                 ->when($request->mes, fn($q, $mes) => $q->whereMonth('fecha_envio', $mes))
                 ->when($request->fecha, fn($q, $fecha) => $q->whereDate('fecha_envio', $fecha));
 
             // Eager load de relaciones y paginación
-            $results = $query->with(['vehicle', 'conductor', 'client'])->get();//->paginate(10);
+            $results = $query->with(['client', 'vehicleSchedules.vehicle'])->get();
 
             // Enviar los resultados a la vista con Inertia
             return Inertia::render('Admin/Reports/index', [

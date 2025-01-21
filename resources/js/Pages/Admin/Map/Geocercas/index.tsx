@@ -7,6 +7,7 @@ import LinkButton from "@/Components/Buttons/LinkButton";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import Map from "@/Components/Maps/Map";
+import { GeocercaIcon } from "@/Components/IconMap";
 
 // Define props type
 interface Props {
@@ -80,6 +81,7 @@ const Index: React.FC<Props> = ({ geocercas }) => {
                                             position={
                                                 centroid as [number, number]
                                             }
+                                            icon={GeocercaIcon}
                                         >
                                             <Popup>
                                                 {`Centro de ${geocerca.name}`}{" "}

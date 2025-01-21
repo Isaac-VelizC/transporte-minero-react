@@ -35,6 +35,7 @@ function FormModalMantenimieto({
         vehicle_id: null,
         taller: "",
         fecha_inicio: "",
+        fecha_fin: "",
         observaciones: "",
         tipo: null,
     };
@@ -71,7 +72,8 @@ function FormModalMantenimieto({
             <form className="p-6" onSubmit={handleSubmit}>
                 <h2 className="text-lg font-bold mb-2">
                     {isEditing
-                        ? "Editar Información de mantenimiento de la matricula: "+ infoData?.matricula
+                        ? "Editar Información de mantenimiento de la matricula: " +
+                          infoData?.matricula
                         : "Programar Mantenimiento"}
                 </h2>
                 <div>
@@ -86,25 +88,47 @@ function FormModalMantenimieto({
                     />
                     <InputError className="mt-2" message={errors.taller} />
                 </div>
-                <div>
-                    <InputLabel
-                        htmlFor="fecha_inicio"
-                        value="Fecha de mantenimiento"
-                    />
-                    <TextInput
-                        id="fecha_inicio"
-                        type="date"
-                        className="mt-1 block w-full"
-                        value={data.fecha_inicio}
-                        onChange={(e) =>
-                            setData("fecha_inicio", e.target.value)
-                        }
-                        required
-                    />
-                    <InputError
-                        className="mt-2"
-                        message={errors.fecha_inicio}
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div >
+                        <InputLabel
+                            htmlFor="fecha_inicio"
+                            value="Fecha de mantenimiento"
+                        />
+                        <TextInput
+                            id="fecha_inicio"
+                            type="date"
+                            className="mt-1 block w-full"
+                            value={data.fecha_inicio}
+                            onChange={(e) =>
+                                setData("fecha_inicio", e.target.value)
+                            }
+                            required
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.fecha_inicio}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel
+                            htmlFor="fecha_fin"
+                            value="Fecha fin de mantenimiento"
+                        />
+                        <TextInput
+                            id="fecha_fin"
+                            type="date"
+                            className="mt-1 block w-full"
+                            value={data.fecha_fin}
+                            onChange={(e) =>
+                                setData("fecha_fin", e.target.value)
+                            }
+                            required
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.fecha_fin}
+                        />
+                    </div>
                 </div>
                 {!isEditing ? (
                     <div>

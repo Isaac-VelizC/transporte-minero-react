@@ -1,21 +1,29 @@
 import DataTableComponent from "@/Components/Table";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, useForm } from "@inertiajs/react";
 import { TableColumn } from "react-data-table-component";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import Modal from "@/Components/Modal/Modal";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
+import InputLabel from "@/Components/Forms/InputLabel";
+import InputError from "@/Components/Forms/InputError";
 
 type Props = {
     envios: ShipmentInterface[];
 };
 
 export default function listEnvios({ envios }: Props) {
+    const initialData = {
+        body: "",
+    };
     const [confirmingShow, setConfirmingShow] = useState(false);
+    const [modalMessage, setModalMessage] = useState(false);
     const [cargaData, setCargaData] = useState<ShipmentInterface | null>(null);
+
+    const { data, setData, post, errors, processing, reset } = useForm(initialData);
 
     const columns: TableColumn<ShipmentInterface>[] = [
         {
@@ -25,7 +33,7 @@ export default function listEnvios({ envios }: Props) {
         },
         {
             name: "Cliente",
-            cell: (row) => row.client.nombre +' '+row.client.ap_pat,
+            cell: (row) => row.client.nombre + " " + row.client.ap_pat,
             sortable: true,
         },
         {
@@ -64,6 +72,9 @@ export default function listEnvios({ envios }: Props) {
                     <Link href={route("client.envio.show", row.id)}>
                         <i className="bi bi-eye"></i>
                     </Link>
+                    <button onClick={handleSendMessage}>
+                        <i className="bi bi-whatsapp"></i>
+                    </button>
                 </div>
             ),
             ignoreRowClick: true,
@@ -76,9 +87,14 @@ export default function listEnvios({ envios }: Props) {
         setConfirmingShow(true);
     }, []);
 
+    const handleSendMessage = useCallback(() => {
+        setModalMessage(true);
+    }, []);
+
     const closeModal = useCallback(() => {
         setConfirmingShow(false);
         setCargaData(null);
+        setModalMessage(false);
     }, []);
 
     const handleConfirm = async () => {
@@ -99,12 +115,30 @@ export default function listEnvios({ envios }: Props) {
         }
     };
 
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        post(route("send.message"), {
+            data: data,
+            onSuccess: ({ props: { flash } }) => {
+                if (flash.error) toast.error(flash.error);
+                if (flash.success) toast.success(flash.success);
+                closeModal();
+            },
+            onError: (errors) => {
+                console.error(errors);
+            },
+        });
+        reset();
+    };
+
     return (
         <Authenticated>
             <Head title="Envios" />
             <div>
                 <div className="flex flex-col lg:flex-row items-center justify-between my-4">
-                    <h1 className="text-lg font-semibold text-gray-200">Lista de Pedidos</h1>
+                    <h1 className="text-lg font-semibold text-gray-200">
+                        Lista de Pedidos
+                    </h1>
                 </div>
                 <DataTableComponent<ShipmentInterface>
                     columns={columns}
@@ -154,6 +188,40 @@ export default function listEnvios({ envios }: Props) {
                         ) : null}
                     </div>
                 </div>
+            </Modal>
+            <Modal show={modalMessage} onClose={closeModal}>
+                <form onSubmit={handleSubmit} className="p-6">
+                    <h2 className="text-lg font-bold mb-2">
+                        Enviar mensaje al encargado
+                    </h2>
+                    <div>
+                        <InputLabel
+                            htmlFor="body"
+                            value="Hablar con el encargado"
+                        />
+                        <textarea
+                            id="body"
+                            rows={4}
+                            className="mt-1 block w-full rounded-md"
+                            value={data.body}
+                            onChange={(e) => setData("body", e.target.value)}
+                        />
+                        <InputError className="mt-2" message={errors.body} />
+                    </div>
+                    <div className="mt-6 flex justify-end">
+                        <SecondaryButton type="button" onClick={closeModal}>
+                            Cancelar
+                        </SecondaryButton>
+
+                        <PrimaryButton
+                            type="submit"
+                            className="ms-3"
+                            disabled={processing}
+                        >
+                            {processing ? "Enviando..." : "Enviar"}
+                        </PrimaryButton>
+                    </div>
+                </form>
             </Modal>
         </Authenticated>
     );

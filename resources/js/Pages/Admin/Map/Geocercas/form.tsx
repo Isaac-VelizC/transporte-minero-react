@@ -4,7 +4,6 @@ import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import Checkbox from "@/Components/Forms/Checkbox";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
-import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
 import GeofenceMap from "@/Components/Maps/GeofenceMap";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
@@ -13,22 +12,17 @@ import { Head, useForm } from "@inertiajs/react";
 import React from "react";
 import toast from "react-hot-toast";
 
-type TypesGeocerca = {
-    value: string;
-};
-
 type Props = {
-    types: TypesGeocerca[];
     geocerca: GeocercaInterface;
     isEditing: boolean;
 };
 
-export default function form({ isEditing, geocerca, types }: Props) {
+export default function form({ isEditing, geocerca }: Props) {
     const initialData = geocerca || {
         id: null,
         name: "",
         polygon_coordinates: "[51.505, -0.09]",
-        type: "",
+        type: "zona_de_trabajo",
         description: "",
         color: "",
         is_active: true,
@@ -104,41 +98,7 @@ export default function form({ isEditing, geocerca, types }: Props) {
                                 message={errors.name}
                             />
                         </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="type"
-                                value="Tipo de Geocerca"
-                            />
-                            <SelectInput
-                                className="mt-1 block w-full"
-                                required
-                                onChange={(e) =>
-                                    setData("type", e.target.value)
-                                }
-                                value={data.type}
-                            >
-                                <option value="" disabled>
-                                    {types && types.length > 0
-                                        ? "Selecciona tipo de geocerca"
-                                        : "No hay datos disponibles"}
-                                </option>
-                                {types && types.length > 0
-                                    ? types.map((item, index) => (
-                                          <option
-                                              key={index}
-                                              value={item.value}
-                                          >
-                                              {item.value}
-                                          </option>
-                                      ))
-                                    : null}
-                            </SelectInput>
-                            <InputError
-                                className="mt-2"
-                                message={errors.type}
-                            />
-                        </div>
-                        <div className="hidden lg:block">
+                        {/*<div className="hidden lg:block">
                             <InputLabel
                                 htmlFor="polygon_coordinates"
                                 value="Coordenadas del poligono"
@@ -162,7 +122,7 @@ export default function form({ isEditing, geocerca, types }: Props) {
                                 className="mt-2"
                                 message={errors.polygon_coordinates}
                             />
-                        </div>
+                        </div>*/}
                         <div>
                             <InputLabel
                                 htmlFor="color"

@@ -7,6 +7,7 @@ use App\Http\Requests\Geocerca\GeocercaCreateResquest;
 use App\Http\Requests\Geocerca\GeocercaUpdateResquest;
 use App\Models\AltercationReport;
 use App\Models\CargoShipment;
+use App\Models\CargoShipmentVehicleSchedule;
 use App\Models\Geocerca;
 use App\Models\RutaDevice;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -31,36 +32,47 @@ class GeocercasController extends Controller
      */
     public function showMap($id)
     {
-        $envio = CargoShipment::with([
-            'conductor',
-            'vehicle',
-            'geocerca'
-        ])->findOrFail($id);
-        $altercados = AltercationReport::where('envio_id', $id)->get();
-        if (is_null($envio->vehicle->device)) {
+        // Obtener el envío junto con las relaciones necesarias
+        $envio = CargoShipment::with(['vehicleSchedules.vehicle.device', 'altercadoReports'])
+            ->findOrFail($id);
+
+        // Obtener los vehículos asociados al envío
+        $vehiclesShipments = $envio->vehicleSchedules()
+            ->with('vehicle.device')
+            ->get();
+
+        // Verificar si hay vehículos y si tienen dispositivos
+        $device = null;
+        foreach ($vehiclesShipments as $shipment) {
+            if ($shipment->vehicle && $shipment->vehicle->device) {
+                $device = $shipment->vehicle->device;
+                break; // Salir del bucle si encontramos un dispositivo
+            }
+        }
+
+        if (is_null($device)) {
             return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
         }
-        $rutaEnvioDevice = RutaDevice::where('envio_id', $id)
-            ->where('device_id', $envio->vehicle->device->id)
-            ->first();
+
+        // Obtener la ruta del dispositivo
+        $rutaEnvioDevices = RutaDevice::with('device')->where('envio_id', $id)->get();
+        $geocercas = Geocerca::where('is_active', true)->get();
 
         return Inertia::render('Admin/Map/index', [
             'envio' => $envio,
-            'altercados' => $altercados,
-            'rutaEnvioDevice' => $rutaEnvioDevice
+            'altercados' => $envio->altercadoReports, // Usar relación cargada
+            'rutaEnvioDevices' => $rutaEnvioDevices,
+            'vehicleSeleccionados' => $vehiclesShipments,
+            'geocercas' => $geocercas
         ]);
     }
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
         return Inertia::render('Admin/Map/Geocercas/form', [
-            'types' => [
-                ['value' => 'zona_de_trabajo'],
-                ['value' => 'zona_de_peligro'],
-                ['value' => 'zona_de_descanso']
-            ],
             'isEditing' => false
         ]);
     }
@@ -92,11 +104,6 @@ class GeocercasController extends Controller
             $geocerca = Geocerca::findOrFail($id);
             return Inertia::render('Admin/Map/Geocercas/form', [
                 'geocerca' => $geocerca,
-                'types' => [
-                    ['value' => 'zona_de_trabajo'],
-                    ['value' => 'zona_de_peligro'],
-                    ['value' => 'zona_de_descanso']
-                ],
                 'isEditing' => true
             ]);
         } catch (ModelNotFoundException $e) {

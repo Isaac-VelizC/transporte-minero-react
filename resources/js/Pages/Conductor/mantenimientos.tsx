@@ -46,7 +46,7 @@ export default function mantenimientos({ mantenimientos }: Props) {
                 sortable: true,
             },
             {
-                name: "Fecha Realizada",
+                name: "Fecha a recoger",
                 cell: (row: MantenimientoInterface) =>
                     row.fecha_fin ? row.fecha_fin : "unknown",
                 sortable: true,

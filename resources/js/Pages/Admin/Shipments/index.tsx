@@ -36,8 +36,8 @@ function index({ envios }: Props) {
             sortable: true,
         },
         {
-            name: "Matricula de Vehiculo",
-            cell: (row: ShipmentInterface) => row.vehicle.matricula,
+            name: "Fecha de Envio",
+            cell: (row: ShipmentInterface) => row.fecha_envio,
             sortable: true,
         },
         {
@@ -72,9 +72,14 @@ function index({ envios }: Props) {
                 <div className="flex gap-2">
                     {row.status === "entregado" ||
                     rol == "Encargado_Control" ? (
-                        <Link href={route("view.map", row.id)}>
-                            <i className="bi bi-geo-fill"></i>
-                        </Link>
+                        <>
+                            <Link href={route("view.map", row.id)}>
+                                <i className="bi bi-geo-fill"></i>
+                            </Link>
+                            <Link href={route("altercados.list", row.id)}>
+                                <i className="bi bi-exclamation-octagon"></i>
+                            </Link>
+                        </>
                     ) : (
                         <>
                             <Link href={route("envios.show", row.id)}>

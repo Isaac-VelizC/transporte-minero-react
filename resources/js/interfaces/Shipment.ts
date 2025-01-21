@@ -1,14 +1,10 @@
-import { GeocercaInterface } from "./Geocerca";
+import { CargoShipmentVehicleScheduleInterface } from "./CargoShipmentVehicleSchedule";
 import { PersonaInterface } from "./Persona";
-import { ScheduleInterface } from "./schedule";
-import { VehicleInterface } from "./Vehicle";
 
 export interface ShipmentInterface {
     id: number;
-    vehicle: VehicleInterface;
-    schedule: ScheduleInterface;
+    vehicle_schedules: CargoShipmentVehicleScheduleInterface[];
     client: PersonaInterface;
-    conductor: PersonaInterface;
     peso: string;
     origen: string;
     destino: string;
@@ -18,7 +14,6 @@ export interface ShipmentInterface {
     notas: string;
     sub_total: number;
     total: number;
-    geocerca?: GeocercaInterface;
     client_latitude: number;
     client_longitude: number;
     origen_latitude: number;
@@ -29,9 +24,8 @@ export interface ShipmentInterface {
 
 export type FormShipmentType = {
     id: number;
-    programming: number;
+    programming: number[];
     client_id: number;
-    geofence_id: number;
     peso: string;
     origen: string;
     destino: string;

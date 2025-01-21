@@ -264,13 +264,13 @@ const showVehicle: React.FC<Props> = ({
                         <div>
                             <InputLabel
                                 htmlFor="fecha_compra"
-                                value="Fecha de Compra"
+                                value="Fecha de registro"
                             />
                             <TextInput
                                 id="fecha_compra"
                                 type="date"
                                 className="mt-1 block w-full"
-                                value={data.fecha_compra} // Cambia esto a 'data.ci'
+                                value={data.fecha_compra}
                                 onChange={(e) =>
                                     setData("fecha_compra", e.target.value)
                                 }

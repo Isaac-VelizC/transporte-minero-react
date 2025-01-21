@@ -6,8 +6,6 @@ import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import FingerprintJS from "@fingerprintjs/fingerprintjs";
-import LinkButton from "@/Components/Buttons/LinkButton";
 
 type Props = {
     dataCarga: ShipmentInterface;
@@ -15,7 +13,6 @@ type Props = {
 };
 
 export default function showEnvio({ dataCarga, altercados }: Props) {
-    const [devicePermiso, setDevicePermiso] = useState(false);
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const { flash } = usePage().props;
     const handleToggle = useCallback(
@@ -24,23 +21,6 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
         },
         [openIndex]
     );
-
-    useEffect(() => {
-        const loadFingerprint = async () => {
-            const fp = await FingerprintJS.load();
-            const result = await fp.get();
-            const deviceId = result.visitorId;
-            if (deviceId === dataCarga.vehicle.device?.visorID) {
-                setDevicePermiso(true);
-                console.log("Permitido");
-            } else {
-                setDevicePermiso(false);
-                console.log("No permitido");
-            }
-        };
-
-        loadFingerprint(); // Llama a la función asíncrona
-    }, [dataCarga]); // Agrega dataCarga como dependencia si se espera que cambie
 
     useEffect(() => {
         if (flash.success) {
@@ -54,7 +34,6 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
     return (
         <Authenticated>
             <Head title="Show" />
-            {devicePermiso ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card>
                         <div className="flex items-center justify-between px-4 py-2 border-b">
@@ -98,7 +77,7 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
                                 href={route("create.altercation", dataCarga.id)}
                                 className="bg-white rounded-md px-4 py-1"
                             >
-                                Registrar altercado
+                                Reportar
                             </Link>
                         </div>
                     </Card>
@@ -113,7 +92,7 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
                             altercados.map((item, index) => (
                                 <AccordionItem
                                     key={index}
-                                    title={item.fecha}
+                                    title={`${item.tipo_altercado} ${item.fecha}`}
                                     content={item.description}
                                     isOpen={openIndex === index}
                                     onToggle={() => handleToggle(index)}
@@ -128,14 +107,6 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
                         )}
                     </Card>
                 </div>
-            ) : (
-                <Card classNames="flex justify-center items-center w-full h-80">
-                    <div className="text-center space-y-14">
-                        <h1 className="text-xl">El Dispositivo no esta registrado</h1>
-                        <LinkButton href="driver.envios.list">Volver</LinkButton>
-                    </div>
-                </Card>
-            )}
         </Authenticated>
     );
 }

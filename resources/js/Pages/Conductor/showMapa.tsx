@@ -8,12 +8,14 @@ import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Marker, Polygon, Polyline, Popup } from "react-leaflet";
 import { RutaEnvioDeviceInterface } from "@/interfaces/RutaEnvioDevice";
 import { customIcon, deviceIcon, HomeIcon } from "@/Components/IconMap";
+import * as turf from "@turf/turf";
 import Map from "@/Components/Maps/Map";
 import toast from "react-hot-toast";
+import ModalAlerta from "../Admin/Map/ModalAlerta";
 
 type Props = {
     envio: ShipmentInterface;
-    geocerca: GeocercaInterface;
+    geocercas: GeocercaInterface[];
     device: DeviceInterface;
     rutaEnvioDevice?: RutaEnvioDeviceInterface;
 };
@@ -38,14 +40,22 @@ type Props = {
 
 export default function ShowMapa({
     envio,
-    geocerca,
+    geocercas,
     device,
     rutaEnvioDevice,
 }: Props) {
     //const [currentIndex, setCurrentIndex] = useState(0); // Para rastrear el índice actual prueba borrar
     const [loading, setLoading] = useState(false);
-    const [rutaUpdated, SetRutaUpdate] = useState(rutaEnvioDevice?.coordenadas);
+    const [alertTriggered, setAlertTriggered] = useState(false);
+    const [alerta, setAlerta] = useState(false);
+
+    const [rutaUpdated, setRutaUpdate] = useState(rutaEnvioDevice?.coordenadas);
+    let token =
+        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
     const [error, setError] = useState<string | null>(null);
+    const [routeCoordinates, setRouteCoordinates] = useState<
+        [number, number][]
+    >([]);
     const [deviceLocation, setDeviceLocation] = useState<
         [number, number] | null
     >(
@@ -57,10 +67,53 @@ export default function ShowMapa({
             : null
     );
 
-    const memoizedGeocercaCoords = useMemo(
+    /*const memoizedGeocercaCoords = useMemo(
         () => JSON.parse(geocerca.polygon_coordinates),
         [geocerca.polygon_coordinates]
+    );*/
+    const closedGeocercaCoords = useMemo(() => {
+        if (!geocercas.length) return [];
+
+        return geocercas.map((geo) => ({
+            coords: JSON.parse(geo.polygon_coordinates) as [number, number][],
+            color: geo.color || "blue",
+        }));
+    }, [geocercas]);
+
+    const checkInsideGeofence = useCallback(
+        (coords: [number, number]) => {
+            if (!closedGeocercaCoords.length) return false;
+            const point = turf.point(coords);
+            return closedGeocercaCoords.some(({ coords: geoCoords }) => {
+                // Asegurar que el primer y último punto sean iguales
+                const closedCoords =
+                    geoCoords[0] !== geoCoords[geoCoords.length - 1]
+                        ? [...geoCoords, geoCoords[0]]
+                        : geoCoords;
+
+                const polygon = turf.polygon([closedCoords]);
+                return turf.booleanPointInPolygon(point, polygon);
+            });
+        },
+        [closedGeocercaCoords]
     );
+
+    // Verificación de ubicación del dispositivo en la geocerca
+    useEffect(() => {
+        if (!deviceLocation || closedGeocercaCoords.length === 0) return;
+
+        if (!checkInsideGeofence(deviceLocation)) {
+            if (!alertTriggered) {
+                setAlerta(true);
+                setAlertTriggered(true); // Aseguramos que la alerta solo se active una vez
+            }
+        } else {
+            if (alertTriggered) {
+                setAlerta(false);
+                setAlertTriggered(false);
+            }
+        }
+    }, [deviceLocation, closedGeocercaCoords, alertTriggered]);
 
     const origenCoords: [number, number] = [
         envio.origen_latitude,
@@ -71,39 +124,24 @@ export default function ShowMapa({
         envio.client_longitude,
     ];
 
-    /** Simulacion de movimiento del dispositivo para llegar al destino  */
-    /*const simulateDeviceMovement = useCallback(() => {
-        if (!deviceLocation) return;
-
-        const [currentLat, currentLng] = deviceLocation;
-        const [destLat, destLng] = envioCoords;
-
-        // Calcular la diferencia en latitud y longitud
-        const diffLat = destLat - currentLat;
-        const diffLng = destLng - currentLng;
-
-        // Distancia máxima por paso
-        const step = 0.0001; // Ajusta este valor para definir la velocidad del movimiento
-
-        // Calcular los pasos en dirección al destino
-        const stepLat =
-            diffLat > 0 ? Math.min(step, diffLat) : Math.max(-step, diffLat);
-        const stepLng =
-            diffLng > 0 ? Math.min(step, diffLng) : Math.max(-step, diffLng);
-
-        // Nueva posición
-        const newLat = currentLat + stepLat;
-        const newLng = currentLng + stepLng;
-
-        // Actualizar la ubicación
-        setDeviceLocation([newLat, newLng]);
-
-        // Verificar si hemos llegado al destino
-        if (Math.abs(diffLat) <= step && Math.abs(diffLng) <= step) {
-            console.log("¡El dispositivo ha llegado al destino!");
-            setError(null); // Opcional: Limpiar errores si los hay
+    const fetchRoute = async () => {
+        try {
+            const response = await axios.get(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&access_token=${token}`
+            );
+            const route = response.data.routes[0].geometry.coordinates.map(
+                (coord: number[]) => [coord[1], coord[0]]
+            );
+            setRouteCoordinates(route);
+        } catch (err) {
+            console.error("Error fetching route:", err);
+            setError("No se pudo obtener la ruta.");
         }
-    }, [deviceLocation, envioCoords]);*/
+    };
+
+    useEffect(() => {
+        fetchRoute();
+    }, []);
 
     /** Optiene la posision del dispositivo del navegador */
     const getCurrentPosition =
@@ -138,8 +176,11 @@ export default function ShowMapa({
 
             // Verifica si la respuesta fue exitosa
             if (response.status === 200) {
-                setDeviceLocation([latitude, longitude]);
-                console.log("Ubicación actualizada React:", {
+                const { latitude, longitude, coordenadas } =
+                            response.data;
+                        setDeviceLocation([latitude, longitude]);
+                        SetRutaUpdate(coordenadas);
+                console.log("Ubicación actualizada React Prueba:", {
                     latitude,
                     longitude,
                 });
@@ -170,7 +211,7 @@ export default function ShowMapa({
             isMounted = false;
             clearInterval(intervalId);
         };
-    }, [currentIndex]);*/ // Dependemos de `currentIndex`
+    }, [currentIndex]); // Dependemos de `currentIndex`*/
 
     /** Actualiza la coordenadas del dispositivo en la base de datos */
     const updateLocation = useCallback(
@@ -192,7 +233,7 @@ export default function ShowMapa({
                         const { latitude, longitude, coordenadas } =
                             response.data;
                         setDeviceLocation([latitude, longitude]);
-                        setDeviceLocation(coordenadas);
+                        setRutaUpdate(coordenadas);
                     } else {
                         throw new Error("Error al actualizar la ubicación");
                     }
@@ -204,11 +245,6 @@ export default function ShowMapa({
         },
         [device.id, deviceLocation]
     );
-
-    /*useEffect(() => {
-        const intervalId = setInterval(simulateDeviceMovement, 1000);
-        return () => clearInterval(intervalId);
-    }, [simulateDeviceMovement]);*/
 
     /** Ejecuta LA funcion para obtener la ubicacion del device y actualizar en la DB */
     useEffect(() => {
@@ -230,21 +266,30 @@ export default function ShowMapa({
         };
     }, [getCurrentPosition, updateLocation]);
 
+    const handleCloseAlert = () => {
+        setAlerta(false);
+        setAlertTriggered(true);
+    };
+
     return (
         <Authenticated>
             <Head title="Show Mapa" />
             <h1 className="text-xl font-semibold text-gray-300">
                 Mapa de Envío
             </h1>
+            <ModalAlerta show={alerta} onClose={handleCloseAlert} />
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {loading && <p>Cargando ubicación...</p>}
             <div className="mt-4 w-full h-[500px]">
                 <Map center={origenCoords} zoom={15}>
-                    <Polygon
-                        positions={memoizedGeocercaCoords}
-                        color={geocerca.color}
-                        weight={2}
-                    />
+                    {closedGeocercaCoords.map((geoData, index) => (
+                        <Polygon
+                            key={index}
+                            positions={geoData.coords}
+                            weight={2}
+                            color={geoData.color}
+                        />
+                    ))}
                     {deviceLocation && (
                         <Marker position={deviceLocation} icon={deviceIcon}>
                             <Popup>Ubicación del vehículo</Popup>
@@ -264,6 +309,10 @@ export default function ShowMapa({
                             positions={JSON.parse(rutaUpdated)}
                             color={rutaEnvioDevice?.color}
                         />
+                    )}
+                    {/* Dibuja la ruta en el mapa */}
+                    {routeCoordinates.length > 0 && (
+                        <Polyline positions={routeCoordinates} color="red" />
                     )}
                 </Map>
             </div>

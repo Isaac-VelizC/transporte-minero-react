@@ -10,8 +10,9 @@ class Message extends Model
 
     protected $fillable = [
         'client_id',
-        'driver_id',
+        'control_id',
         'body',
+        'receptor',
         'fecha'
     ];
 
@@ -20,8 +21,8 @@ class Message extends Model
         return $this->belongsTo(Persona::class, 'client_id');
     }
     
-    public function driver()
+    public function control()
     {
-        return $this->belongsTo(Persona::class, 'driver_id');
+        return $this->belongsTo(Persona::class, 'control_id');
     }
 }

@@ -63,8 +63,8 @@ const ModalFormUser: React.FC<Props> = ({
         const method = isEditing && data?.user_id ? patch : post;
 
         method(route(routeName, [data.user_id, data.id]), {
-            onSuccess: (page) => {
-                toast.error(`${page.props.flash.error}`);
+            onSuccess: ({ props: {flash} }) => {
+                if (flash.error) toast.error(flash.error);
                 onClose();
                 reset();
             },

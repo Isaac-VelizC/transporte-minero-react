@@ -22,9 +22,7 @@ interface Props {
 }
 
 export default function Index({
-    vehiculos,
     clientes,
-    drivers,
     results,
 }: Props) {
     const { data, setData, errors, post, reset } = useForm({
@@ -43,14 +41,16 @@ export default function Index({
     return (
         <Authenticated>
             <Head title="Reports" />
-            <Breadcrumb breadcrumbs={[
+            <Breadcrumb
+                breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Resportes de envios" },
-                ]} />
+                ]}
+            />
             <Card>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div>
+                        {/*<div>
                             <InputLabel htmlFor="vehiculo" value="Vehículo" />
                             <SelectInput
                                 isFocused
@@ -77,14 +77,13 @@ export default function Index({
                                 message={errors.vehiculo}
                                 className="mt-2"
                             />
-                        </div>
-
+                        </div>*/}
                         <div>
                             <InputLabel htmlFor="cliente" value="Cliente" />
                             <SelectInput
                                 id="cliente"
                                 className="mt-1 block w-full"
-                                value={data.cliente || ''}
+                                value={data.cliente || ""}
                                 onChange={(e) =>
                                     setData("cliente", e.target.value)
                                 }
@@ -97,7 +96,7 @@ export default function Index({
                                 {clientes && clientes.length > 0
                                     ? clientes.map((item, index) => (
                                           <option key={index} value={item.id}>
-                                              {item.nombre +' '+item.ap_pat}
+                                              {item.nombre + " " + item.ap_pat}
                                           </option>
                                       ))
                                     : null}
@@ -107,8 +106,7 @@ export default function Index({
                                 className="mt-2"
                             />
                         </div>
-
-                        <div>
+                        {/*<div>
                             <InputLabel htmlFor="conductor" value="Conductor" />
                             <SelectInput
                                 id="conductor"
@@ -135,8 +133,7 @@ export default function Index({
                                 message={errors.conductor}
                                 className="mt-2"
                             />
-                        </div>
-
+                        </div>*/}
                         <div>
                             <InputLabel htmlFor="mes" value="Mes" />
                             <SelectInput
@@ -167,7 +164,6 @@ export default function Index({
                             </SelectInput>
                             <InputError message={errors.mes} className="mt-2" />
                         </div>
-
                         <div>
                             <InputLabel htmlFor="fecha" value="Fecha" />
                             <TextInput
@@ -205,13 +201,13 @@ export default function Index({
                             <thead>
                                 <tr className="bg-gray-200">
                                     <th className="border border-gray-300 px-4 py-2">
-                                          Codigo
+                                        Codigo
                                     </th>
                                     <th className="border border-gray-300 px-4 py-2">
                                         Cliente
                                     </th>
                                     <th className="border border-gray-300 px-4 py-2">
-                                        Matricula del Vehículo
+                                        Cantidad Camiones
                                     </th>
                                     <th className="border border-gray-300 px-4 py-2">
                                         Conductor
@@ -256,10 +252,10 @@ export default function Index({
                                                 )}
                                             </td>
                                             <td className="border border-gray-300 px-4 py-2">
-                                                {item.vehicle?.matricula ||
+                                                {item.vehicle_schedules.length ||
                                                     "N/A"}
                                             </td>
-                                            <td className="border border-gray-300 px-4 py-2">
+                                            {/*<td className="border border-gray-300 px-4 py-2">
                                             {item.conductor ? (
                                                     <>
                                                         {`${
@@ -276,7 +272,7 @@ export default function Index({
                                                 ) : (
                                                     "N/A"
                                                 )}
-                                            </td>
+                                            </td>*/}
                                             <td className="border border-gray-300 px-4 py-2">
                                                 {item.status}
                                             </td>

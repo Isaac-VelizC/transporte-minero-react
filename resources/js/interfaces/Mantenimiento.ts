@@ -23,6 +23,7 @@ export type FormMantenimientoType = {
     vehicle_id: number;
     taller: string;
     fecha_inicio: string;
+    fecha_fin: string;
     observaciones: string;
     tipo: number;
     matricula: string;

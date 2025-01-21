@@ -1,13 +1,12 @@
 import React from "react";
 import {
-    MapContainer,
-    TileLayer,
     Marker,
     Polygon,
     useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
+import Map from "./Map";
 
 type Props = {
     latitud: number | null;
@@ -34,15 +33,10 @@ const SelectLatLonMap: React.FC<Props> = ({
     };
 
     return (
-        <MapContainer
+        <Map
             center={[latitud || -19.58361, longitud || -65.75306]}
-            zoom={13}
-            style={{ height: "400px", width: "100%" }}
+            zoom={15}
         >
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
 
             {/* Manejador de clics en el mapa */}
             <MapClickHandler />
@@ -60,7 +54,7 @@ const SelectLatLonMap: React.FC<Props> = ({
                     pathOptions={{ color: "blue", weight: 2 }}
                 />
             ))}
-        </MapContainer>
+        </Map>
     );
 };
 

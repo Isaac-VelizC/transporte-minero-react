@@ -37,19 +37,26 @@ class Vehicle extends Model
         return $this->belongsTo(TypeVehicle::class, 'type_id');
     }
 
-    public function cargoShipments()
+    /*public function cargoShipments()
     {
         return $this->hasMany(CargoShipment::class, 'car_id');
-    }
+    }*/
 
     public function device()
     {
         return $this->belongsTo(Device::class, 'device_id');
     }
 
-    public function schedules()
+    public function cargoShipments()
     {
-        return $this->hasMany(VehicleSchedule::class, 'car_id');
+        return $this->hasManyThrough(
+            CargoShipment::class,
+            CargoShipmentVehicleSchedule::class,
+            'car_id', // Foreign key on cargo_shipment_vehicle_schedule table...
+            'id', // Foreign key on cargo_shipments table...
+            'id', // Local key on vehicles table...
+            'cargo_shipment_id' // Local key on cargo_shipment_vehicle_schedule table...
+        );
     }
 
     public function mantenimientos() {

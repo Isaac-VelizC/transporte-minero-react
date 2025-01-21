@@ -6,8 +6,11 @@ use App\Events\LocationUpdated;
 use App\Events\RutaEnvioDeviceUpdated;
 use App\Models\AltercationReport;
 use App\Models\CargoShipment;
+use App\Models\CargoShipmentVehicleSchedule;
 use App\Models\Device;
+use App\Models\Driver;
 use App\Models\Geocerca;
+use App\Models\Persona;
 use App\Models\RutaDevice;
 use App\Models\VehicleSchedule;
 use App\Models\VehiculoMantenimiento;
@@ -23,7 +26,7 @@ class ClientDriverController extends Controller
     public function showEnvio($id)
     {
         try {
-            $envio = CargoShipment::with(['vehicle.device', 'client', 'conductor.driver'])->findOrFail($id);
+            $envio = CargoShipment::with(['client'])->findOrFail($id);
             $item = AltercationReport::where('envio_id', $id)->get();
 
             return Inertia::render('Conductor/showEnvio', [
@@ -44,16 +47,15 @@ class ClientDriverController extends Controller
         try {
             $idUser = Auth::user()->persona->id;
             $envio = CargoShipment::with([
-                'vehicle.device',
                 'client',
-                'geocerca'
             ])->where('client_id', $idUser)
                 ->findOrFail($id);
             $altercados = AltercationReport::where('envio_id', $envio->id)->get();
-
+            $schedules = CargoShipmentVehicleSchedule::with(['vehicle'])->where('cargo_shipment_id', $id)->get();
             return Inertia::render('Client/show', [
                 'envio' => $envio,
-                'altercados' => $altercados
+                'altercados' => $altercados,
+                'schedules' => $schedules
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
@@ -91,29 +93,28 @@ class ClientDriverController extends Controller
     {
         try {
             $envio = CargoShipment::with([
-                'vehicle',
                 'client',
-                'geocerca'
             ])->findOrFail($id);
-
-
-            $geocerca = Geocerca::findOrFail($envio->geofence_id);
-            $device = Device::find($envio->vehicle->device_id);
-            $rutaEnvioDevice = RutaDevice::where('envio_id', $id)
-                ->where('device_id', $device->id)
+            $geocercas = Geocerca::where('is_active', true)->get();
+            $userId = Persona::where('user_id', Auth::user()->id)->first()->id;
+            $datosEnvios = CargoShipmentVehicleSchedule::where('cargo_shipment_id', $envio->id)
+                ->where('conductor_id', $userId)
                 ->first();
+            $device = Device::find($datosEnvios->vehicle->device_id);
 
             if (is_null($device)) {
                 return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
             }
+            $rutaEnvioDevice = RutaDevice::where('envio_id', $id)
+                ->where('device_id', $device->id)
+                ->first();
             return Inertia::render('Conductor/showMapa', [
-                'geocerca' => $geocerca,
+                'geocercas' => $geocercas,
                 'envio' => $envio,
                 'device' => $device,
                 'rutaEnvioDevice' => $rutaEnvioDevice
             ]);
         } catch (ModelNotFoundException $e) {
-            dd($e);
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
             return redirect()->back()->with('error', 'Envio no encontrado.');
         } catch (\Exception $e) {
@@ -169,9 +170,9 @@ class ClientDriverController extends Controller
         try {
             $item = VehiculoMantenimiento::findOrFail($id);
             $item->estado = $validated['status'];
-            if ($item->estado == 'terminado') {
+            /*if ($item->estado == 'terminado') {
                 $item->fecha_fin = Carbon::now();
-            }
+            }*/
             $item->save();
             return back()->with([
                 'success' => 'Confirmación exitosa',
@@ -238,11 +239,30 @@ class ClientDriverController extends Controller
 
     public function createAltercado($id)
     {
-        $envio = CargoShipment::with('vehicle', 'conductor.driver')->findOrFail($id);
+        // Obtener el envío con las relaciones necesarias
+        $envio = CargoShipment::findOrFail($id);
+        // Obtener el ID del usuario autenticado
+        $userId = Auth::user()->persona->id;
+        // Buscar el envío relacionado con el conductor
+        $cargaShipment = $envio->vehicleSchedules()
+        ->where('conductor_id', $userId)
+        ->first();
+        // Verificar si se encontró un cargaShipment
+        if (!$cargaShipment) {
+            // Manejar el caso donde no se encuentra el cargaShipment
+            return redirect()->back()->withErrors(['error' => 'No se encontró el envío asociado al conductor.']);
+        }
+        // Obtener carId y driverId
+        $carId = $cargaShipment->car_id;
+        $driverId = Driver::where('persona_id', $userId)->first()->id;
+        
         return Inertia::render('Conductor/createAltercado', [
-            'dataCarga' => $envio
+            'dataCarga' => $envio,
+            'carId' => $carId,
+            'driverId' => $driverId,
         ]);
     }
+
 
     public function storeReporteAltercados(Request $request)
     {
@@ -250,6 +270,7 @@ class ClientDriverController extends Controller
             'car_id' => 'required|exists:vehicles,id',
             'driver_id' => 'required|exists:drivers,id',
             'envio_id' => 'required|numeric|exists:cargo_shipments,id',
+            'tipo_altercado' => 'required|string|in:bloqueo,descanso,accidente,fallas,otro',
             'description' => 'required|string|min:10',
             'last_latitude' => 'required|numeric|between:-90,90',
             'last_longitude' => 'required|numeric|between:-180,180',

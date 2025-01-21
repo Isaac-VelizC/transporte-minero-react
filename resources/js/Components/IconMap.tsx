@@ -27,3 +27,11 @@ export const AltercadoIcon = L.icon({
     iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
     popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
 });
+
+
+export const GeocercaIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/128/13707/13707082.png", // URL del ícono de dispositivo móvil
+    iconSize: [32, 32], // Tamaño del ícono
+    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
+    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+});

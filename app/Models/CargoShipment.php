@@ -12,11 +12,8 @@ class CargoShipment extends Model
     protected $table = 'cargo_shipments';
 
     protected $fillable = [
-        'car_id',
         'programming',
-        'geofence_id',
         'client_id',
-        'conductor_id',
         'peso',
         'origen',
         'destino',
@@ -33,38 +30,14 @@ class CargoShipment extends Model
         'total'
     ];
 
-    public function formatFullName(): string
-    {
-        return trim(
-            ($this->client->nombre ?? '') . ' ' .
-                ($this->client->ap_pat ?? '') . ' ' .
-                ($this->client->ap_mat ?? '')
-        );
-    }
-
-    public function vehicle()
-    {
-        return $this->belongsTo(Vehicle::class, 'car_id');
-    }
-
     public function client()
     {
         return $this->belongsTo(Persona::class, 'client_id');
     }
 
-    public function conductor()
+    public function vehicleSchedules()
     {
-        return $this->belongsTo(Persona::class, 'conductor_id');
-    }
-
-    public function schedule()
-    {
-        return $this->belongsTo(VehicleSchedule::class, 'programming');
-    }
-
-    public function geocerca()
-    {
-        return $this->belongsTo(Geocerca::class, 'geofence_id');
+        return $this->belongsToMany(VehicleSchedule::class, 'cargo_shipment_vehicle_schedule', 'cargo_shipment_id', 'vehicle_schedule_id');
     }
 
     public function altercadoReports() {

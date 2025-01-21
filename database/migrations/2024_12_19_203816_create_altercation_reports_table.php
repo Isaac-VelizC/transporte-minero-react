@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('envio_id')->references('id')->on('cargo_shipments')->onDelete('cascade');
             $table->unsignedBigInteger('driver_id')->nullable();
             $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null');
+            $table->string('tipo_altercado')->nullable();
             $table->text('description');
             $table->dateTime('fecha')->default(now());
             $table->decimal('last_latitude', 10, 7)->nullable();

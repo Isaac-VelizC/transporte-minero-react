@@ -47,7 +47,6 @@ class ConductorController extends Controller
             Driver::updateOrCreate(
                 ['persona_id' => $persona->id], // Relacionar con la persona
                 [
-                    'license_number' => $data['license_number'],
                     'hiring_date' => Carbon::parse($data['hiring_date']),
                     'experiencia' => $data['experiencia'],
                     'direccion' => $data['direccion']
@@ -75,7 +74,6 @@ class ConductorController extends Controller
             'ci' => $item->persona->ci,
             'genero' => $item->persona->genero,
             'numero' => $item->persona->numero,
-            'license_number' => $item->persona->driver->license_number ?? null,
             'hiring_date' => $item->persona->driver->hiring_date ?? null,
             'direccion' => $item->persona->driver->direccion ?? null,
             'experiencia' => $item->persona->driver->experiencia ?? null,
@@ -102,7 +100,6 @@ class ConductorController extends Controller
             Driver::updateOrCreate(
                 ['persona_id' => $persona->id],
                 [
-                    'license_number' => $data['license_number'],
                     'hiring_date' => Carbon::parse($data['hiring_date']),
                     'experiencia' => $data['experiencia'],
                     'direccion' => $data['direccion']

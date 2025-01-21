@@ -4,6 +4,7 @@ import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import SelectInput from "@/Components/Forms/SelectInput";
+import SelectMultiple from "@/Components/Forms/SelectMultiple";
 import TextInput from "@/Components/Forms/TextInput";
 import SelectOrigenDestinoMap from "@/Components/Maps/SelectOrigenDestino";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
@@ -21,6 +22,7 @@ type Props = {
     schedules: ScheduleInterface[];
     shipment: FormShipmentType;
     isEditing: boolean;
+    selects?: number[];
 };
 
 export default function form({
@@ -29,21 +31,24 @@ export default function form({
     schedules,
     clientes,
     geocercas,
+    selects,
 }: Props) {
     const initialData = useMemo(
         () =>
-            shipment || {
+            shipment ? {
+                ...shipment,
+                programming: selects
+            }:  {
                 id: null,
-                programming: null,
+                programming: [],
                 client_id: null,
-                geofence_id: null,
                 peso: "",
                 origen: "",
                 destino: "",
                 fecha_entrega: "",
                 fecha_envio: "",
                 notas: "",
-                sub_total: null,
+                sub_total: 50,
                 total: null,
                 client_latitude: null,
                 client_longitude: null,
@@ -91,8 +96,7 @@ export default function form({
                 isEditing && data?.id
                     ? route("envios.update.form", data.id)
                     : route("envios.store.form");
-             console.log(data);
-             
+            console.log(data);
 
             const submitMethod = isEditing && data?.id ? patch : post;
 
@@ -110,6 +114,11 @@ export default function form({
         },
         [isEditing, data, post, patch]
     );
+
+    const options = schedules.map((item) => ({
+        id: item.id,
+        label: `${item.vehicle.matricula} <= ${item.vehicle.capacidad_carga}T.`,
+    }));
 
     return (
         <Authenticated>
@@ -132,237 +141,191 @@ export default function form({
                             ? "Editar Información del envio"
                             : "Registrar nuevo envio"}
                     </h2>
-                    <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <InputLabel
-                                htmlFor="client_id"
-                                value="Seleccionar Cliente"
-                            />
-                            <SelectInput
-                                isFocused
-                                className="mt-1 block w-full"
-                                required
-                                onChange={(e) =>
-                                    setData(
-                                        "client_id",
-                                        parseFloat(e.target.value)
-                                    )
-                                }
-                                value={data.client_id || 0}
-                            >
-                                <option value={0} disabled>
+                    <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+                        <div className="col-span-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel
+                                    htmlFor="client_id"
+                                    value="Seleccionar Cliente"
+                                />
+                                <SelectInput
+                                    isFocused
+                                    className="mt-1 block w-full"
+                                    required
+                                    onChange={(e) =>
+                                        setData(
+                                            "client_id",
+                                            parseFloat(e.target.value)
+                                        )
+                                    }
+                                    value={data.client_id || 0}
+                                >
+                                    <option value={0} disabled>
+                                        {clientes && clientes.length > 0
+                                            ? "Selecciona un cliente"
+                                            : "No hay datos disponibles"}
+                                    </option>
                                     {clientes && clientes.length > 0
-                                        ? "Selecciona un cliente"
-                                        : "No hay datos disponibles"}
-                                </option>
-                                {clientes && clientes.length > 0
-                                    ? clientes.map((item) => (
-                                          <option key={item.id} value={item.id}>
-                                              {item.nombre}
-                                          </option>
-                                      ))
-                                    : null}
-                            </SelectInput>
-                            <InputError
-                                className="mt-2"
-                                message={errors.client_id}
-                            />
+                                        ? clientes.map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.nombre}
+                                            </option>
+                                        ))
+                                        : null}
+                                </SelectInput>
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.client_id}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    htmlFor="origen"
+                                    value="Origen de entrega"
+                                />
+                                <TextInput
+                                    id="origen"
+                                    className="mt-1 block w-full"
+                                    value={data.origen || ""}
+                                    onChange={(e) =>
+                                        setData("origen", e.target.value)
+                                    }
+                                    required
+                                    isFocused
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.origen}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    htmlFor="destino"
+                                    value="Destino de entrega"
+                                />
+                                <TextInput
+                                    id="destino"
+                                    className="mt-1 block w-full"
+                                    value={data.destino || ""}
+                                    onChange={(e) =>
+                                        setData("destino", e.target.value)
+                                    }
+                                    required
+                                    isFocused
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.destino}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    htmlFor="fecha_envio"
+                                    value="Fecha de Envio"
+                                />
+                                <TextInput
+                                    id="fecha_envio"
+                                    type="datetime-local"
+                                    className="mt-1 block w-full"
+                                    value={data.fecha_envio || ""}
+                                    onChange={(e) =>
+                                        setData("fecha_envio", e.target.value)
+                                    }
+                                    required
+                                    isFocused
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.fecha_envio}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    htmlFor="fecha_entrega"
+                                    value="Fecha de Entrega"
+                                />
+                                <TextInput
+                                    id="fecha_entrega"
+                                    type="datetime-local"
+                                    className="mt-1 block w-full"
+                                    value={data.fecha_entrega || ""}
+                                    onChange={(e) =>
+                                        setData("fecha_entrega", e.target.value)
+                                    }
+                                    required
+                                    isFocused
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.fecha_entrega}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    htmlFor="sub_total"
+                                    value="Costo por Tonelada"
+                                />
+                                <TextInput
+                                    id="sub_total"
+                                    type="number"
+                                    className={`mt-1 block w-full ${
+                                        !isEditing ? "bg-gray-400 text-white" : ""
+                                    }`}
+                                    value={data.sub_total || ''}
+                                    disabled={isEditing ? false : true}
+                                    onChange={(e) =>
+                                        setData(
+                                            "sub_total",
+                                            parseFloat(e.target.value)
+                                        )
+                                    }
+                                    required
+                                    isFocused
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.sub_total}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel htmlFor="peso" value="Peso de carga" />
+                                <TextInput
+                                    id="peso"
+                                    type="number"
+                                    className="mt-1 block w-full"
+                                    value={data.peso || ""}
+                                    onChange={(e) =>
+                                        setData("peso", e.target.value)
+                                    }
+                                    required
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.peso}
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="programming"
-                                value="Vehiculo mas capacidad de Carga"
-                            />
-                            <SelectInput
-                                isFocused
-                                className="mt-1 block w-full"
-                                required
-                                value={data.programming || 0}
-                                onChange={(e) =>
-                                    setData(
-                                        "programming",
-                                        parseFloat(e.target.value)
-                                    )
-                                }
-                            >
-                                <option value={0} disabled>
-                                    {schedules && schedules.length > 0
-                                        ? "Selecciona un programa"
-                                        : "No hay datos disponibles"}
-                                </option>
-                                {schedules && schedules.length > 0
-                                    ? schedules.map((item) => (
-                                          <option key={item.id} value={item.id}>
-                                              {item.vehicle.matricula +
-                                                  " <= " +
-                                                  item.vehicle.capacidad_carga +
-                                                  "T."}
-                                          </option>
-                                      ))
-                                    : null}
-                            </SelectInput>
-                            <InputError
-                                className="mt-2"
-                                message={errors.programming}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="geofence_id"
-                                value="Seleccionar Geocerca"
-                            />
-                            <SelectInput
-                                isFocused
-                                className="mt-1 block w-full"
-                                required
-                                onChange={(e) =>
-                                    setData(
-                                        "geofence_id",
-                                        parseFloat(e.target.value)
-                                    )
-                                }
-                                value={data.geofence_id || ""}
-                            >
-                                <option value="" disabled>
-                                    {geocercas && geocercas.length > 0
-                                        ? "Selecciona una Geocerca"
-                                        : "No hay datos disponibles"}
-                                </option>
-                                {geocercas && geocercas.length > 0
-                                    ? geocercas.map((item) => (
-                                          <option key={item.id} value={item.id}>
-                                              {item.name}
-                                          </option>
-                                      ))
-                                    : null}
-                            </SelectInput>
-                            <InputError
-                                className="mt-2"
-                                message={errors.geofence_id}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="origen"
-                                value="Origen de entrega"
-                            />
-                            <TextInput
-                                id="origen"
-                                className="mt-1 block w-full"
-                                value={data.origen || ""}
-                                onChange={(e) =>
-                                    setData("origen", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.origen}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="destino"
-                                value="Destino de entrega"
-                            />
-                            <TextInput
-                                id="destino"
-                                className="mt-1 block w-full"
-                                value={data.destino || ""}
-                                onChange={(e) =>
-                                    setData("destino", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.destino}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="fecha_envio"
-                                value="Fecha de Envio"
-                            />
-                            <TextInput
-                                id="fecha_envio"
-                                type="datetime-local"
-                                className="mt-1 block w-full"
-                                value={data.fecha_envio || ""}
-                                onChange={(e) =>
-                                    setData("fecha_envio", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.fecha_envio}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="fecha_entrega"
-                                value="Fecha de Entrega"
-                            />
-                            <TextInput
-                                id="fecha_entrega"
-                                type="datetime-local"
-                                className="mt-1 block w-full"
-                                value={data.fecha_entrega || ""}
-                                onChange={(e) =>
-                                    setData("fecha_entrega", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.fecha_entrega}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="sub_total"
-                                value="Costo por Tonelada"
-                            />
-                            <TextInput
-                                id="sub_total"
-                                type="number"
-                                className="mt-1 block w-full"
-                                value={data.sub_total || ""}
-                                onChange={(e) =>
-                                    setData(
-                                        "sub_total",
-                                        parseFloat(e.target.value)
-                                    )
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.sub_total}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel htmlFor="peso" value="Peso de carga" />
-                            <TextInput
-                                id="peso"
-                                type="number"
-                                className="mt-1 block w-full"
-                                value={data.peso || ""}
-                                onChange={(e) =>
-                                    setData("peso", e.target.value)
-                                }
-                                required
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.peso}
-                            />
+                        <div className="col-span-2">
+                            <div>
+                                <InputLabel
+                                    htmlFor="programming"
+                                    value="Vehiculo mas capacidad de Carga"
+                                />
+                                <SelectMultiple
+                                    options={options}
+                                    value={data.programming}
+                                    onChange={(selectedValues: number[]) =>
+                                        setData((prevData) => ({
+                                            ...prevData,
+                                            programming: selectedValues,
+                                        }))
+                                    }
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.programming}
+                                />
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -382,20 +345,22 @@ export default function form({
                         </h1>
                         <div className="flex gap-4 mb-4">
                             <button
-                                className={`px-2 py-1 rounded-lg text-sm ${
+                            type="button"
+                                className={`px-2 py-1 rounded-lg text-sm text-white ${
                                     selectionType === "origen"
-                                        ? "bg-green-500 text-white"
-                                        : "bg-gray-500"
+                                        ? "bg-green-700"
+                                        : "bg-gray-700"
                                 }`}
                                 onClick={() => setSelectionType("origen")}
                             >
                                 Seleccionar Origen
                             </button>
                             <button
-                                className={`px-2 py-1 rounded-lg text-sm ${
+                            type="button"
+                                className={`px-2 py-1 rounded-lg text-sm text-white ${
                                     selectionType === "destino"
-                                        ? "bg-blue-500 text-white"
-                                        : "bg-gray-500"
+                                        ? "bg-blue-700"
+                                        : "bg-gray-700"
                                 }`}
                                 onClick={() => setSelectionType("destino")}
                             >

@@ -24,7 +24,7 @@ class VehiclesController extends Controller
 {
     public function index()
     {
-        $vehicles = Vehicle::with('marca', 'device')->get();
+        $vehicles = Vehicle::with('marca', 'device')->latest()->get();
         return Inertia::render('Admin/Vehicle/index', [
             'vehicles' => $vehicles,
         ]);
@@ -176,7 +176,7 @@ class VehiclesController extends Controller
     {
         try {
             $vehicle = Vehicle::with(['marca', 'tipo', 'device'])->findOrFail($id);
-            $schedules = $vehicle->schedules()->with('driver.persona')->get();
+            $schedules = VehicleSchedule::where('car_id', $vehicle->id)->with('driver.persona')->get();
             $listMantenimientos = VehiculoMantenimiento::where('vehicle_id', $id)->get();
             return Inertia::render('Admin/Vehicle/show', [
                 'vehicle' => $vehicle,
@@ -186,7 +186,8 @@ class VehiclesController extends Controller
         } catch (ModelNotFoundException $e) {
             return redirect()->route('vehicle.list')->with('error', 'Vehículo no encontrado.');
         } catch (\Exception $e) {
-            return redirect()->route('vehicle.list')->with('error', 'Ocurrió un error al obtener los datos. ' . $e);
+            
+            return redirect()->route('vehicle.list')->with('error', 'Ocurrió un error al obtener los datos. ');
         }
     }
 
@@ -212,7 +213,6 @@ class VehiclesController extends Controller
             $data = $request->validated();
             $vehicle = Vehicle::findOrFail($id);
             $vehicle->update($data);
-
             // Actualizar el estado del dispositivo si se proporciona device_id
             if ($data['device_id'] != $vehicle->device_id) {
                 Device::findOrFail($vehicle->device_id)->update(['status' => 'activo']);
@@ -267,10 +267,11 @@ class VehiclesController extends Controller
         $validatedData = $request->validate([
             'taller' => 'required|string',
             'vehicle_id' => 'required|exists:vehicles,id',
-            'fecha_inicio' => 'required|date|after_or_equal:now',
+            'fecha_inicio' => 'required|date|after_or_equal:today', // Cambiado a today
+            'fecha_fin' => 'required|date|after:fecha_inicio', // Correcto
             'observaciones' => 'nullable|string|max:255',
             'tipo' => 'required|numeric|exists:tipo_mantenimientos,id'
-        ]);
+        ]);        
         try {
             VehiculoMantenimiento::create($validatedData);
             return redirect()->back()->with(['success' => 'Mantenimiento programado exitosamente.'], 201);
@@ -284,10 +285,11 @@ class VehiclesController extends Controller
         $validatedData = $request->validate([
             'taller' => 'required|string',
             'vehicle_id' => 'required|exists:vehicles,id',
-            'fecha_inicio' => 'required|date|after_or_equal:now',
+            'fecha_inicio' => 'required|date|after_or_equal:today', // Cambiado a today
+            'fecha_fin' => 'required|date|after:fecha_inicio', // Correcto
             'observaciones' => 'nullable|string|max:255',
             'tipo' => 'required|numeric|exists:tipo_mantenimientos,id'
-        ]);
+        ]);        
 
         try {
             VehiculoMantenimiento::findOrFail($id)->update($validatedData);

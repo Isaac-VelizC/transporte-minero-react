@@ -18,11 +18,6 @@ export const roleNavItems: Record<
             icon: <i className="bi bi-truck-front"></i>,
             label: "Vehiculos",
         },
-        /*{
-            href: "mantenimiento.list",
-            icon: <i className="bi bi-gear"></i>,
-            label: "Mantenimientos",
-        },*/
         {
             href: "devices.list",
             icon: <i className="bi bi-phone"></i>,
@@ -97,11 +92,11 @@ export const roleNavItems: Record<
             icon: <i className="bi bi-gear"></i>,
             label: "Mantenimientos",
         },
-        /*{
-            href: "view.map",
-            icon: <i className="bi bi-journals"></i>,
-            label: "Reporte de Cambios",
-        },*/
+        {
+            href: "view.message",
+            icon: <i className="bi bi-chat"></i>,
+            label: "Mensajes",
+        },
     ],
     Conductor: [
         {

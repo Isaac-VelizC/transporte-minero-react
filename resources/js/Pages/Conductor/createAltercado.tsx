@@ -2,6 +2,7 @@ import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import Card from "@/Components/Cards/Card";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
+import SelectInput from "@/Components/Forms/SelectInput";
 import SelectLatLonMap from "@/Components/Maps/SelectLatLonMap";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
@@ -11,14 +12,21 @@ import toast from "react-hot-toast";
 
 type Props = {
     dataCarga: ShipmentInterface;
+    driverId: number;
+    carId: number;
 };
 
-export default function createAltercation({ dataCarga }: Props) {
+export default function createAltercation({
+    dataCarga,
+    driverId,
+    carId,
+}: Props) {
     const initialData = {
         id: null,
-        driver_id: dataCarga.conductor.driver?.id,
-        car_id: dataCarga.vehicle.id,
+        driver_id: driverId,
+        car_id: carId,
         envio_id: dataCarga.id,
+        tipo_altercado: "",
         description: "",
         last_latitude: null as number | null,
         last_longitude: null as number | null,
@@ -36,11 +44,12 @@ export default function createAltercation({ dataCarga }: Props) {
         const routeName = data.id
             ? "mantenimiento.update"
             : "driver.store.altercado";
+        console.log(data);
 
         action(route(routeName, `${data.id}`), {
             onSuccess: ({ props: { flash } }) => {
                 reset();
-                if (flash?.success) toast.success(flash.success);
+                if (flash?.error) toast.success(flash.error);
             },
             onError: () => {
                 toast.error("Error al registrar el altercado.");
@@ -94,6 +103,32 @@ export default function createAltercation({ dataCarga }: Props) {
                         <h2 className="text-lg font-semibold">
                             Reportar un altercado
                         </h2>
+                        <div className="mt-6">
+                            <InputLabel
+                                htmlFor="status"
+                                value="Seleccionar Tipo"
+                            />
+                            <SelectInput
+                                isFocused
+                                className="mt-1 block w-full"
+                                required
+                                onChange={(e) =>
+                                    setData("tipo_altercado", e.target.value)
+                                }
+                                value={data.tipo_altercado || ""}
+                            >
+                                <option value="">Seleccionar Tipo</option>
+                                <option value="bloqueo">Bloqueo</option>
+                                <option value="descanso">Descanso</option>
+                                <option value="accidente">Accidente</option>
+                                <option value="fallas">Fallas</option>
+                                <option value="otro">Otro</option>
+                            </SelectInput>
+                            <InputError
+                                message={errors.tipo_altercado}
+                                className="mt-2"
+                            />
+                        </div>
                         <div>
                             <InputLabel
                                 htmlFor="description"

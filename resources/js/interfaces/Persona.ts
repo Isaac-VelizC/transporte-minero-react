@@ -1,4 +1,5 @@
 import { DriverInterface } from "./Driver";
+import { MessageInterface } from "./Message";
 import { UserInterface } from "./User";
 
 // Definición de la interfaz para un usuario
@@ -15,5 +16,6 @@ export interface PersonaInterface {
     estado: boolean;
     driver?: DriverInterface;
     rol: string;
+    messages?: MessageInterface[];
     [key: string]: unknown;
 }

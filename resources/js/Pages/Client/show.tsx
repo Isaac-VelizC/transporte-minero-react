@@ -11,13 +11,15 @@ import {
 import { Marker, Popup } from "react-leaflet";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import Map from "@/Components/Maps/Map";
+import { CargoShipmentVehicleScheduleInterface } from "@/interfaces/CargoShipmentVehicleSchedule";
 
 type Props = {
     envio: ShipmentInterface;
     altercados?: AltercationReportInterface[];
+    schedules: CargoShipmentVehicleScheduleInterface[];
 };
 
-export default function Show({ envio, altercados }: Props) {
+export default function Show({ envio, altercados, schedules }: Props) {
     const envioCoords: [number, number] = [
         envio.client_latitude,
         envio.client_longitude,
@@ -28,14 +30,20 @@ export default function Show({ envio, altercados }: Props) {
         envio.origen_longitude,
     ];
 
-    const deviceLocation: [number, number] | null =
-        envio.vehicle.device?.last_latitude &&
-        envio.vehicle.device?.last_longitude
-            ? [
-                  JSON.parse(envio.vehicle.device.last_latitude),
-                  JSON.parse(envio.vehicle.device.last_longitude),
-              ]
-            : null;
+    const deviceLocations: [number, number][] = schedules
+        .map((schedule) => {
+            if (
+                schedule.vehicle.device?.last_latitude &&
+                schedule.vehicle.device?.last_longitude
+            ) {
+                return [
+                    JSON.parse(schedule.vehicle.device.last_latitude),
+                    JSON.parse(schedule.vehicle.device.last_longitude),
+                ];
+            }
+            return null;
+        })
+        .filter((coords): coords is [number, number] => coords !== null); // Filtra los valores nulos
 
     return (
         <Authenticated>
@@ -74,18 +82,22 @@ export default function Show({ envio, altercados }: Props) {
                         </p>
                     </div>
                     <div className="pl-4 space-y-1">
-                        <p>
-                            <strong>Matricula de Vehiculo: </strong>
-                            {envio.vehicle.matricula}
-                        </p>
-                        <p>
-                            <strong>Color: </strong>
-                            {envio.vehicle.color}
-                        </p>
-                        <p>
-                            <strong>Capacidad de Carga: </strong>
-                            {envio.vehicle.capacidad_carga}
-                        </p>
+                        {schedules.map((item, index) => (
+                            <div key={index}>
+                                <p>
+                                    <strong>Matricula de Vehiculo: </strong>
+                                    {item.vehicle.matricula}
+                                </p>
+                                <p>
+                                    <strong>Color: </strong>
+                                    {item.vehicle.color}
+                                </p>
+                                <p>
+                                    <strong>Capacidad de Carga: </strong>
+                                    {item.vehicle.capacidad_carga}
+                                </p>
+                            </div>
+                        ))}
                         <p>
                             <strong>Sub Total por tonelada: </strong>
                             {envio.sub_total}bs.
@@ -122,17 +134,20 @@ export default function Show({ envio, altercados }: Props) {
                                     </Marker>
                                 ))}
                             {/* Ubicación del dispositivo */}
-                            {deviceLocation && (
+                            {deviceLocations.map((location, index) => (
                                 <Marker
-                                    position={deviceLocation}
+                                    key={index}
+                                    position={location}
                                     icon={deviceIcon}
                                 >
                                     <Popup>
-                                        {envio.vehicle.device?.name_device ||
+                                        {schedules[index]?.vehicle.device
+                                            ?.name_device ||
                                             "Dispositivo desconocido"}
                                     </Popup>
                                 </Marker>
-                            )}
+                            ))}
+
                             {origenCoords && (
                                 <Marker position={origenCoords} icon={HomeIcon}>
                                     <Popup>{envio.origen}</Popup>
@@ -148,11 +163,6 @@ export default function Show({ envio, altercados }: Props) {
                                 </Marker>
                             )}
 
-                            {/* Ruta entre origen y destino */}
-                            {/*<RoutingMachine
-                                origenCoords={origenCoords}
-                                destinoCoords={envioCoords}
-                            />*/}
                         </Map>
                     </div>
                 </div>

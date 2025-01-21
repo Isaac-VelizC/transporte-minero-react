@@ -28,7 +28,6 @@ type formConductorType = {
     ci: string;
     genero: string;
     numero: string;
-    license_number: string;
     hiring_date: string;
     experiencia: string;
     direccion: string;
@@ -49,7 +48,6 @@ export default function drivers({ isEditing, driver }: Props) {
         ci: "",
         genero: "",
         numero: "",
-        license_number: "",
         hiring_date: "",
         experiencia: "",
         direccion: "",
@@ -285,26 +283,6 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputError
                                 className="mt-2"
                                 message={errors.direccion}
-                            />
-                        </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="license_number"
-                                value="Numero de licencia"
-                            />
-                            <TextInput
-                                id="license_number"
-                                className="mt-1 block w-full"
-                                value={data.license_number}
-                                onChange={(e) =>
-                                    setData("license_number", e.target.value)
-                                }
-                                required
-                                isFocused
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.license_number}
                             />
                         </div>
                         <div>

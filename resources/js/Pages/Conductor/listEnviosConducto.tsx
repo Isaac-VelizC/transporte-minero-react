@@ -28,13 +28,18 @@ export default function listEnviosConducto({ envios }: Props) {
             sortable: true,
         },
         {
-            name: "Matricula de Vehiculo",
-            cell: (row: ShipmentInterface) => row.vehicle.matricula,
+            name: "Fecha de envio",
+            cell: (row: ShipmentInterface) => row.fecha_envio,
             sortable: true,
         },
         {
             name: "Fecha de Entrega",
             cell: (row: ShipmentInterface) => row.fecha_entrega,
+            sortable: true,
+        },
+        {
+            name: "Origen de envio",
+            cell: (row: ShipmentInterface) => row.origen,
             sortable: true,
         },
         {
@@ -142,10 +147,6 @@ export default function listEnviosConducto({ envios }: Props) {
                         <p>
                             <strong>Notas: </strong>
                             {cargaData?.notas}
-                        </p>
-                        <p>
-                            <strong>Matricula del vehiculo: </strong>
-                            {cargaData?.vehicle.matricula}
                         </p>
                         <p>
                             <strong>Fecha de Entrega: </strong>

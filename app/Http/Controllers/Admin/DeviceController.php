@@ -13,6 +13,15 @@ use Inertia\Inertia;
 
 class DeviceController extends Controller
 {
+    public function listDevicesActive() {
+        $devices = Device::where('status', '!=', 'inactivo')->get();
+    
+        if ($devices->isEmpty()) {
+            return response()->json(['message' => 'No hay dispositivos activos'], 404);
+        }
+        return response()->json($devices);
+    }
+
     public function index()
     {
         $devices = Device::all();
@@ -73,27 +82,36 @@ class DeviceController extends Controller
         return Device::select('id', 'device_name', 'latitude', 'longitude')->get();
     }
 
-    public function updateDeviceRutMap($id, $envio_id)
+    public function updateDevicesRutaMap(Request $request)
     {
         try {
-            // Obtener el dispositivo
-            $device = Device::findOrFail($id);
+            // Obtener los IDs de los dispositivos y el ID del envio
+            $deviceIds = $request->input('device_ids'); // Array de IDs de dispositivos
+            $envio_id = $request->input('envio_id');
 
-            // Obtener o crear la ruta del dispositivo
-            $rutaDevice = RutaDevice::firstOrNew([
-                'envio_id' => $envio_id,
-                'device_id' => $device->id
-            ]);
+            $updatedDevices = [];
 
-            // Emitir eventos a través de WebSocket
-            //event(new LocationUpdated($device));
-            //event(new RutaEnvioDeviceUpdated($rutaDevice));
+            foreach ($deviceIds as $deviceId) {
+                // Obtener el dispositivo
+                $device = Device::findOrFail($deviceId);
+
+                // Obtener o crear la ruta del dispositivo
+                $rutaDevice = RutaDevice::firstOrNew([
+                    'envio_id' => $envio_id,
+                    'device_id' => $device->id
+                ]);
+
+                $updatedDevices[] = [
+                    'device_id' => $device->id,
+                    'latitude' => $device->last_latitude,
+                    'longitude' => $device->last_longitude,
+                    'coordenadas' => $rutaDevice->coordenadas
+                ];
+            }
 
             return response()->json([
                 'success' => true,
-                'latitude' => $device->last_latitude,
-                'longitude' => $device->last_longitude,
-                'coordenadas' => $rutaDevice->coordenadas
+                'updated_devices' => $updatedDevices
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error actualizando la ubicación: ' . $e->getMessage()], 500);

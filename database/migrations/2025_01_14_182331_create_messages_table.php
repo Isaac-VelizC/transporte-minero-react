@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('client_id')->nullable();
             $table->foreign('client_id')->references('id')->on('personas')->onDelete('set null');
-            $table->unsignedBigInteger('driver_id')->nullable();
-            $table->foreign('driver_id')->references('id')->on('personas')->onDelete('cascade');
+            $table->unsignedBigInteger('control_id')->nullable();
+            $table->foreign('control_id')->references('id')->on('personas')->onDelete('cascade');
+            $table->enum('receptor', ['cliente', 'admin'])->default('cliente');
             $table->text('body');
             $table->date('fecha')->default(now());
             $table->timestamps();

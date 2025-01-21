@@ -13,6 +13,8 @@ type Props = {
 };
 
 function show({ datos, reportes }: Props) {
+    console.log(datos);
+
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const handleToggle = useCallback(
         (index: number) => {
@@ -61,17 +63,25 @@ function show({ datos, reportes }: Props) {
                             <strong>Fecha de Entrega:</strong>{" "}
                             {datos.fecha_entrega}
                         </p>
-                        <p>
-                            <strong>Conductor de Vehículo:</strong>{" "}
-                            {datos.conductor.nombre +
-                                " " +
-                                datos.conductor.ap_pat}{" "}
-                            - {datos.conductor.numero}
-                        </p>
-                        <p>
-                            <strong>Matrícula de Vehículo:</strong>{" "}
-                            {datos.vehicle.matricula}
-                        </p>
+                        <div>
+                            <h3>Matrícula y Conductor</h3>
+                            {datos.vehicle_schedules &&
+                            datos.vehicle_schedules.length > 0 ? (
+                                <ul>
+                                    {datos.vehicle_schedules.map((item) => (
+                                        <li key={item.id}>
+                                            <strong>Camión:</strong>{" "}
+                                            {item.vehicle?.matricula} <br />
+                                            <strong>Conductor:</strong>{" "}
+                                            {item.driver?.persona?.nombre ||
+                                                "Nombre no disponible"}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No hay vehículos disponibles.</p>
+                            )}
+                        </div>
                         <p>
                             <strong>Peso de la Carga:</strong> {datos.peso}{" "}
                             Toneladas

@@ -23,10 +23,9 @@ class EnviosCreateResquest extends FormRequest
     {
         return [
             'car_id' => 'nullable|exists:vehicles,id', // Debe existir en la tabla vehicles
-            'programming' => 'required|exists:vehicle_schedules,id', // Debe existir en la tabla vehicle_schedules
             'client_id' => 'required|exists:personas,id', // Debe existir en la tabla personas
             'conductor_id' => 'nullable|exists:personas,id', // Debe existir en la tabla personas
-            'geofence_id' => 'required|exists:geocercas,id', // Debe existir en la tabla personas
+            //'geofence_id' => 'required|exists:geocercas,id', // Debe existir en la tabla personas
             'peso' => 'required|numeric|min:0', // Peso requerido y debe ser un número positivo
             'origen' => 'required|string|max:255', // Destino requerido y no puede exceder 255 caracteres
             'destino' => 'required|string|max:255', // Destino requerido y no puede exceder 255 caracteres

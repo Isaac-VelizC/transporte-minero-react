@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Polygon, FeatureGroup } from "react-leaflet";
+import { Polygon, FeatureGroup } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";

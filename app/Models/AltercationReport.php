@@ -15,6 +15,7 @@ class AltercationReport extends Model
         'car_id',
         'envio_id',
         'driver_id',
+        'tipo_altercado',
         'description',
         'fecha',
         'last_latitude',

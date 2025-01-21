@@ -92,6 +92,10 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     //Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.view');
     Route::post('/reports/filter', [ReportController::class, 'filterConsult'])->name('admin.resports.filter');
+    ///Altecados
+    Route::get('/altercados/{id}', [ShipmentsController::class, 'altercationsListControler'])->name('altercados.list');
+    Route::post('/message/send/control', [HomeController::class, 'sendMessageControl'])->name('send.message.control');
+    Route::get('/messages', [HomeController::class, 'viewMessage'])->name('view.message');
 });
 
 Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
@@ -110,8 +114,11 @@ Route::middleware(['auth', 'checkRole:Cliente'])->group(function () {
     Route::patch('/cliente/envios/{id}/confirm', [ClientDriverController::class, 'confirmEntrega'])->name('client.envios.status');
     Route::get('/client/pedidos/', [ShipmentsController::class, 'listEnviosCliente'])->name('client.pedido.list');
     Route::get('/client/envio/show/{id}', [ClientDriverController::class, 'showEnvioClient'])->name('client.envio.show');
+    Route::post('/message/send', [HomeController::class, 'sendMessage'])->name('send.message');
 });
 
-Route::get('/devices/{id}/location/{envio_id}/monitoreo', [DeviceController::class, 'updateDeviceRutMap'])->name('device.monitoreo.put');
-
+//Route::get('/devices/{id}/location/{envio_id}/monitoreo', [DeviceController::class, 'updateDeviceRutMap'])->name('device.monitoreo.put');
+Route::post('/update-devices-ruta', [DeviceController::class, 'updateDevicesRutaMap'])->name('device.monitoreo.post');
+Route::get('/list/devices/actives', [DeviceController::class, 'listDevicesActive'])->name('list.device.active');
+Route::get('error', [HomeController::class, 'errorPage'])->name('error.page');
 require __DIR__.'/auth.php';

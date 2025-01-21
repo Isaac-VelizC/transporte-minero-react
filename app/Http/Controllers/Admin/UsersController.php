@@ -18,21 +18,21 @@ use Spatie\Permission\Models\Role;
 class UsersController extends Controller
 {
     public function listClients() {
-        $list = Persona::where('rol', 'cliente')->with('user')->get();
+        $list = Persona::where('rol', 'cliente')->with('user')->latest()->get();
         return Inertia::render('Admin/Users/Clients/index', [
             'clientes' => $list,
         ]);
     }
 
     public function listConductores() {
-        $list = Persona::where('rol', 'conductor')->with('user', 'driver')->get();
+        $list = Persona::where('rol', 'conductor')->with('user', 'driver')->latest()->get();
         return Inertia::render('Admin/Users/Conductor/index', [
             'drivers' => $list,
         ]);
     }
 
     public function index() {
-        $users = Persona::with('user')->where('rol', '!=', 'Admin')->get();
+        $users = Persona::with('user')->where('rol', '!=', 'Admin')->latest()->get();
         $roles = Role::whereNotIn('name', ['Admin', 'Conductor', 'Cliente'])->get();
         return Inertia::render('Admin/Users/index', [
             'users' => $users,

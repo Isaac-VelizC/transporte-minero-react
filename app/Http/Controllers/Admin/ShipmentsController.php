@@ -7,18 +7,21 @@ use App\Http\Requests\Envios\EnviosCreateResquest;
 use App\Http\Requests\Envios\EnviosUpdateResquest;
 use App\Models\AltercationReport;
 use App\Models\CargoShipment;
+use App\Models\CargoShipmentVehicleSchedule;
 use App\Models\Geocerca;
 use App\Models\Persona;
 use App\Models\VehicleSchedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ShipmentsController extends Controller
 {
-    public function index() {
-        $envios = CargoShipment::with(['vehicle', 'client'])->latest()->get();
+    public function index()
+    {
+        $envios = CargoShipment::with('client')->latest()->get();
         return Inertia::render('Admin/Shipments/index', [
             'envios' => $envios
         ]);
@@ -31,12 +34,12 @@ class ShipmentsController extends Controller
             'envios' => $envios
         ]);
     }
-    
+
     public function listEnviosCliente()
     {
         $idAuth = Auth::user()->id;
         try {
-            $envios = CargoShipment::with(['vehicle', 'client'])
+            $envios = CargoShipment::with(['client'])
                 ->whereHas('client', function ($query) use ($idAuth) {
                     $query->where('user_id', $idAuth);
                 })->latest()
@@ -49,16 +52,20 @@ class ShipmentsController extends Controller
             return redirect()->route('some.route')->with('error', 'Ocurrió un error al obtener los envíos.');
         }
     }
-    
+
     private function getEnviosByUserId($userId)
     {
-        return CargoShipment::with(['vehicle', 'client'])
-            ->where('conductor_id', $userId)
-            ->where('delete', true)->latest()
+        return CargoShipment::with(['client'])
+            ->whereHas('vehicleSchedules', function($query) use ($userId) {
+                $query->where('conductor_id', $userId);
+            })
+            ->where('delete', true) // Asegúrate de que este sea el nombre correcto del campo
+            ->latest('fecha_envio') // Especifica el campo para ordenar
             ->get();
     }
 
-    public function create() {
+    public function create()
+    {
         $schedules = VehicleSchedule::with('vehicle')
             ->where('status', 'libre')
             ->where('status_time', true)
@@ -73,33 +80,12 @@ class ShipmentsController extends Controller
             'isEditing' => false
         ]);
     }
-    
-    public function store(EnviosCreateResquest $request) {
-        $validatedData = $request->validated();
-        $vehicleSchedule = VehicleSchedule::findOrFail($validatedData['programming']);
-        $validatedData['car_id'] = $vehicleSchedule->car_id;
-        $validatedData['conductor_id'] = $vehicleSchedule->driver->persona->user_id;
+
+    public function show(string $id)
+    {
         try {
-            if ($request->peso > $vehicleSchedule->vehicle->capacidad_carga) {
-                return back()->with('error', 'El peso de carga no puede ser mayor a la capacidad de carga del camión');
-            }
-            // Crear el envío
-            $item = CargoShipment::create($validatedData);
-            $item->total = $request->sub_total * $request->peso;
-            $item->save();
-            // Actualizar el estado del vehículo
-            $vehicleSchedule->update(['status' => 'pendiente']);
-            return redirect()->route('envios.list')->with('success', 'Envío creado exitosamente');
-        } catch (\Exception $e) {
-            dd($e);
-            Log::error('Error creating envio: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'No se pudo crear el envío. Intente nuevamente.');
-        }
-    }
-    
-    public function show(string $id) {
-        try {
-            $envio = CargoShipment::with(['vehicle', 'client', 'conductor'])->findOrFail($id);
+            $envio = CargoShipment::with(['vehicleSchedules.vehicle', 'vehicleSchedules.driver.persona', 'client'])
+                ->findOrFail($id);
             $reportes = AltercationReport::where('envio_id', $id)->get();
             return Inertia::render('Admin/Shipments/show', [
                 'datos' => $envio,
@@ -109,26 +95,32 @@ class ShipmentsController extends Controller
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
             return redirect()->route('envios.list')->with('error', 'Envio no encontrado.');
         } catch (\Exception $e) {
+            dd($e->getMessage());
             Log::error('Error retrieving shipment data: ', ['error' => $e]);
             return redirect()->route('envios.list')->with('error', 'Ocurrió un error al obtener los datos.');
         }
     }
 
-    public function edit(string $id) {
+    public function edit(string $id)
+    {
         try {
             $envio = CargoShipment::findOrFail($id);
+            $programmingIds = array_map('intval', json_decode($envio->programming));
             $schedules = VehicleSchedule::with('vehicle')
-                ->where('status', '!=', 'pendiente')
-                ->where('status_time', true)
+                ->where(function ($query) use ($programmingIds) {
+                    $query->whereIn('id', $programmingIds) // Incluir IDs presentes en programming
+                        ->orWhere(function ($subQuery) {
+                            $subQuery->where('status', '!=', 'pendiente') // Condición para status
+                                ->where('status_time', true); // Condición para status_time
+                        });
+                })
                 ->get();
-
             $clientes = Persona::where('rol', 'cliente')->where('estado', true)->get();
-            $geocercas = Geocerca::where('is_active', true)->get();
             // Retornar la vista utilizando Inertia
             return Inertia::render('Admin/Shipments/form', [
+                'selects' => $programmingIds,
                 'shipment' => $envio,
                 'clientes' => $clientes,
-                'geocercas' => $geocercas,
                 'schedules' => $schedules,
                 'isEditing' => true
             ]);
@@ -137,29 +129,66 @@ class ShipmentsController extends Controller
             return redirect()->back()->with('error', 'Carga de envio no encontrada');
         }
     }
-    
-    public function update(EnviosUpdateResquest $request, string $id) {
-        $validatedData = $request->validated();
-        $vehicleSchedule = VehicleSchedule::findOrFail($validatedData['programming']);
-        $validatedData['car_id'] = $vehicleSchedule->car_id;
-        $validatedData['conductor_id'] = $vehicleSchedule->driver->persona->user_id;
+
+    public function store(EnviosCreateResquest $request)
+    {
+        return $this->saveShipment(new CargoShipment(), $request);
+    }
+
+    public function update(EnviosUpdateResquest $request, string $id)
+    {
+        $item = CargoShipment::findOrFail($id);
+        return $this->saveShipment($item, $request);
+    }
+
+    private function saveShipment(CargoShipment $item, Request $request)
+    {
+        $request->validate([
+            'programming' => 'required|array',
+            'programming.*' => 'exists:vehicle_schedules,id',
+        ]);
+
         try {
-            if ($request->peso > $vehicleSchedule->vehicle->capacidad_carga) {
-                return back()->with('error', 'El peso de carga no puede ser mayor a la capacidad de carga del camión');
+            $validatedData = $request->validated();
+            $vehicleSchedules = VehicleSchedule::findMany($request->programming);
+            $totalPeso = $request->peso;
+            $totalCapacidad = $vehicleSchedules->sum(fn($v) => $v->vehicle->capacidad_carga);
+
+            if ($totalPeso > $totalCapacidad) {
+                return back()->with('error', 'El peso de carga no puede ser mayor a la capacidad total de los camiones: ' . $totalCapacidad);
             }
-            $item = CargoShipment::findOrFail($id);
-            $item->update($validatedData);
-            $item->total = $request->sub_total * $request->peso;
+
+            // Guardar envío
+            $item->fill($validatedData);
+            $item->programming = json_encode($request->programming);
+            $item->total = $request->sub_total * $totalPeso;
             $item->save();
-            $vehicleSchedule->update(['status' => 'pendiente']);
-            return redirect()->route('envios.list')->with('success', 'Envío actualizado exitosamente');
+
+            // Si es actualización, eliminar asociaciones previas
+            CargoShipmentVehicleSchedule::where('cargo_shipment_id', $item->id)->delete();
+
+            // Asociar vehicle schedules seleccionados
+            $data = collect($vehicleSchedules)->map(fn($v) => [
+                'cargo_shipment_id' => $item->id,
+                'vehicle_schedule_id' => $v->id,
+                'car_id' => $v->car_id,
+                'conductor_id' => $v->driver->persona_id
+            ])->toArray();
+            CargoShipmentVehicleSchedule::insert($data);
+
+            // Actualizar estado de vehículos
+            $vehicleSchedules->each(fn($v) => $v->update(['status' => 'pendiente']));
+
+            return redirect()->route('envios.list')->with('success', 'Envío ' . ($item->wasRecentlyCreated ? 'creado' : 'actualizado') . ' exitosamente');
         } catch (\Exception $e) {
-            Log::error('Error creating envio: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'No se pudo crear el envío. Intente nuevamente.');
+            Log::error('Error en ' . ($item->wasRecentlyCreated ? 'creación' : 'actualización') . ' de envío: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'No se pudo procesar el envío. Intente nuevamente.');
         }
     }
-    
-    public function changeStatus(string $id) {
+
+
+    public function changeStatus(string $id)
+    {
         try {
             $item = CargoShipment::findOrFail($id);
             $item->status = $item->delete ? 'cancelado' : 'pendiente';
@@ -176,5 +205,12 @@ class ShipmentsController extends Controller
             Log::error('Error al modificar estado el envio: ' . $e->getMessage());
             return redirect()->back()->with('error', 'No se pudo modificar el estado del envio. Inténtalo nuevamente');
         }
+    }
+
+    public function altercationsListControler($id) {
+        $list = AltercationReport::with(['driver.persona', 'vehiculo'])->where('envio_id', $id)->get();
+        return Inertia::render('Admin/Shipments/altercations', [
+            'altercations' => $list
+        ]);
     }
 }

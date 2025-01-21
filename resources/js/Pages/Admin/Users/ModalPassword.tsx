@@ -13,8 +13,6 @@ type Props = {
 };
 
 const ModalPassword: React.FC<Props> = ({ show, onClose, user }) => {
-    //const [password, setPassword] = useState(""); // Estado para la contraseña
-    //const [error, setError] = useState(""); // Estado para los errores
 
     const handleResetPassword = async () => {
         if (user.id === null) {

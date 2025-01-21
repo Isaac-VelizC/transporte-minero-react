@@ -23,15 +23,6 @@ class Persona extends Model
         'rol'
     ];
 
-    public function formatFullName(): string
-    {
-        return trim(
-            ($this->nombre ?? '') . ' ' .
-                ($this->ap_pat ?? '') . ' ' .
-                ($this->ap_mat ?? '')
-        );
-    }
-
     public function driver()
     {
         return $this->hasOne(Driver::class, 'persona_id');
@@ -50,5 +41,9 @@ class Persona extends Model
     public function vehicles()
     {
         return $this->hasMany(Vehicle::class, 'responsable_id');
+    }
+
+    public function messages() {
+        return $this->hasMany(Message::class, 'client_id');
     }
 }

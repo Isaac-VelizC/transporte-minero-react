@@ -14,26 +14,17 @@ return new class extends Migration
         Schema::create('cargo_shipments', function (Blueprint $table) {
             $table->id();
             // Relación con vehículos
-            $table->unsignedBigInteger('car_id')->nullable();
-            $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('set null');
-            $table->unsignedBigInteger('programming')->nullable();
-            $table->foreign('programming')->references('id')->on('vehicle_schedules')->onDelete('set null');
-            $table->unsignedBigInteger('geofence_id')->nullable();
-            $table->foreign('geofence_id')->references('id')->on('geocercas')->onDelete('set null');
-
+            $table->json('programming')->nullable(); // Cambiar a JSON
             // Relación con clientes
             $table->unsignedBigInteger('client_id')->nullable();
             $table->foreign('client_id')->references('id')->on('personas')->onDelete('cascade');
-            $table->unsignedBigInteger('conductor_id')->nullable();
-            $table->foreign('conductor_id')->references('id')->on('personas')->onDelete('set null');
-            
             // Nuevos campos relevantes
             $table->decimal('peso', 10, 2);
             $table->string('origen');
             $table->string('destino');
             $table->enum('status', ['pendiente', 'en_transito', 'entregado', 'cancelado'])->default('pendiente');
             $table->boolean('delete')->default(true);
-
+        
             // Información adicional
             $table->timestamp('fecha_envio')->default(now());
             $table->timestamp('fecha_entrega')->nullable();
@@ -43,11 +34,13 @@ return new class extends Migration
             $table->decimal('origen_longitude', 11, 8)->nullable();
             $table->text('notas')->nullable();
             
-            $table->integer('sub_total', 11)->default(0);
-            $table->integer('total', 11)->default(0);
+            $table->integer('sub_total')->default(0);
+            $table->integer('total')->default(0);
+            
             // Timestamps
             $table->timestamps();
         });
+        
     }
 
     /**

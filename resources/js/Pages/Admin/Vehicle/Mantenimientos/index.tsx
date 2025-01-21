@@ -49,7 +49,7 @@ const index: React.FC<Props> = ({ mantenimientos, tipos, vehicles }) => {
                 sortable: true,
             },
             {
-                name: "Fecha Realizada",
+                name: "Fecha a recoger",
                 cell: (row: MantenimientoInterface) =>
                     row.fecha_fin ? row.fecha_fin : "unknown",
                 sortable: true,
@@ -106,6 +106,7 @@ const index: React.FC<Props> = ({ mantenimientos, tipos, vehicles }) => {
             vehicle_id: row.vehicle.id,
             taller: row.taller,
             fecha_inicio: row.fecha_inicio,
+            fecha_fin: row.fecha_fin,
             observaciones: row.observaciones,
             tipo: row.tipo.id,
             matricula: row.vehicle.matricula

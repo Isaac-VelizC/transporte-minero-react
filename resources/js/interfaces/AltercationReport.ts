@@ -8,6 +8,7 @@ export interface AltercationReportInterface {
     vehiculo: VehicleInterface;
     envio: ShipmentInterface;
     driver: DriverInterface;
+    tipo_altercado: string;
     description: string;
     fecha: string;
     last_latitude: number;

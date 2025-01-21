@@ -109,7 +109,6 @@ class UsersSeeder extends Seeder
 
         Driver::create([
             'persona_id' => 5,
-            'license_number' => '9833345',
         ]);
     }
 }

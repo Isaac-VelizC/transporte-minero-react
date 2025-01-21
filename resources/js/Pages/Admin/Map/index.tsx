@@ -14,74 +14,139 @@ import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import Map from "@/Components/Maps/Map";
 import { RutaEnvioDeviceInterface } from "@/interfaces/RutaEnvioDevice";
 import axios from "axios";
-import toast from "react-hot-toast";
 import ModalAlerta from "./ModalAlerta";
+import { CargoShipmentVehicleScheduleInterface } from "@/interfaces/CargoShipmentVehicleSchedule";
+import { GeocercaInterface } from "@/interfaces/Geocerca";
 
 type Props = {
     envio: ShipmentInterface;
     altercados?: AltercationReportInterface[];
-    rutaEnvioDevice?: RutaEnvioDeviceInterface;
+    rutaEnvioDevices?: RutaEnvioDeviceInterface[];
+    vehicleSeleccionados: CargoShipmentVehicleScheduleInterface[];
+    geocercas: GeocercaInterface[];
 };
 
-const Index: React.FC<Props> = ({ envio, altercados, rutaEnvioDevice }) => {
+interface ResponseDevice {
+    id: number;
+    latitude: number;
+    longitude: number;
+    coordenadas: [number, number][];
+}
+
+const Index: React.FC<Props> = ({
+    envio,
+    altercados = [],
+    rutaEnvioDevices = [],
+    vehicleSeleccionados = [],
+    geocercas = [],
+}) => {
     const [alertTriggered, setAlertTriggered] = useState(false);
-    const [rutaUpdated, SetRutaUpdate] = useState(rutaEnvioDevice?.coordenadas);
-    let token = 'pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA';
-    const [error, setError] = useState<string | null>(null);
+
+    const [rutaUpdated, setRutaUpdate] = useState<[number, number][][]>([]);
+
+    useEffect(() => {
+        // Mapeamos los datos de rutaEnvioDevices para parsear las coordenadas
+        const parsedRoutes =
+            rutaEnvioDevices?.map((rutaEnvioDevice) => {
+                try {
+                    // Convertimos la cadena JSON en un array de arrays
+                    const parsedCoords = JSON.parse(
+                        rutaEnvioDevice.coordenadas
+                    );
+                    return parsedCoords; // Esto ya es un array de coordenadas
+                } catch (error) {
+                    console.warn("Error al parsear las coordenadas:", error);
+                    return []; // Si hay un error, devolvemos un array vacío
+                }
+            }) || [];
+
+        // Actualizamos el estado con las rutas parseadas
+        setRutaUpdate(parsedRoutes);
+    }, [rutaEnvioDevices]); // Solo ejecutamos cuando rutaEnvioDevices cambie
+
+    const token =
+        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
     const [routeCoordinates, setRouteCoordinates] = useState<
         [number, number][]
     >([]);
     const [alerta, setAlerta] = useState(false);
-    const geocercaCoords: [number, number][] = envio.geocerca
-        ?.polygon_coordinates
-        ? JSON.parse(envio.geocerca.polygon_coordinates)
-        : [];
 
     const envioCoords: [number, number] = [
         envio.client_latitude,
         envio.client_longitude,
     ];
-
     const origenCoords: [number, number] = [
         envio.origen_latitude,
         envio.origen_longitude,
     ];
 
-    const [deviceLocation, setDeviceLocation] = useState<
-        [number, number] | null
-    >(
-        envio.vehicle.device?.last_latitude &&
-            envio.vehicle.device?.last_longitude
-            ? [
-                  JSON.parse(envio.vehicle.device.last_latitude),
-                  JSON.parse(envio.vehicle.device.last_longitude),
-              ]
-            : null
+    const [deviceLocations, setDeviceLocations] = useState<[number, number][]>(
+        () => {
+            return vehicleSeleccionados
+                ? vehicleSeleccionados
+                      .filter(
+                          (vehicle) =>
+                              vehicle.vehicle.device?.last_latitude &&
+                              vehicle.vehicle.device?.last_longitude
+                      )
+                      .map((vehicle) => {
+                          const lastLatitude =
+                              vehicle.vehicle.device?.last_latitude;
+                          const lastLongitude =
+                              vehicle.vehicle.device?.last_longitude;
+
+                          // Asegúrate de que lastLatitude y lastLongitude sean cadenas antes de analizarlas
+                          return [
+                              lastLatitude ? JSON.parse(lastLatitude) : 0, // Valor por defecto si es undefined
+                              lastLongitude ? JSON.parse(lastLongitude) : 0, // Valor por defecto si es undefined
+                          ];
+                      })
+                : [];
+        }
     );
-    // Memorizar la geocerca cerrada para evitar cálculos redundantes
+
+    // Manejo de geocercas correctamente
     const closedGeocercaCoords = useMemo(() => {
-        if (geocercaCoords.length === 0) return [];
-        return geocercaCoords[0] !== geocercaCoords[geocercaCoords.length - 1]
-            ? [...geocercaCoords, geocercaCoords[0]]
-            : geocercaCoords;
-    }, [geocercaCoords]);
+        if (!geocercas.length) return [];
+
+        return geocercas.map((geo) => ({
+            coords: JSON.parse(geo.polygon_coordinates) as [number, number][],
+            color: geo.color || "blue",
+        }));
+    }, [geocercas]);
 
     const checkInsideGeofence = useCallback(
         (coords: [number, number]) => {
+            if (!closedGeocercaCoords.length) return false;
             const point = turf.point(coords);
-            const polygon = turf.polygon([closedGeocercaCoords]);
-            return turf.booleanPointInPolygon(point, polygon);
+            return closedGeocercaCoords.some(({ coords: geoCoords }) => {
+                // Asegurar que el primer y último punto sean iguales
+                const closedCoords =
+                    geoCoords[0] !== geoCoords[geoCoords.length - 1]
+                        ? [...geoCoords, geoCoords[0]]
+                        : geoCoords;
+
+                const polygon = turf.polygon([closedCoords]);
+                return turf.booleanPointInPolygon(point, polygon);
+            });
         },
-        [geocercaCoords]
+        [closedGeocercaCoords]
     );
 
-    // Verificar si el dispositivo está dentro o fuera de la geocerca
+    // Verificación de ubicación del dispositivo en la geocerca
     useEffect(() => {
-        if (!deviceLocation || closedGeocercaCoords.length === 0) return;
+        if (deviceLocations.length === 0 || closedGeocercaCoords.length === 0)
+            return;
 
-        if (!checkInsideGeofence(deviceLocation)) {
+        // Verificamos si al menos un dispositivo está fuera de la geocerca
+        const anyDeviceOutside = deviceLocations.some(
+            (location) => !checkInsideGeofence(location)
+        );
+
+        if (anyDeviceOutside) {
             if (!alertTriggered) {
                 setAlerta(true);
+                setAlertTriggered(true); // Aseguramos que la alerta solo se active una vez
             }
         } else {
             if (alertTriggered) {
@@ -89,44 +154,69 @@ const Index: React.FC<Props> = ({ envio, altercados, rutaEnvioDevice }) => {
                 setAlertTriggered(false);
             }
         }
-    }, [deviceLocation, closedGeocercaCoords, alertTriggered]);
+    }, [deviceLocations, closedGeocercaCoords, alertTriggered]);
 
     const handleCloseAlert = () => {
         setAlerta(false);
         setAlertTriggered(true);
     };
 
-    const updateRutaDevice = async () => {
+    const updateRutasDevices = async (deviceId: number[], envioId: number) => {
         try {
-            const response = await axios.get(
-                `/devices/${envio.vehicle.device?.id}/location/${envio.id}/monitoreo`
-            );
+            const response = await axios.post("/update-devices-ruta", {
+                device_ids: deviceId,
+                envio_id: envioId,
+            });
             if (response.status === 200) {
-                const { latitude, longitude, coordenadas } = response.data;
-                setDeviceLocation([latitude, longitude]);
-                SetRutaUpdate(coordenadas);
+                const updatedDevices = response.data;
+
+                if (Array.isArray(updatedDevices)) {
+                    updatedDevices.forEach((device) => {
+                        const { latitude, longitude, coordenadas } = device;
+
+                        // Actualizar las ubicaciones del dispositivo
+                        setDeviceLocations((prevLocations) => [
+                            ...prevLocations,
+                            [latitude, longitude],
+                        ]);
+
+                        // Actualizar la ruta con las coordenadas del dispositivo
+                        setRutaUpdate((prevRoutes) => [
+                            ...prevRoutes,
+                            ...coordenadas,
+                        ]);
+                    });
+                }
             } else {
                 throw new Error("Error al actualizar la ubicación");
             }
-        } catch (err) {
-            console.error("Error en updateRutaDevice:", err);
-            toast.error("No se pudo actualizar la ubicación");
+            // Manejar la respuesta si es necesario
+        } catch (error) {
+            console.error("Error actualizando la ruta del dispositivo:", error);
         }
     };
 
     useEffect(() => {
         let isMounted = true;
         const intervalId = setInterval(async () => {
-            if (isMounted) await updateRutaDevice();
+            if (isMounted && vehicleSeleccionados.length > 0) {
+                const deviceIds = vehicleSeleccionados
+                    .map((device) => device.vehicle.device?.id)
+                    .filter((id): id is number => id !== undefined); // Filtrar IDs válidos y asegurar que son números
+
+                if (deviceIds.length > 0) {
+                    await updateRutasDevices(deviceIds, envio.id); // Pasar el array completo
+                }
+            }
         }, 20000);
 
         return () => {
             isMounted = false;
             clearInterval(intervalId);
         };
-    }, [envio.vehicle.device?.id]);
+    }, [envio.id, vehicleSeleccionados]);
 
-    // Función para obtener la ruta entre el origen y el destino
+    // Obtención de la ruta entre origen y destino
     const fetchRoute = async () => {
         try {
             const response = await axios.get(
@@ -138,76 +228,73 @@ const Index: React.FC<Props> = ({ envio, altercados, rutaEnvioDevice }) => {
             setRouteCoordinates(route);
         } catch (err) {
             console.error("Error fetching route:", err);
-            setError("No se pudo obtener la ruta.");
         }
     };
 
     useEffect(() => {
         fetchRoute();
-    }, [origenCoords, envioCoords]);
+    }, []);
 
     return (
         <Authenticated>
             <Head title="Mapa" />
-            <ModalAlerta
-                show={alerta}
-                onClose={handleCloseAlert}
-                conductor={
-                    envio.conductor?.nombre + " " + envio.conductor?.ap_pat
-                }
-                telefono={envio.conductor?.numero}
-            />
+            <ModalAlerta show={alerta} onClose={handleCloseAlert} />
             <div className="h-150 w-full">
                 <Map center={envioCoords} zoom={15}>
-                    {/* Renderizar geocerca */}
-                    {closedGeocercaCoords.length > 0 && (
+                    {/* Renderizar geocercas */}
+                    {closedGeocercaCoords.map((geoData, index) => (
                         <Polygon
-                            positions={closedGeocercaCoords}
-                            color={envio.geocerca?.color || "blue"}
+                            key={index}
+                            positions={geoData.coords}
                             weight={2}
+                            color={geoData.color}
                         />
-                    )}
+                    ))}
+
                     {/* Coordenadas del destino */}
                     <Marker position={envioCoords} icon={customIcon}>
                         <Popup>{envio.destino}</Popup>
                     </Marker>
+
                     {/* Coordenadas del origen */}
                     <Marker position={origenCoords} icon={HomeIcon}>
                         <Popup>{envio.origen}</Popup>
                     </Marker>
-                    {/* Ubicación del dispositivo */}
-                    {deviceLocation && (
-                        <Marker position={deviceLocation} icon={deviceIcon}>
-                            <Popup>
-                                {envio.vehicle.device?.name_device ||
-                                    "Dispositivo desconocido"}
-                            </Popup>
-                        </Marker>
-                    )}
+
                     {/* Trayecto del dispositivo */}
-                    {altercados &&
-                        altercados.map((item, index) => (
-                            <Marker
+                    {altercados.map((item, index) => (
+                        <Marker
+                            key={index}
+                            position={[item.last_latitude, item.last_longitude]}
+                            icon={AltercadoIcon}
+                        >
+                            <Popup>{item.description}</Popup>
+                        </Marker>
+                    ))}
+
+                    {/* Ubicación del dispositivo */}
+                    {deviceLocations.map((location, index) => (
+                        <Marker
+                            key={index}
+                            position={location}
+                            icon={deviceIcon}
+                        >
+                            <Popup>Vehículo {index + 1}</Popup>
+                        </Marker>
+                    ))}
+
+                    {/* Ruta del Camión o Dispositivo */}
+                    {rutaUpdated.length > 0 &&
+                        rutaUpdated.map((coords, index) => (
+                            <Polyline
                                 key={index}
-                                position={[
-                                    item.last_latitude,
-                                    item.last_longitude,
-                                ]}
-                                icon={AltercadoIcon}
-                            >
-                                <Popup>{item.description}</Popup>
-                            </Marker>
+                                positions={coords}
+                                color={'green'}
+                            />
                         ))}
-                    {/** Ruta del Camion o dispositivo */}
-                    {rutaUpdated && rutaUpdated.length > 0 && (
-                        <Polyline
-                            positions={JSON.parse(rutaUpdated)}
-                            color={rutaEnvioDevice?.color}
-                        />
-                    )}
                     {/* Dibuja la ruta en el mapa */}
                     {routeCoordinates.length > 0 && (
-                        <Polyline positions={routeCoordinates} color="blue" />
+                        <Polyline positions={routeCoordinates} color="red" />
                     )}
                 </Map>
             </div>

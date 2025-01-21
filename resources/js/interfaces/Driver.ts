@@ -5,7 +5,6 @@ export interface DriverInterface {
     id: number;
     persona: PersonaInterface;
     hiring_date: string;
-    license_number: string;
     status: boolean;
     experiencia: number;
     direccion: string;
