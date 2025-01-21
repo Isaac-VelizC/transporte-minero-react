@@ -56,7 +56,7 @@ class ShipmentsController extends Controller
     private function getEnviosByUserId($userId)
     {
         return CargoShipment::with(['client'])
-            ->whereHas('vehicleSchedules', function($query) use ($userId) {
+            ->whereHas('vehicleSchedules', function ($query) use ($userId) {
                 $query->where('conductor_id', $userId);
             })
             ->where('delete', true) // Asegúrate de que este sea el nombre correcto del campo
@@ -132,16 +132,16 @@ class ShipmentsController extends Controller
 
     public function store(EnviosCreateResquest $request)
     {
-        return $this->saveShipment(new CargoShipment(), $request);
+        return $this->saveShipment(new CargoShipment(), $request, false);
     }
 
     public function update(EnviosUpdateResquest $request, string $id)
     {
         $item = CargoShipment::findOrFail($id);
-        return $this->saveShipment($item, $request);
+        $this->saveShipment($item, $request, true);
     }
 
-    private function saveShipment(CargoShipment $item, Request $request)
+    private function saveShipment(CargoShipment $item, Request $request, Bool $isEditing)
     {
         $request->validate([
             'programming' => 'required|array',
@@ -158,6 +158,16 @@ class ShipmentsController extends Controller
                 return back()->with('error', 'El peso de carga no puede ser mayor a la capacidad total de los camiones: ' . $totalCapacidad);
             }
 
+            // Verificar si hay valores en la programación
+            if ($isEditing && !empty($item->programming)) {
+                // Iterar sobre cada valor en el campo 'programming' (suponiendo que sea un arreglo)
+                foreach ($item->programming as $value) {
+                    // Buscar el vehículo correspondiente a la programación
+                    $vehicle = VehicleSchedule::findOrFail($value);
+                    // Actualizar el estado del vehículo
+                    $vehicle->update(['status' => 'libre']);
+                }
+            }
             // Guardar envío
             $item->fill($validatedData);
             $item->programming = json_encode($request->programming);
@@ -207,7 +217,8 @@ class ShipmentsController extends Controller
         }
     }
 
-    public function altercationsListControler($id) {
+    public function altercationsListControler($id)
+    {
         $list = AltercationReport::with(['driver.persona', 'vehiculo'])->where('envio_id', $id)->get();
         return Inertia::render('Admin/Shipments/altercations', [
             'altercations' => $list

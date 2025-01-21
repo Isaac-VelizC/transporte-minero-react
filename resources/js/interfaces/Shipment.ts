@@ -5,6 +5,7 @@ export interface ShipmentInterface {
     id: number;
     vehicle_schedules: CargoShipmentVehicleScheduleInterface[];
     client: PersonaInterface;
+    programming: number[];
     peso: string;
     origen: string;
     destino: string;

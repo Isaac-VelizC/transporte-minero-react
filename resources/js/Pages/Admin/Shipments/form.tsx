@@ -10,7 +10,7 @@ import SelectOrigenDestinoMap from "@/Components/Maps/SelectOrigenDestino";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import { PersonaInterface } from "@/interfaces/Persona";
 import { ScheduleInterface } from "@/interfaces/schedule";
-import { FormShipmentType } from "@/interfaces/Shipment";
+import { FormShipmentType, ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useCallback, useMemo, useState } from "react";
@@ -35,26 +35,28 @@ export default function form({
 }: Props) {
     const initialData = useMemo(
         () =>
-            shipment ? {
-                ...shipment,
-                programming: selects
-            }:  {
-                id: null,
-                programming: [],
-                client_id: null,
-                peso: "",
-                origen: "",
-                destino: "",
-                fecha_entrega: "",
-                fecha_envio: "",
-                notas: "",
-                sub_total: 50,
-                total: null,
-                client_latitude: null,
-                client_longitude: null,
-                origen_latitude: null,
-                origen_longitude: null,
-            },
+            shipment
+                ? {
+                      ...shipment,
+                      programming: selects,
+                  }
+                : {
+                      id: null,
+                      programming: [],
+                      client_id: null,
+                      peso: "",
+                      origen: "",
+                      destino: "",
+                      fecha_entrega: "",
+                      fecha_envio: "",
+                      notas: "",
+                      sub_total: 50,
+                      total: null,
+                      client_latitude: null,
+                      client_longitude: null,
+                      origen_latitude: null,
+                      origen_longitude: null,
+                  },
         [shipment]
     );
 
@@ -68,7 +70,7 @@ export default function form({
 
     const handleMapChange = useCallback(
         (lat: number, lon: number, type: "origen" | "destino") => {
-            setData((prevData) => ({
+            setData((prevData: any) => ({
                 ...prevData,
                 ...(type === "origen"
                     ? { origen_latitude: lat, origen_longitude: lon }
@@ -167,10 +169,13 @@ export default function form({
                                     </option>
                                     {clientes && clientes.length > 0
                                         ? clientes.map((item) => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.nombre}
-                                            </option>
-                                        ))
+                                              <option
+                                                  key={item.id}
+                                                  value={item.id}
+                                              >
+                                                  {item.nombre}
+                                              </option>
+                                          ))
                                         : null}
                                 </SelectInput>
                                 <InputError
@@ -269,9 +274,11 @@ export default function form({
                                     id="sub_total"
                                     type="number"
                                     className={`mt-1 block w-full ${
-                                        !isEditing ? "bg-gray-400 text-white" : ""
+                                        !isEditing
+                                            ? "bg-gray-400 text-white"
+                                            : ""
                                     }`}
-                                    value={data.sub_total || ''}
+                                    value={data.sub_total || ""}
                                     disabled={isEditing ? false : true}
                                     onChange={(e) =>
                                         setData(
@@ -288,7 +295,10 @@ export default function form({
                                 />
                             </div>
                             <div>
-                                <InputLabel htmlFor="peso" value="Peso de carga" />
+                                <InputLabel
+                                    htmlFor="peso"
+                                    value="Peso de carga"
+                                />
                                 <TextInput
                                     id="peso"
                                     type="number"
@@ -313,12 +323,12 @@ export default function form({
                                 />
                                 <SelectMultiple
                                     options={options}
-                                    value={data.programming}
+                                    value={data.programming ?? []}
                                     onChange={(selectedValues: number[]) =>
-                                        setData((prevData) => ({
-                                            ...prevData,
-                                            programming: selectedValues,
-                                        }))
+                                        setData(
+                                            "programming",
+                                            selectedValues ?? []
+                                        )
                                     }
                                 />
                                 <InputError
@@ -345,7 +355,7 @@ export default function form({
                         </h1>
                         <div className="flex gap-4 mb-4">
                             <button
-                            type="button"
+                                type="button"
                                 className={`px-2 py-1 rounded-lg text-sm text-white ${
                                     selectionType === "origen"
                                         ? "bg-green-700"
@@ -356,7 +366,7 @@ export default function form({
                                 Seleccionar Origen
                             </button>
                             <button
-                            type="button"
+                                type="button"
                                 className={`px-2 py-1 rounded-lg text-sm text-white ${
                                     selectionType === "destino"
                                         ? "bg-blue-700"

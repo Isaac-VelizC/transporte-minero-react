@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 
 // Definición de tipos para las opciones
 interface Option {
