@@ -59,7 +59,7 @@ const showVehicle: React.FC<Props> = ({
                 </span>
             ),
         },
-        {
+        /*{
             cell: (_: MantenimientoInterface) => (
                 <div className="gap-3">
                     <button>
@@ -69,7 +69,7 @@ const showVehicle: React.FC<Props> = ({
             ),
             ignoreRowClick: true,
             width: "80px",
-        },
+        },*/
     ];
 
     return (

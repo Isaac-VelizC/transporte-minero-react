@@ -127,6 +127,15 @@ class ClientDriverController extends Controller
     {
         try {
             $item = CargoShipment::findOrFail($id);
+            // **1️⃣ Restaurar el estado de los vehículos anteriores antes de actualizar**
+            if (!empty($item->programming)) {
+                $previousIds = json_decode($item->programming, true);
+                if (is_array($previousIds)) {
+                    VehicleSchedule::whereIn('id', $previousIds)->update(['status' => 'libre']);
+                } else {
+                    Log::error('Formato inválido en los IDs de vehículos anteriores.');
+                }
+            }
             $item->status = "entregado";
             $item->save();
             return redirect()->back()->with('success', 'Confirmación de entrega exitosa.');

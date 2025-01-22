@@ -98,14 +98,16 @@ export default function form({
                 isEditing && data?.id
                     ? route("envios.update.form", data.id)
                     : route("envios.store.form");
-            console.log(data);
-
+                    
             const submitMethod = isEditing && data?.id ? patch : post;
 
             submitMethod(submitRoute, {
                 onSuccess: ({ props: { flash } }) => {
                     if (flash?.error) {
                         toast.error(flash.error);
+                    }
+                    if (flash?.success) {
+                        toast.success(flash.success);
                     }
                 },
                 onError: (errors) => {

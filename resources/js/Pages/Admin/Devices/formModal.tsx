@@ -39,17 +39,31 @@ const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
         try {
+            // Cargar FingerprintJS y obtener el ID del dispositivo
             const fp = await FingerprintJS.load();
             const result = await fp.get();
             const deviceId = result.visitorId;
-            setData('visorID', deviceId);
-    
-            const action = isEditing && data?.id ? patch : post;
-            const routeName = isEditing && data?.id ? "devices.update" : "devices.create";
-            const routeParams = isEditing && data?.id ? data?.id : undefined;
-    
-            action(route(routeName, routeParams), {
+
+            // Asegurarse de que el visorID se establezca antes de continuar
+            if (!deviceId) {
+                throw new Error(
+                    "No se pudo obtener el ID del dispositivo, Intentalo nuevamente"
+                );
+            }
+            data.visorID = deviceId;
+            // Asegúrate de que el estado esté actualizado antes de continuar
+            await new Promise((resolve) => setTimeout(resolve, 0)); // Espera un ciclo de renderizado
+
+            // Determinar la acción y los parámetros según si se está editando o creando
+            const isUpdate = isEditing && data?.id;
+            const action = isUpdate ? patch : post;
+            const routeName = isUpdate ? "devices.update" : "devices.create";
+            const routeParams = isUpdate ? data.id : undefined;
+
+            // Ejecutar la acción correspondiente
+            await action(route(routeName, routeParams), {
                 onSuccess: ({ props: { flash } }) => {
                     onClose();
                     reset();
@@ -57,11 +71,20 @@ const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
                     if (flash?.error) toast.error(flash.error);
                 },
                 onError: () => {
-                    toast.error("Error al registrar o actualizar el dispositivo");
+                    toast.error(
+                        "Error al registrar o actualizar el dispositivo"
+                    );
                 },
             });
         } catch (error) {
-            toast.error("No se pudo obtener la información del dispositivo");
+            // Manejo de errores más específico
+            if (error instanceof Error) {
+                toast.error(error.message);
+            } else {
+                toast.error(
+                    "No se pudo obtener la información del dispositivo"
+                );
+            }
         }
     };
 

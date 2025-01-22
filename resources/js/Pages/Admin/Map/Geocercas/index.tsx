@@ -18,7 +18,6 @@ const Index: React.FC<Props> = ({ geocercas }) => {
     const { flash } = usePage().props;
     // Display flash messages
     useEffect(() => {
-        if (flash.success) toast.success(flash.success);
         if (flash.error) toast.error(flash.error);
     }, [flash]);
     // Calculate polygon centroid

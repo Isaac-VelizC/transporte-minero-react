@@ -138,7 +138,7 @@ class ShipmentsController extends Controller
     public function update(EnviosUpdateResquest $request, string $id)
     {
         $item = CargoShipment::findOrFail($id);
-        $this->saveShipment($item, $request, true);
+        return $this->saveShipment($item, $request, true);
     }
 
     private function saveShipment(CargoShipment $item, Request $request, Bool $isEditing)
@@ -158,26 +158,27 @@ class ShipmentsController extends Controller
                 return back()->with('error', 'El peso de carga no puede ser mayor a la capacidad total de los camiones: ' . $totalCapacidad);
             }
 
-            // Verificar si hay valores en la programación
+            // **1️⃣ Restaurar el estado de los vehículos anteriores antes de actualizar**
             if ($isEditing && !empty($item->programming)) {
-                // Iterar sobre cada valor en el campo 'programming' (suponiendo que sea un arreglo)
-                foreach ($item->programming as $value) {
-                    // Buscar el vehículo correspondiente a la programación
-                    $vehicle = VehicleSchedule::findOrFail($value);
-                    // Actualizar el estado del vehículo
-                    $vehicle->update(['status' => 'libre']);
+                $previousIds = json_decode($item->programming, true);
+
+                if (is_array($previousIds)) {
+                    VehicleSchedule::whereIn('id', $previousIds)->update(['status' => 'libre']);
+                } else {
+                    Log::error('Formato inválido en los IDs de vehículos anteriores.');
                 }
             }
-            // Guardar envío
+
+            // **2️⃣ Guardar el nuevo envío**
             $item->fill($validatedData);
             $item->programming = json_encode($request->programming);
             $item->total = $request->sub_total * $totalPeso;
             $item->save();
 
-            // Si es actualización, eliminar asociaciones previas
+            // **3️⃣ Eliminar asociaciones previas antes de insertar las nuevas**
             CargoShipmentVehicleSchedule::where('cargo_shipment_id', $item->id)->delete();
 
-            // Asociar vehicle schedules seleccionados
+            // **4️⃣ Asociar vehicle schedules seleccionados**
             $data = collect($vehicleSchedules)->map(fn($v) => [
                 'cargo_shipment_id' => $item->id,
                 'vehicle_schedule_id' => $v->id,
@@ -186,16 +187,16 @@ class ShipmentsController extends Controller
             ])->toArray();
             CargoShipmentVehicleSchedule::insert($data);
 
-            // Actualizar estado de vehículos
-            $vehicleSchedules->each(fn($v) => $v->update(['status' => 'pendiente']));
+            // **5️⃣ Actualizar el estado de los nuevos vehículos a "pendiente"**
+            VehicleSchedule::whereIn('id', $request->programming)->update(['status' => 'pendiente']);
 
-            return redirect()->route('envios.list')->with('success', 'Envío ' . ($item->wasRecentlyCreated ? 'creado' : 'actualizado') . ' exitosamente');
+            $message = 'Envío ' . (!$isEditing ? 'creado' : 'actualizado') . ' exitosamente';
+            return redirect()->route('envios.list')->with('success', $message);
         } catch (\Exception $e) {
-            Log::error('Error en ' . ($item->wasRecentlyCreated ? 'creación' : 'actualización') . ' de envío: ' . $e->getMessage());
+            Log::error('Error en ' . (!$isEditing ? 'creación' : 'actualización') . ' de envío: ' . $e->getMessage());
             return back()->withInput()->with('error', 'No se pudo procesar el envío. Intente nuevamente.');
         }
     }
-
 
     public function changeStatus(string $id)
     {

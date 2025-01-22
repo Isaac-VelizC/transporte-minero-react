@@ -44,6 +44,7 @@ export default function form({ isEditing, geocerca }: Props) {
         method(routeUrl, {
             onSuccess: ({ props: { flash } }) => {
                 if (flash?.error) toast.error(flash.error);
+                if (flash?.success) toast.success(flash.success);
             },
             onError: () => {
                 const errorMessage = isEditing

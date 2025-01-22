@@ -42,7 +42,6 @@ class DeviceController extends Controller
         ]);
 
         try {
-            //dd($validatedData);
             // Crear el dispositivo
             Device::create($validatedData);
             return redirect()->back()->with('success', 'Dispositivo registrado exitosamente.');
