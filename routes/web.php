@@ -88,6 +88,7 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::get('/devices', [DeviceController::class, 'index'])->name('devices.list');
     Route::post('/devices', [DeviceController::class, 'store'])->name('devices.create');
     Route::patch('/devices/{id}', [DeviceController::class, 'update'])->name('devices.update');
+    Route::put('/devices/{id}/storage', [DeviceController::class, 'updateStorageDevice'])->name('devices.update.storage');
     //Route::get('/devices/locations', [DeviceController::class, 'getLocations']);
     //Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.view');

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Events\LocationUpdated;
-use App\Events\RutaEnvioDeviceUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Models\RutaDevice;
@@ -56,7 +54,7 @@ class DeviceController extends Controller
         // Validación de los datos de entrada
         $validatedData = $request->validate([
             'num_serial' => 'required|string|unique:devices,num_serial,' . $id,
-            'visorID' => 'required|string|unique:devices,visorID,' . $id,
+            //'visorID' => 'required|string|unique:devices,visorID,' . $id,
             'name_device' => 'required|string',
             'type' => 'required|string|in:Android,IOS',
             'status' => 'required|string|in:activo,inactivo',
@@ -76,6 +74,28 @@ class DeviceController extends Controller
         }
     }
 
+    public function updateStorageDevice(Request $request, $id) {
+        // Validación de los datos de entrada
+        $validatedData = $request->validate([
+            'visorID' => 'required|string|max:255|unique:devices,visorID,' . $id,
+        ]);
+    
+        try {
+            // Actualizar el dispositivo
+            $device = Device::findOrFail($id);
+            $device->visorID = $validatedData['visorID'];
+            $device->save();  // Guardar cambios en el modelo
+    
+            return response()->json(['status' => 'success', 'message' => 'Código actualizado exitosamente.']);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['status' => 'error', 'message' => 'Código no encontrado.'], 404);
+        } catch (\Throwable $th) {
+            // Manejo de errores
+            return response()->json(['status' => 'error', 'message' => 'Error al actualizar código: ' . $th->getMessage()], 500);
+        }
+    }
+    
+    
     public function getLocations()
     {
         return Device::select('id', 'device_name', 'latitude', 'longitude')->get();

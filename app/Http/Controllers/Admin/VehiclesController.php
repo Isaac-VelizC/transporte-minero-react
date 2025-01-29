@@ -212,12 +212,12 @@ class VehiclesController extends Controller
         try {
             $data = $request->validated();
             $vehicle = Vehicle::findOrFail($id);
-            $vehicle->update($data);
             // Actualizar el estado del dispositivo si se proporciona device_id
             if ($data['device_id'] != $vehicle->device_id) {
                 Device::findOrFail($vehicle->device_id)->update(['status' => 'activo']);
                 Device::findOrFail($data['device_id'])->update(['status' => 'asignado']);
             }
+            $vehicle->update($data);
             DB::commit();
             return redirect()->route('vehicle.list')->with('success', 'Vehículo actualizado con éxito.');
         } catch (\Throwable $th) {

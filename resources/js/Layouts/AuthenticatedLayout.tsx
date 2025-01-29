@@ -2,10 +2,9 @@ import { PropsWithChildren, ReactNode, useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { Toaster } from "react-hot-toast";
-import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { router, usePage } from "@inertiajs/react";
 import { DeviceInterface } from "@/interfaces/Device";
-import axios from "axios"; // Usa axios para realizar la petición correctamente
+import axios from "axios";
 
 export default function Authenticated({
     children,
@@ -32,37 +31,44 @@ export default function Authenticated({
         fetchDevices();
     }, [rol]);
 
-    useEffect(() => {
+    const loadFingerprint = async () => {
         if (rol === "Conductor") {
-            const loadFingerprint = async () => {
-                try {
-                    const fp = await FingerprintJS.load();
-                    const result = await fp.get();
-                    const deviceId = result.visitorId;
-                    // Verificar si el dispositivo está permitido
-                    const isDeviceAllowed = devices?.some(
-                        (device) => device.visorID === deviceId
-                    );
+            try {
+                const storedDeviceId = localStorage.getItem('deviceId');
+                console.log("deviceId:", storedDeviceId);
 
-                    if (isDeviceAllowed) {
-                        setDevicePermiso(true);
-                        console.log("Permitido");
-                    } else {
-                        setDevicePermiso(false);
-                        console.log("No permitido");
-                        router.visit("/error");
-                    }
-                } catch (error) {
-                    console.error("Error obteniendo huella digital:", error);
+                if (!devices) {
+                    console.error("No devices available to compare.");
+                    return;
                 }
-                if (devices.length > 0) {
-                    loadFingerprint();
+
+                const isDeviceAllowed = devices.some(
+                    (device) => device.visorID === storedDeviceId
+                );
+
+                if (isDeviceAllowed) {
+                    setDevicePermiso(true);
+                    console.log("Permitido");
+                } else {
+                    setDevicePermiso(false);
+                    console.log("No permitido");
+                    router.visit("/error");
                 }
-            };
+            } catch (error) {
+                console.error("Error obteniendo huella digital:", error);
+            }
         } else {
             setDevicePermiso(true);
         }
-    }, [devices]); // Ejecutar cada vez que `devices` cambie
+    };
+
+    useEffect(() => {
+        if (rol === "Conductor" && devices?.length > 0) {
+            loadFingerprint();
+        } else {
+            setDevicePermiso(true);
+        }
+    }, [rol, devices]);
 
     return (
         <div className="dark:bg-boxdark-2 dark:text-bodydark">

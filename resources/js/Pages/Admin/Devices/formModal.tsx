@@ -45,14 +45,16 @@ const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
             const fp = await FingerprintJS.load();
             const result = await fp.get();
             const deviceId = result.visitorId;
-
             // Asegurarse de que el visorID se establezca antes de continuar
             if (!deviceId) {
                 throw new Error(
                     "No se pudo obtener el ID del dispositivo, Intentalo nuevamente"
                 );
             }
-            data.visorID = deviceId;
+            if (!isEditing) {
+                localStorage.setItem("deviceId", deviceId);
+                data.visorID = deviceId;
+            }
             // Asegúrate de que el estado esté actualizado antes de continuar
             await new Promise((resolve) => setTimeout(resolve, 0)); // Espera un ciclo de renderizado
 
@@ -168,7 +170,9 @@ const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
                                 Seleccionar estado
                             </option>
                             <option value="activo">Activo</option>
-                            <option value="inactivo">Inactivo</option>
+                            {device?.status === "asignado" ? null : (
+                                <option value="inactivo">Inactivo</option>
+                            )}
                         </SelectInput>
                         <InputError className="mt-2" message={errors.status} />
                     </div>

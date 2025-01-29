@@ -74,7 +74,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         alt="Transporte Minero"
                         className="h-16 w-16"
                     />
-                    <h1 className="font-bold text-sm">Transporte Minero</h1>
+                    <h1 className="font-bold text-sm text-white">Transportes Benjamin</h1>
                 </Link>
                 <button
                     ref={trigger}
