@@ -1,20 +1,31 @@
+import DangerButton from "@/Components/Buttons/DangerButton";
 import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import SecondaryButton from "@/Components/Buttons/SecondaryButton";
+import InputError from "@/Components/Forms/InputError";
+import InputLabel from "@/Components/Forms/InputLabel";
 import Modal from "@/Components/Modal/Modal";
 import DataTableComponent from "@/Components/Table";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router, usePage } from "@inertiajs/react";
+import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 type Props = {
     envios: ShipmentInterface[];
+    vehicleId?: number | null;
 };
 
-export default function listEnviosConducto({ envios }: Props) {
+export default function listEnviosConducto({ envios, vehicleId }: Props) {
     const [confirmingShow, setConfirmingShow] = useState(false);
     const [cargaData, setCargaData] = useState<ShipmentInterface | null>(null);
+    const initialData = {
+        message: "",
+        vehicle: vehicleId,
+        envio: cargaData?.id,
+    };
+
+    const { data, setData, post, errors, processing } = useForm(initialData);
 
     const columns = [
         {
@@ -24,7 +35,8 @@ export default function listEnviosConducto({ envios }: Props) {
         },
         {
             name: "Cliente",
-            cell: (row: ShipmentInterface) => row.client.nombre +' '+row.client.ap_pat,
+            cell: (row: ShipmentInterface) =>
+                row.client.nombre + " " + row.client.ap_pat,
             sortable: true,
         },
         {
@@ -62,13 +74,19 @@ export default function listEnviosConducto({ envios }: Props) {
             name: "Acciones",
             cell: (row: ShipmentInterface) => (
                 <div className="flex gap-2">
-                    <button onClick={() => handleViewEnvio(row)}>
-                        <i className="bi bi-info-circle"></i>
-                    </button>
-                    {row.status === "entregado" ? null : (
-                        <Link href={route("driver.envio.show", row.id)}>
-                            <i className="bi bi-geo-fill"></i>
-                        </Link>
+                    {vehicleId != null && (
+                        <>
+                            {row.status !== "pendiente" ? null : (
+                                <button onClick={() => handleViewEnvio(row)}>
+                                    <i className="bi bi-info-circle"></i>
+                                </button>
+                            )}
+                            {row.status === "entregado" ? null : (
+                                <Link href={route("driver.envio.show", row.id)}>
+                                    <i className="bi bi-geo-fill"></i>
+                                </Link>
+                            )}
+                        </>
                     )}
                 </div>
             ),
@@ -91,9 +109,30 @@ export default function listEnviosConducto({ envios }: Props) {
         if (cargaData !== null) {
             try {
                 // Realiza la solicitud para cambiar el estado del envío
-                await router.get(route("driver.envios.status", cargaData.id), {
-                });
+                await router.get(
+                    route("driver.envios.status", cargaData.id),
+                    {}
+                );
             } catch (error) {
+                toast.error("Error al cambiar el estado del envío");
+            }
+        } else {
+            toast.error(
+                "No hay un ID de envío seleccionado para cambiar el estado."
+            );
+        }
+    };
+
+    const handleCancelarEnvio = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (data.envio !== null && data.vehicle !== null) {
+            try {
+                data.envio = cargaData?.id;
+                // Realiza la solicitud para cambiar el estado del envío
+                post(route("driver.envios.renuncia"));
+                //toast.success("El estado del envío ha sido cambiado exitosamente.");
+            } catch (error) {
+                console.error("Error al cambiar el estado del envío:", error);
                 toast.error("Error al cambiar el estado del envío");
             }
         } else {
@@ -118,60 +157,82 @@ export default function listEnviosConducto({ envios }: Props) {
         <Authenticated>
             <Head title="Envios" />
             <div className="flex flex-col lg:flex-row items-center justify-between my-4">
-                <h1 className="text-lg font-semibold text-gray-200">Envios Asigandos</h1>
+                <h1 className="text-lg font-semibold text-gray-200">
+                    Envios Asigandos
+                </h1>
             </div>
             <DataTableComponent columns={columns} data={envios} />
             <Modal show={confirmingShow} onClose={closeModal}>
                 <div className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900">
-                        Información del Envio
-                    </h2>
-                    <div className="py-2 pl-4">
-                        <p>
-                            <strong>Cliente: </strong>
-                            {cargaData?.client.nombre+' '+cargaData?.client.ap_pat+' '+cargaData?.client.ap_mat}
-                        </p>
-                    </div>
                     <h3 className="font-medium text-base text-gray-900">
                         Datos de la carga
                     </h3>
                     <div className="py-2 pl-4 space-y-1">
                         <p>
-                            <strong>Peso en toneldas: </strong>
-                            {cargaData?.peso} t.
+                            <strong>Origen: </strong>
+                            {cargaData?.origen}
                         </p>
                         <p>
                             <strong>Destino: </strong>
                             {cargaData?.destino}
                         </p>
                         <p>
-                            <strong>Notas: </strong>
-                            {cargaData?.notas}
-                        </p>
-                        <p>
                             <strong>Fecha de Entrega: </strong>
                             {cargaData?.fecha_entrega}
                         </p>
                     </div>
-
-                    <div className="mt-6 flex justify-end gap-4">
-                        <SecondaryButton
-                            type="button"
-                            className="mt-4"
-                            onClick={closeModal}
-                        >
-                            Cancel
-                        </SecondaryButton>
-                        {cargaData?.status !== "pendiente" ? null : (
-                            <PrimaryButton
+                    <form onSubmit={handleCancelarEnvio}>
+                        <p className="text-orange-400">
+                            Si renuncias, menciona del porque
+                        </p>
+                        <div>
+                            <InputLabel
+                                htmlFor="message"
+                                value="Descripcion Corta"
+                            />
+                            <textarea
+                                id="message"
+                                rows={4}
+                                className="mt-1 block w-full rounded-md"
+                                onChange={(e) =>
+                                    setData("message", e.target.value)
+                                }
+                                value={data.message}
+                                required
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.message}
+                            />
+                        </div>
+                        <div className="mt-6 flex justify-end gap-4">
+                            <DangerButton
                                 type="button"
                                 className="mt-4"
-                                onClick={handleConfirm}
+                                onClick={closeModal}
                             >
-                                Aceptar Carga
-                            </PrimaryButton>
-                        )}
-                    </div>
+                                Cerrar
+                            </DangerButton>
+                            {cargaData?.status !== "pendiente" &&
+                            vehicleId ? null : (
+                                <>
+                                    <PrimaryButton
+                                        type="button"
+                                        className="mt-4"
+                                        onClick={handleConfirm}
+                                    >
+                                        Aceptar Carga
+                                    </PrimaryButton>
+                                    <SecondaryButton
+                                        type="submit"
+                                        className="mt-4"
+                                    >
+                                        Renunciar al envio
+                                    </SecondaryButton>
+                                </>
+                            )}
+                        </div>
+                    </form>
                 </div>
             </Modal>
         </Authenticated>

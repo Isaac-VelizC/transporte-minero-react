@@ -258,7 +258,7 @@ export default function ShowMapa({
             } catch (err) {
                 if (isMounted) setError("No se pudo obtener la ubicación");
             }
-        }, 20000);
+        }, 10000);
 
         return () => {
             isMounted = false;

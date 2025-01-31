@@ -9,7 +9,7 @@ export const customIcon = L.icon({
 
 export const deviceIcon = L.icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/1514/1514801.png", // URL del ícono de dispositivo móvil
-    iconSize: [32, 32], // Tamaño del ícono
+    iconSize: [44, 44], // Tamaño del ícono
     iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
     popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
 });

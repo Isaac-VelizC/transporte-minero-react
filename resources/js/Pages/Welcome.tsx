@@ -315,7 +315,7 @@ export default function Welcome({
                                     rel="noopener noreferrer"
                                     className="underline hover:text-white"
                                 >
-                                    AIsakVeliz
+                                    Transportes Benjamín
                                 </a>
                             </span>
                         </div>

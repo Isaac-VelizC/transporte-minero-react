@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vehicle\VehicleCreateResquest;
 use App\Http\Requests\Vehicle\VehicleUpdateResquest;
+use App\Models\CargoShipment;
+use App\Models\CargoShipmentVehicleSchedule;
 use App\Models\Device;
 use App\Models\Driver;
 use App\Models\Mark;
+use App\Models\RenunciaUser;
 use App\Models\TipoMantenimiento;
 use App\Models\TypeVehicle;
 use App\Models\Vehicle;
@@ -15,7 +18,6 @@ use App\Models\VehicleSchedule;
 use App\Models\VehiculoMantenimiento;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -51,6 +53,37 @@ class VehiclesController extends Controller
         return Inertia::render('Admin/Vehicle/Programming/index', [
             'schedules' => $list,
         ]);
+    }
+
+    public function reasignacionDriverVehicleEnvio(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'car_id' => 'required|exists:vehicles,id',
+            'driver_id' => 'required|exists:drivers,id',
+        ]);
+
+        try {
+            $item = RenunciaUser::findOrFail($id);
+            // Crear un nuevo horario de vehículo
+            $nuevoSchedule = VehicleSchedule::create($validatedData);
+            // Obtener el conductor y actualizar su estado
+            $driver = Driver::findOrFail($validatedData['driver_id']);
+            $driver->update(['status' => false]);
+            // Actualizar el responsable del vehículo
+            Vehicle::where('id', $item->vehicle)->update(['responsable_id' => $driver->persona->id]);
+            // Actualizar el envío asociado al horario del vehículo
+            CargoShipmentVehicleSchedule::where('cargo_shipment_id', $item->envio)
+                ->where('vehicle_schedule_id', $item->schedule_id)
+                ->update([
+                    'vehicle_schedule_id' => $nuevoSchedule->id,
+                    'conductor_id' => $validatedData['driver_id']
+                ]);
+
+            return redirect()->back()->with('success', 'Conductor asignado a vehículo exitosamente.');
+        } catch (\Throwable $th) {
+            // Manejo de errores
+            return redirect()->back()->with('error', 'Error al asignar vehículo: ' . $th->getMessage());
+        }
     }
 
     public function registerConductorVehicle(Request $request)
@@ -307,5 +340,11 @@ class VehiclesController extends Controller
         } catch (\Throwable $th) {
             return redirect()->back()->with(['error' => 'Error al eliminar mantenimiento de vehículo: ' . $th->getMessage()], 500);
         }
+    }
+    public function viewMapEnviosAll() {
+        $envios = CargoShipment::with(['vehicleSchedules.vehicle.device'])->where('status', 'pendiente')->get();
+        return Inertia::render('Admin/Map/allEnviosMap', [
+            'envios' => $envios
+        ]);
     }
 }

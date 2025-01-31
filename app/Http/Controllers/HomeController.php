@@ -8,6 +8,7 @@ use App\Models\Driver;
 use App\Models\Geocerca;
 use App\Models\Message;
 use App\Models\Persona;
+use App\Models\RenunciaUser;
 use App\Models\User;
 use App\Models\Vehicle;
 use Carbon\Carbon;
@@ -35,8 +36,10 @@ class HomeController extends Controller
         $enviosPendienteCount = 0;
         $enviosTransitoCount = 0;
         $enviosEntregadoCount = 0;
+        $messages = [];
 
         if ($authUserRol === 'cliente') {
+            $messages = Message::where('client_id', $idAuthUser)->get();
             // Clientes
             $enviosQuery = CargoShipment::where('client_id', $idAuthUser);
         } elseif ($authUserRol === 'Conductor') {
@@ -73,6 +76,15 @@ class HomeController extends Controller
             // Contar todos los envíos para administrador
             $enviosCount = $enviosQuery->count();
         }
+        $renuncias = [];
+        if ($authUserRol === 'encargado_Control') {
+
+            $renuncias = RenunciaUser::with(['conductor', 'schedule.vehicle'])
+                ->whereHas('schedule.vehicle', function ($query) {
+                    $query->whereNull('responsable_id');
+                })
+                ->get();
+        }
 
         return Inertia::render('Dashboard', [
             'usersCount' => $usersCount ?? 0,
@@ -84,6 +96,8 @@ class HomeController extends Controller
             'enviosPendienteCount' => $enviosPendienteCount,
             'enviosTransitoCount' => $enviosTransitoCount,
             'enviosEntregadoCount' => $enviosEntregadoCount,
+            'messages' => $messages,
+            'renuncias' => $renuncias
         ]);
     }
 

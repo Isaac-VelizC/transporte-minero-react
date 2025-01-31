@@ -1,6 +1,11 @@
 import CardCount from "@/Components/Cards/CardCount";
+import { MessageInterface } from "@/interfaces/Message";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, usePage } from "@inertiajs/react";
+import MensajesCliente from "./Client/mensajes";
+import { RenunciaUser } from "@/interfaces/RenunciaUser";
+import { useState } from "react";
+import ModalReasignacion from "./Admin/modalReasignacion";
 
 type Props = {
     usersCount: number;
@@ -12,6 +17,8 @@ type Props = {
     enviosPendienteCount: number;
     enviosTransitoCount: number;
     enviosEntregadoCount: number;
+    messages?: MessageInterface[];
+    renuncias?: RenunciaUser[];
 };
 
 export default function Dashboard({
@@ -24,8 +31,27 @@ export default function Dashboard({
     enviosPendienteCount,
     enviosTransitoCount,
     enviosEntregadoCount,
+    messages,
+    renuncias,
 }: Props) {
     const { rol } = usePage().props.auth;
+
+    const [openModalSchedule, setOpenModalSchedule] = useState(false);
+    const [vehicleId, setVehicleId] = useState<number | null>(null);
+    const [renunciaId, setrenunciaId] = useState<number | null>(null);
+
+    const handleCreateSchedule = (id: number, idRenuncia: number) => {
+        setVehicleId(id);
+        setOpenModalSchedule(true);
+        setrenunciaId(idRenuncia);
+    };
+
+    const closeModal = () => {
+        setOpenModalSchedule(false);
+        setVehicleId(null);
+        setrenunciaId(null);
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -39,7 +65,7 @@ export default function Dashboard({
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {(rol === "Admin" || rol === "Secretaria")  && (
+                        {(rol === "Admin" || rol === "Secretaria") && (
                             <>
                                 <CardCount
                                     icon="people"
@@ -73,7 +99,7 @@ export default function Dashboard({
                                 />
                             </>
                         )}
-                        {(rol === "Conductor" || rol === "Cliente")  && (
+                        {(rol === "Conductor" || rol === "Cliente") && (
                             <>
                                 <CardCount
                                     icon="box"
@@ -93,13 +119,107 @@ export default function Dashboard({
                                 <CardCount
                                     icon="clock"
                                     title="Envios Finalizados"
-                                    result={enviosEntregadoCount}/>
+                                    result={enviosEntregadoCount}
+                                />
                             </>
                         )}
                     </div>
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            Hola Mundo, he vuelto!!
+                            {rol === "Cliente" && (
+                                <MensajesCliente messages={messages} />
+                            )}
+                            {rol === "Encargado_Control" && (
+                                <>
+                                    <div className="my-3 mb-4 text-center">
+                                        <h2 className="font-semibold text-lg text-danger">
+                                            Lista de Conductores que renunciaros
+                                            a vehiculos con pedidos pendientes{" "}
+                                        </h2>
+                                    </div>
+                                    <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">
+                                        <thead>
+                                            <tr className="bg-gray-200 text-gray-700">
+                                                <th className="py-3 px-4 text-left">
+                                                    Conductor
+                                                </th>
+                                                <th className="py-3 px-4 text-left">
+                                                    Vehiculo
+                                                </th>
+                                                <th className="py-3 px-4 text-left">
+                                                    Fecha
+                                                </th>
+                                                <th className="py-3 px-4 text-left">
+                                                    Mensaje
+                                                </th>
+                                                <th className="py-3 px-4 text-left">
+                                                    Acciones
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Array.isArray(renuncias) &&
+                                            renuncias.length > 0 ? (
+                                                renuncias.map((item, index) => (
+                                                    <tr
+                                                        key={index}
+                                                        className="border-b hover:bg-gray-100"
+                                                    >
+                                                        <td className="py-2 px-4">
+                                                            {item.conductor
+                                                                .nombre +
+                                                                " " +
+                                                                item.conductor
+                                                                    .ap_pat}
+                                                        </td>
+                                                        <td className="py-2 px-4 text-green-600">
+                                                            {
+                                                                item.schedule
+                                                                    .vehicle
+                                                                    .matricula
+                                                            }
+                                                        </td>
+                                                        <td className="py-2 px-4">
+                                                            {item.fecha}
+                                                        </td>
+                                                        <td>{item.message}</td>
+                                                        <td>
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleCreateSchedule(
+                                                                        item
+                                                                            .schedule
+                                                                            .vehicle
+                                                                            .id,
+                                                                        item.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                <i className="bi bi-calendar4-range"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td
+                                                        colSpan={5}
+                                                        className="py-2 px-4 text-center text-gray-500"
+                                                    >
+                                                        No hay datos
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                    <ModalReasignacion
+                                        show={openModalSchedule}
+                                        id_car={vehicleId || undefined}
+                                        onClose={closeModal}
+                                        id_renuncia={renunciaId}
+                                    />
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -107,4 +227,3 @@ export default function Dashboard({
         </AuthenticatedLayout>
     );
 }
-

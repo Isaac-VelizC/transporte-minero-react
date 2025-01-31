@@ -152,11 +152,12 @@ function index({ envios }: Props) {
                     { name: "Lista de Envios" },
                 ]}
             />
-            {rol === "Encargado_Control" ? null : (
-                <div className="flex justify-end my-4">
+            <div className="flex justify-end my-4">
+                <LinkButton href={"all.map.envios"}>Mapa</LinkButton>
+                {rol === "Encargado_Control" ? null : (
                     <LinkButton href={"envios.create.form"}>Nuevo</LinkButton>
-                </div>
-            )}
+                )}
+            </div>
             <DataTableComponent columns={columns} data={envios} />
             <ModalDelete
                 title={`¿Estás seguro de que quieres ${

@@ -208,7 +208,7 @@ const Index: React.FC<Props> = ({
                     await updateRutasDevices(deviceIds, envio.id); // Pasar el array completo
                 }
             }
-        }, 20000);
+        }, 12000);
 
         return () => {
             isMounted = false;

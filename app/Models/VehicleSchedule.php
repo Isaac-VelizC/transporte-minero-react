@@ -20,6 +20,10 @@ class VehicleSchedule extends Model
         'status_time'
     ];
 
+    public function renuncia() {
+        return $this->belongsTo(RenunciaUser::class, 'schedule_id');
+    }
+
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class, 'car_id');

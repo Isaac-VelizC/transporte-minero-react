@@ -1,7 +1,6 @@
 import Card from "@/Components/Cards/Card";
 import TextInput from "@/Components/Forms/TextInput";
 import { PersonaMessageInterface } from "@/interfaces/Message";
-import { PersonaInterface } from "@/interfaces/Persona";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useState } from "react";
@@ -45,6 +44,7 @@ export default function Index({ messages }: Props) {
                     if (flash.error) toast.error(flash.error);
                     if (flash.success) toast.success(flash.success);
                     reset();
+                    setSelectedUser(null);
                 },
                 onError: (errors) => {
                     console.error(errors);

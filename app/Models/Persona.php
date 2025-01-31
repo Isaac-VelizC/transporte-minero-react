@@ -23,6 +23,10 @@ class Persona extends Model
         'rol'
     ];
 
+    public function renuncia() {
+        return $this->hasMany(RenunciaUser::class, 'persona_id');
+    }
+
     public function driver()
     {
         return $this->hasOne(Driver::class, 'persona_id');

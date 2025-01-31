@@ -1,3 +1,5 @@
+import { PersonaInterface } from "./Persona";
+
 // Definición de la interfaz para un usuario
 export interface PersonaMessageInterface {
     id: number;
@@ -17,5 +19,6 @@ export interface MessageInterface {
     body: string;
     fecha: string;
     receptor: string;
+    control: PersonaInterface;
     [key: string]: unknown;
 }

@@ -50,7 +50,7 @@ export default function form({
                       fecha_entrega: "",
                       fecha_envio: "",
                       notas: "",
-                      sub_total: 50,
+                      sub_total: 690,
                       total: null,
                       client_latitude: null,
                       client_longitude: null,
@@ -67,6 +67,10 @@ export default function form({
     const [selectionType, setSelectionType] = useState<"origen" | "destino">(
         "destino"
     );
+
+    const total = useMemo(() => {
+        return (data.sub_total || 0) * (parseInt(data.peso) || 0);
+    }, [data.sub_total, data.peso]);
 
     const handleMapChange = useCallback(
         (lat: number, lon: number, type: "origen" | "destino") => {
@@ -98,7 +102,7 @@ export default function form({
                 isEditing && data?.id
                     ? route("envios.update.form", data.id)
                     : route("envios.store.form");
-                    
+
             const submitMethod = isEditing && data?.id ? patch : post;
 
             submitMethod(submitRoute, {
@@ -314,6 +318,19 @@ export default function form({
                                 <InputError
                                     className="mt-2"
                                     message={errors.peso}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    htmlFor="total"
+                                    value="Monto Total"
+                                />
+                                <TextInput
+                                    id="total"
+                                    type="number"
+                                    className="mt-1 block w-full bg-gray-400 text-white"
+                                    value={total || ""}
+                                    disabled
                                 />
                             </div>
                         </div>

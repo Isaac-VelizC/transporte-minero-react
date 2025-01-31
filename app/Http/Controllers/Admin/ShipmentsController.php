@@ -10,6 +10,7 @@ use App\Models\CargoShipment;
 use App\Models\CargoShipmentVehicleSchedule;
 use App\Models\Geocerca;
 use App\Models\Persona;
+use App\Models\Vehicle;
 use App\Models\VehicleSchedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -29,9 +30,12 @@ class ShipmentsController extends Controller
     public function listEnviosConductor()
     {
         $idAuth = Auth::user()->id;
+        $item = Vehicle::where('responsable_id', $idAuth)->first();
+        $vehicleId = $item ? $item->id : null;
         $envios = $this->getEnviosByUserId($idAuth);
         return Inertia::render('Conductor/listEnviosConducto', [
-            'envios' => $envios
+            'envios' => $envios,
+            'vehicleId' => $vehicleId
         ]);
     }
 

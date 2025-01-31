@@ -58,7 +58,9 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::patch('/vehicle/programming/{id}', [VehiclesController::class, 'updateConductorVehicle'])->name('vehicle.programming.update');
     Route::get('/vehicle/programming/{id}/cancel', [VehiclesController::class, 'cancelScheduleVehicle'])->name('vehicle.programming.cancel');
     Route::delete('/vehicle/programming/{id}/delete', [VehiclesController::class, 'deleteScheduleVehicle'])->name('vehicle.programming.delete');
+    Route::post('/vehicle/programming/{id}/reasignacion', [VehiclesController::class, 'reasignacionDriverVehicleEnvio'])->name('vehicle.programming.reasignacion');
     Route::get('/api/available-resources', [VehiclesController::class, 'availableResources']);
+    Route::get('/all/envios/map', [VehiclesController::class, 'viewMapEnviosAll'])->name('all.map.envios');
     // Mantenimientos
     Route::get('/vehicle/mantenimientos', [VehiclesController::class, 'listMantenimientos'])->name('mantenimiento.list');
     Route::post('/vehicle/mantenimiento',[VehiclesController::class, 'storeMantenimientoVehicle'])->name('mantenimiento.store');
@@ -102,6 +104,8 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
 Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
     Route::get('/driver/envios/', [ShipmentsController::class, 'listEnviosConductor'])->name('driver.envios.list');
     Route::get('/driver/envios/{id}/status', [ClientDriverController::class, 'changeStatusShipment'])->name('driver.envios.status');
+    Route::post('/driver/envios/renuncia', [ClientDriverController::class, 'renunciaEnvio'])->name('driver.envios.renuncia');
+
     Route::get('/driver/envio/show/{id}', [ClientDriverController::class, 'showEnvio'])->name('driver.envio.show');
     Route::get('/driver/show/map/{id}', [ClientDriverController::class, 'showMapMonitoreo'])->name('driver.show.map');
     Route::get('/driver/mantenimientos/', [ClientDriverController::class, 'mantenimientosVehiculosList'])->name('driver.mantenimientos.list');

@@ -11,7 +11,9 @@ use App\Models\Device;
 use App\Models\Driver;
 use App\Models\Geocerca;
 use App\Models\Persona;
+use App\Models\RenunciaUser;
 use App\Models\RutaDevice;
+use App\Models\Vehicle;
 use App\Models\VehicleSchedule;
 use App\Models\VehiculoMantenimiento;
 use Carbon\Carbon;
@@ -127,7 +129,7 @@ class ClientDriverController extends Controller
     {
         try {
             $item = CargoShipment::findOrFail($id);
-            // **1️⃣ Restaurar el estado de los vehículos anteriores antes de actualizar**
+            // ** Restaurar el estado de los vehículos anteriores antes de actualizar**
             if (!empty($item->programming)) {
                 $previousIds = json_decode($item->programming, true);
                 if (is_array($previousIds)) {
@@ -254,8 +256,8 @@ class ClientDriverController extends Controller
         $userId = Auth::user()->persona->id;
         // Buscar el envío relacionado con el conductor
         $cargaShipment = $envio->vehicleSchedules()
-        ->where('conductor_id', $userId)
-        ->first();
+            ->where('conductor_id', $userId)
+            ->first();
         // Verificar si se encontró un cargaShipment
         if (!$cargaShipment) {
             // Manejar el caso donde no se encuentra el cargaShipment
@@ -264,7 +266,7 @@ class ClientDriverController extends Controller
         // Obtener carId y driverId
         $carId = $cargaShipment->car_id;
         $driverId = Driver::where('persona_id', $userId)->first()->id;
-        
+
         return Inertia::render('Conductor/createAltercado', [
             'dataCarga' => $envio,
             'carId' => $carId,
@@ -291,6 +293,47 @@ class ClientDriverController extends Controller
         } catch (\Throwable $th) {
             // Manejo de errores
             return redirect()->back()->with(['error' => 'Error al reportar: ' . $th->getMessage()], 500);
+        }
+    }
+
+    public function renunciaEnvio(Request $request)
+    {
+        // Validación de los datos de entrada
+        $validatedData = $request->validate([
+            'message' => 'required|string|max:100',
+            'vehicle' => 'required|exists:vehicles,id',
+            'envio' => 'required|numeric|exists:cargo_shipments,id',
+        ]);
+        try {
+            // Obtener el usuario autenticado y su ID de conductor
+            $user = Auth::user();
+            $driverId = $user->persona->driver->id;
+
+            // Encuentra el vehículo y su horario asociado en una sola consulta
+            $vehicleSchedule = VehicleSchedule::where('driver_id', $driverId)
+                ->where('status', 'pendiente')
+                ->with(['vehicle', 'driver'])
+                ->firstOrFail();
+
+            // Actualiza el responsable del vehículo y cierra el horario
+            $vehicleSchedule->vehicle->update(['responsable_id' => null]);
+            $vehicleSchedule->driver->update(['status' => true]);
+            $vehicleSchedule->update(['driver_id' => null, 'status' => 'cerrado', 'end_time' => Carbon::now()]);
+
+            // Crear la renuncia del usuario
+            RenunciaUser::create([
+                'message' => $validatedData['message'],
+                'vehicle' => $validatedData['vehicle'],
+                'envio' => $validatedData['envio'],
+                'persona_id' => $user->persona->id,
+                'schedule_id' => $vehicleSchedule->id,
+            ]);
+
+            return redirect()->back()->with('success', 'Renunciaste a la entrega exitosamente.');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->back()->with('error', 'Vehículo o envío no encontrado.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Ocurrió un error al renunciar al envío.');
         }
     }
 }
