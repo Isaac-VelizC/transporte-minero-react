@@ -1,21 +1,15 @@
 import DataTableComponent from "@/Components/Table";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import { TableColumn } from "react-data-table-component";
-import PrimaryButton from "@/Components/Buttons/PrimaryButton";
-import SecondaryButton from "@/Components/Buttons/SecondaryButton";
-import Modal from "@/Components/Modal/Modal";
-import { useCallback, useState } from "react";
-import toast from "react-hot-toast";
-
 type Props = {
     envios: ShipmentInterface[];
 };
 
 export default function listEnvios({ envios }: Props) {
-    const [confirmingShow, setConfirmingShow] = useState(false);
-    const [cargaData, setCargaData] = useState<ShipmentInterface | null>(null);
+    //const [confirmingShow, setConfirmingShow] = useState(false);
+    //const [cargaData, setCargaData] = useState<ShipmentInterface | null>(null);
     const columns: TableColumn<ShipmentInterface>[] = [
         {
             name: "#",
@@ -55,11 +49,6 @@ export default function listEnvios({ envios }: Props) {
             name: "Acciones",
             cell: (row) => (
                 <div className="flex gap-2">
-                    {row.status == "en_transito" ? (
-                        <button onClick={() => handleViewEnvio(row)}>
-                            <i className="bi bi-info-circle"></i>
-                        </button>
-                    ) : null}
                     <Link href={route("client.envio.show", row.id)}>
                         <i className="bi bi-eye"></i>
                     </Link>
@@ -70,7 +59,7 @@ export default function listEnvios({ envios }: Props) {
         },
     ];
 
-    const handleViewEnvio = useCallback((row: ShipmentInterface) => {
+    /*const handleViewEnvio = useCallback((row: ShipmentInterface) => {
         setCargaData(row);
         setConfirmingShow(true);
     }, []);
@@ -96,7 +85,7 @@ export default function listEnvios({ envios }: Props) {
         } else {
             toast.error("No hay un ID de envío seleccionado para cancelar.");
         }
-    };
+    };*/
 
     return (
         <Authenticated>
@@ -112,7 +101,7 @@ export default function listEnvios({ envios }: Props) {
                     data={envios}
                 />
             </div>
-            <Modal show={confirmingShow} onClose={closeModal}>
+            {/*<Modal show={confirmingShow} onClose={closeModal}>
                 <div className="p-6">
                     <h1 className="font-medium text-base text-gray-900">
                         Datos de la carga
@@ -155,7 +144,7 @@ export default function listEnvios({ envios }: Props) {
                         ) : null}
                     </div>
                 </div>
-            </Modal>
+            </Modal>*/}
         </Authenticated>
     );
 }

@@ -252,7 +252,9 @@ class VehiclesController extends Controller
             $vehicle = Vehicle::findOrFail($id);
             // Actualizar el estado del dispositivo si se proporciona device_id
             if ($data['device_id'] != $vehicle->device_id) {
-                Device::findOrFail($vehicle->device_id)->update(['status' => 'activo']);
+                if ($vehicle->device_id) {
+                    Device::findOrFail($vehicle->device_id)->update(['status' => 'activo']);
+                }
                 Device::findOrFail($data['device_id'])->update(['status' => 'asignado']);
             }
             $vehicle->update($data);

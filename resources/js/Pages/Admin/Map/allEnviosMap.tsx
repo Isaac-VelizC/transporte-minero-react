@@ -3,7 +3,8 @@ import Map from "@/Components/Maps/Map";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Marker, Polyline, Popup } from "react-leaflet";
 
 type Props = {
@@ -11,6 +12,51 @@ type Props = {
 };
 
 export default function allEnviosMap({ envios }: Props) {
+    const token =
+        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
+
+    const [routeCoordinates, setRouteCoordinates] = useState<
+        [number, number][]
+    >([]);
+    const [routes, setRoutes] = useState<{ [key: string]: [number, number][] }>(
+        {}
+    );
+
+    const fetchRoute = async (
+        origenCoords: [number, number],
+        envioCoords: [number, number],
+        envioId: number
+    ) => {
+        try {
+            const response = await axios.get(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&access_token=${token}`
+            );
+            const route = response.data.routes[0].geometry.coordinates.map(
+                (coord: number[]) => [coord[1], coord[0]]
+            );
+            setRoutes((prevRoutes) => ({
+                ...prevRoutes,
+                [envioId]: route,
+            }));
+        } catch (err) {
+            console.error("Error fetching route:", err);
+        }
+    };
+
+    useEffect(() => {
+        envios.forEach((envio) => {
+            const origenCoords: [number, number] = [
+                envio.origen_latitude,
+                envio.origen_longitude,
+            ];
+            const envioCoords: [number, number] = [
+                envio.client_latitude,
+                envio.client_longitude,
+            ];
+            fetchRoute(origenCoords, envioCoords, envio.id);
+        });
+    }, [envios]);
+
     return (
         <Authenticated>
             <Head title="Mapa" />
@@ -18,8 +64,6 @@ export default function allEnviosMap({ envios }: Props) {
                 <Map center={[-16.290154, -63.588653]} zoom={6}>
                     {envios.map((envio) => (
                         <React.Fragment key={envio.id}>
-                            {" "}
-                            {/* Asegúrate de tener una clave única */}
                             {/* Marcador para el destino del cliente */}
                             <Marker
                                 position={[
@@ -43,42 +87,31 @@ export default function allEnviosMap({ envios }: Props) {
                             {/* Marcadores para los horarios de vehículos */}
                             {envio.vehicle_schedules.map((location, index) => (
                                 <Marker
-                                    key={location.vehicle.id} // Usa un identificador único si está disponible
+                                    key={location.vehicle.id}
                                     position={[
                                         parseFloat(
                                             location.vehicle.device
                                                 ?.last_latitude || "0"
-                                        ), // Manejo de valores nulos
+                                        ),
                                         parseFloat(
                                             location.vehicle.device
                                                 ?.last_longitude || "0"
-                                        ), // Manejo de valores nulos
+                                        ),
                                     ]}
                                     icon={deviceIcon}
                                 >
                                     <Popup>Vehículo {index + 1}</Popup>
                                 </Marker>
                             ))}
+                            {/* Dibuja la ruta en el mapa si las coordenadas existen */}
+                            {routes[envio.id] && (
+                                <Polyline
+                                    positions={routes[envio.id]}
+                                    color="red"
+                                />
+                            )}
                         </React.Fragment>
                     ))}
-
-                    {/* Coordenadas del destino */}
-
-                    {/* Ubicación del dispositivo */}
-
-                    {/* Ruta del Camión o Dispositivo */}
-                    {/*rutaUpdated.length > 0 &&
-                        rutaUpdated.map((coords, index) => (
-                            <Polyline
-                                key={index}
-                                positions={coords}
-                                color={'green'}
-                            />
-                        ))*/}
-                    {/* Dibuja la ruta en el mapa */}
-                    {/*routeCoordinates.length > 0 && (
-                        <Polyline positions={routeCoordinates} color="red" />
-                    )*/}
                 </Map>
             </div>
         </Authenticated>

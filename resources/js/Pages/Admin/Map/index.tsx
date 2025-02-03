@@ -26,13 +26,6 @@ type Props = {
     geocercas: GeocercaInterface[];
 };
 
-interface ResponseDevice {
-    id: number;
-    latitude: number;
-    longitude: number;
-    coordenadas: [number, number][];
-}
-
 const Index: React.FC<Props> = ({
     envio,
     altercados = [],
@@ -45,9 +38,9 @@ const Index: React.FC<Props> = ({
         "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
     const [rutaUpdated, setRutaUpdate] = useState<[number, number][][]>([]);
 
-    const [route, setRoute] = useState<any>(null);
+    //const [route, setRoute] = useState<any>(null);
 
-    useEffect(() => {
+    /*useEffect(() => {
         // Convertir coordenadas en formato adecuado para Mapbox Directions
         const coordinates = rutaUpdated[0].map(coord => coord.join(",")).join(";");
 
@@ -64,7 +57,7 @@ const Index: React.FC<Props> = ({
         };
 
         fetchRoute();
-    }, []);
+    }, []);*/
 
     useEffect(() => {
         // Mapeamos los datos de rutaEnvioDevices para parsear las coordenadas
@@ -260,10 +253,10 @@ const Index: React.FC<Props> = ({
             <Head title="Mapa" />
             <ModalAlerta show={alerta} onClose={handleCloseAlert} />
             <div className="h-150 w-full">
-                <Map center={envioCoords} zoom={15}>            
-            {route && (
+                <Map center={envioCoords} zoom={15}>
+                    {/*route && (
                 <Polyline positions={route.coordinates} color="green" weight={4} />
-            )}
+            )*/}
                     {/* Renderizar geocercas */}
                     {closedGeocercaCoords.map((geoData, index) => (
                         <Polygon
@@ -312,7 +305,7 @@ const Index: React.FC<Props> = ({
                             <Polyline
                                 key={index}
                                 positions={coords}
-                                color={'green'}
+                                color={"green"}
                             />
                         ))}
                     {/* Dibuja la ruta en el mapa */}

@@ -48,8 +48,8 @@ export default function ShowMapa({
     const [loading, setLoading] = useState(false);
     const [alertTriggered, setAlertTriggered] = useState(false);
     const [alerta, setAlerta] = useState(false);
-
     const [rutaUpdated, setRutaUpdate] = useState(rutaEnvioDevice?.coordenadas);
+
     let token =
         "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
     const [error, setError] = useState<string | null>(null);
@@ -144,51 +144,54 @@ export default function ShowMapa({
     }, []);
 
     /** Optiene la posision del dispositivo del navegador */
-    const getCurrentPosition =
-        useCallback(async (): Promise<GeolocationCoordinates | null> => {
-            setLoading(true);
-            return new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setLoading(false);
-                        resolve(position.coords);
-                    },
-                    (err) => {
-                        setLoading(false);
-                        reject(err);
-                    },
-                    { enableHighAccuracy: true }
-                );
-            });
-        }, []);
-
-    const getGoogleLocation = async (): Promise<{
-        lat: number;
-        lng: number;
-    } | null> => {
-        try {
-            const apiKey = "TU_GOOGLE_API_KEY"; // Reemplázalo con tu clave real
-            const response = await fetch(
-                `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ considerIp: true }),
-                }
+    const getCurrentPosition = useCallback(async (): Promise<GeolocationCoordinates | null> => {
+        setLoading(true);
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLoading(false);
+                    resolve(position.coords);
+                },
+                (err) => {
+                    setLoading(false);
+                    reject(err);
+                },
+                { enableHighAccuracy: true }
             );
-
-            const data = await response.json();
-            if (data.location) {
-                return { lat: data.location.lat, lng: data.location.lng };
+        });
+    }, []);
+    
+    /*const getGoogleLocation = async (): Promise<{ lat: number; lng: number;} | null> => {
+            try {
+                const apiKey = "AIzaSyBkhbdloKALu7gJWvja0GT82-mtLvVFqWY"; // Reemplázalo con tu clave real
+                const response = await fetch(
+                    `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ considerIp: true }), // Esto usa la IP para obtener la ubicación
+                    }
+                );
+        
+                // Verifica si la respuesta es exitosa
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                }
+        
+                const data = await response.json();
+                if (data.location) {
+                    return { lat: data.location.lat, lng: data.location.lng };
+                } else {
+                    console.error("No se encontró la ubicación en la respuesta de Google.");
+                }
+            } catch (error) {
+                console.error("Error obteniendo la ubicación de Google:", error);
             }
-        } catch (error) {
-            console.error("Error obteniendo la ubicación de Google:", error);
-        }
-
-        return null;
-    };
+        
+            return null;
+        };*/
 
     /**Prueba borrar despues */
     /*const updateLocation = async (latitude: number, longitude: number) => {
@@ -276,24 +279,21 @@ export default function ShowMapa({
 
     /** Ejecuta LA funcion para obtener la ubicacion del device y actualizar en la DB */
     useEffect(() => {
-        let isMounted = true;
         const intervalId = setInterval(async () => {
             try {
-                //const coords = await getCurrentPosition();
-                const coords = await getGoogleLocation();
-                if (isMounted && coords) {
-                    updateLocation(coords.lat, coords.lng);
+                const coords = await getCurrentPosition();
+                if (coords) {
+                    updateLocation(coords.latitude, coords.longitude);
                 }
             } catch (err) {
-                if (isMounted) setError("No se pudo obtener la ubicación");
+                setError("No se pudo obtener la ubicación");
             }
         }, 10000);
-
+    
         return () => {
-            isMounted = false;
-            clearInterval(intervalId);
+            clearInterval(intervalId); // Limpieza del intervalo cuando el componente se desmonta
         };
-    }, [getGoogleLocation, updateLocation]);
+    }, [getCurrentPosition, updateLocation]);    
 
     const handleCloseAlert = () => {
         setAlerta(false);
@@ -310,7 +310,7 @@ export default function ShowMapa({
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {loading && <p>Cargando ubicación...</p>}
             <div className="mt-4 w-full h-[500px]">
-                <Map center={origenCoords} zoom={15}>
+                <Map center={deviceLocation ? deviceLocation : origenCoords} zoom={13}>
                     {closedGeocercaCoords.map((geoData, index) => (
                         <Polygon
                             key={index}

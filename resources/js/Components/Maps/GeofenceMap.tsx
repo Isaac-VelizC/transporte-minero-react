@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { useEffect, useState } from "react";
 import Map from "./Map";
+import MapSeach from "./MapSearch";
 
 interface GeofenceMapProps {
     initialCoordinates?: number[][];
@@ -59,14 +60,13 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({
 
     return (
         <div style={{ height: "400px", width: "100%" }}>
-            <Map
+            <MapSeach
                 center={
                     initialCoordinates.length > 0 && initialCoordinates[0].length === 2
                         ? (initialCoordinates[0] as [number, number])
                         : [-19.58361, -65.75306]
                 }
                 zoom={13}
-                withSearch={true}
             >
                 <FeatureGroup>
                     <EditControl
@@ -93,7 +93,7 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({
                         />
                     )}
                 </FeatureGroup>
-            </Map>
+            </MapSeach>
         </div>
     );
 };

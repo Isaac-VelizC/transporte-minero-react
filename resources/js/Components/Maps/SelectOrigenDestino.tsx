@@ -2,6 +2,7 @@ import { GeocercaInterface } from "@/interfaces/Geocerca";
 import { Marker, Polygon, useMapEvents } from "react-leaflet";
 import { customIcon, HomeIcon } from "../IconMap";
 import Map from "./Map";
+import MapSeach from "./MapSearch";
 
 type Props = {
     latitud: number | null;
@@ -34,10 +35,9 @@ const SelectOrigenDestinoMap: React.FC<Props> = ({
 
     return (
         <div className="w-full h-90">
-            <Map
+            <MapSeach
                 center={[latitud || -19.58361, longitud || -65.75306]}
                 zoom={13}
-                withSearch={true}
             >
                 <MapClickHandler />
                 {/* Mostrar marcador del destino */}
@@ -60,7 +60,7 @@ const SelectOrigenDestinoMap: React.FC<Props> = ({
                             pathOptions={{ color: geocerca.color, weight: 2 }}
                         />
                     ))}
-            </Map>
+            </MapSeach>
         </div>
     );
 };

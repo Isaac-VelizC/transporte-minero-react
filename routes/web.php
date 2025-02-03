@@ -113,10 +113,10 @@ Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
     Route::patch('/driver/mantenimiento/{id}/confirm',[ClientDriverController::class, 'updateEstatusMantenimiento'])->name('driver.confirm.status');
     Route::get('/driver/create/form/altercado/{id}', [ClientDriverController::class, 'createAltercado'])->name('create.altercation');
     Route::post('driver/store/artercado', [ClientDriverController::class, 'storeReporteAltercados'])->name('driver.store.altercado');
+    Route::patch('/driver/envios/{id}/confirm', [ClientDriverController::class, 'confirmEntrega'])->name('client.envios.status');
 });
 
 Route::middleware(['auth', 'checkRole:Cliente'])->group(function () {
-    Route::patch('/cliente/envios/{id}/confirm', [ClientDriverController::class, 'confirmEntrega'])->name('client.envios.status');
     Route::get('/client/pedidos/', [ShipmentsController::class, 'listEnviosCliente'])->name('client.pedido.list');
     Route::get('/client/envio/show/{id}', [ClientDriverController::class, 'showEnvioClient'])->name('client.envio.show');
     Route::post('/message/send', [HomeController::class, 'sendMessage'])->name('send.message');

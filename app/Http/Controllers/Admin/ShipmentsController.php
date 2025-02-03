@@ -139,9 +139,8 @@ class ShipmentsController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(EnviosCreateResquest $request)
     {
-        dd($request);
         return $this->saveShipment(new CargoShipment(), $request, false);
     }
 
