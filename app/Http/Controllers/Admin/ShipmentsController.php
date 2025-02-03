@@ -10,6 +10,7 @@ use App\Models\CargoShipment;
 use App\Models\CargoShipmentVehicleSchedule;
 use App\Models\Geocerca;
 use App\Models\Persona;
+use App\Models\TipoMineral;
 use App\Models\Vehicle;
 use App\Models\VehicleSchedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -76,12 +77,14 @@ class ShipmentsController extends Controller
             ->get();
         $clientes = Persona::where('rol', 'cliente')->where('estado', true)->get();
         $geocercas = Geocerca::where('is_active', true)->get();
+        $tipoMineral = TipoMineral::all();
         // Retornar la vista utilizando Inertia
         return Inertia::render('Admin/Shipments/form', [
             'schedules' => $schedules,
             'clientes' => $clientes,
             'geocercas' => $geocercas,
-            'isEditing' => false
+            'isEditing' => false,
+            'tipoMineral' => $tipoMineral
         ]);
     }
 
@@ -120,13 +123,15 @@ class ShipmentsController extends Controller
                 })
                 ->get();
             $clientes = Persona::where('rol', 'cliente')->where('estado', true)->get();
+            $tipoMineral = TipoMineral::all();
             // Retornar la vista utilizando Inertia
             return Inertia::render('Admin/Shipments/form', [
                 'selects' => $programmingIds,
                 'shipment' => $envio,
                 'clientes' => $clientes,
                 'schedules' => $schedules,
-                'isEditing' => true
+                'isEditing' => true,
+                'tipoMineral' => $tipoMineral
             ]);
         } catch (ModelNotFoundException $e) {
             Log::warning("Intento de editar cergo de envio no existente: {$id}");
@@ -134,8 +139,9 @@ class ShipmentsController extends Controller
         }
     }
 
-    public function store(EnviosCreateResquest $request)
+    public function store(Request $request)
     {
+        dd($request);
         return $this->saveShipment(new CargoShipment(), $request, false);
     }
 

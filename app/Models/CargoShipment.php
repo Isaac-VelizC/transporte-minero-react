@@ -25,6 +25,7 @@ class CargoShipment extends Model
         'client_longitude',
         'origen_latitude',
         'origen_longitude',
+        'mineral_id',
         'notas',
         'sub_total',
         'total'
@@ -42,5 +43,9 @@ class CargoShipment extends Model
 
     public function altercadoReports() {
         return $this->hasMany(AltercationReport::class, 'envio_id');
+    }
+
+    public function mineral() {
+        return $this->belongsTo(TipoMineral::class, 'mineral_id');
     }
 }

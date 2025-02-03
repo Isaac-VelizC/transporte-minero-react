@@ -26,6 +26,7 @@
 
 <body class="m-0 font-sans text-base antialiased font-normal leading-default text-slate-500">
     @inertia
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places"></script>
 </body>
 
 </html>

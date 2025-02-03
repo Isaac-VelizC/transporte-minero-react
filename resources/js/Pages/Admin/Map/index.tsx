@@ -41,8 +41,30 @@ const Index: React.FC<Props> = ({
     geocercas = [],
 }) => {
     const [alertTriggered, setAlertTriggered] = useState(false);
-
+    const token =
+        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
     const [rutaUpdated, setRutaUpdate] = useState<[number, number][][]>([]);
+
+    const [route, setRoute] = useState<any>(null);
+
+    useEffect(() => {
+        // Convertir coordenadas en formato adecuado para Mapbox Directions
+        const coordinates = rutaUpdated[0].map(coord => coord.join(",")).join(";");
+
+        // Llamar a la API de Mapbox Directions
+        const fetchRoute = async () => {
+            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&access_token=${token}`;
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (data.routes && data.routes.length > 0) {
+                setRoute(data.routes[0].geometry); // Ruta optimizada
+            }
+        };
+
+        fetchRoute();
+    }, []);
 
     useEffect(() => {
         // Mapeamos los datos de rutaEnvioDevices para parsear las coordenadas
@@ -64,8 +86,6 @@ const Index: React.FC<Props> = ({
         setRutaUpdate(parsedRoutes);
     }, [rutaEnvioDevices]); // Solo ejecutamos cuando rutaEnvioDevices cambie
 
-    const token =
-        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
     const [routeCoordinates, setRouteCoordinates] = useState<
         [number, number][]
     >([]);
@@ -240,7 +260,10 @@ const Index: React.FC<Props> = ({
             <Head title="Mapa" />
             <ModalAlerta show={alerta} onClose={handleCloseAlert} />
             <div className="h-150 w-full">
-                <Map center={envioCoords} zoom={15}>
+                <Map center={envioCoords} zoom={15}>            
+            {route && (
+                <Polyline positions={route.coordinates} color="green" weight={4} />
+            )}
                     {/* Renderizar geocercas */}
                     {closedGeocercaCoords.map((geoData, index) => (
                         <Polygon

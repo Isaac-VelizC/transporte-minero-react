@@ -11,6 +11,7 @@ import { GeocercaInterface } from "@/interfaces/Geocerca";
 import { PersonaInterface } from "@/interfaces/Persona";
 import { ScheduleInterface } from "@/interfaces/schedule";
 import { FormShipmentType, ShipmentInterface } from "@/interfaces/Shipment";
+import { TipoMineralInterface } from "@/interfaces/TipoMineral";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useCallback, useMemo, useState } from "react";
@@ -23,6 +24,7 @@ type Props = {
     shipment: FormShipmentType;
     isEditing: boolean;
     selects?: number[];
+    tipoMineral: TipoMineralInterface[];
 };
 
 export default function form({
@@ -32,6 +34,7 @@ export default function form({
     clientes,
     geocercas,
     selects,
+    tipoMineral,
 }: Props) {
     const initialData = useMemo(
         () =>
@@ -44,13 +47,14 @@ export default function form({
                       id: null,
                       programming: [],
                       client_id: null,
+                      mineral_id: null,
                       peso: "",
                       origen: "",
                       destino: "",
                       fecha_entrega: "",
                       fecha_envio: "",
                       notas: "",
-                      sub_total: 690,
+                      sub_total: 0,
                       total: null,
                       client_latitude: null,
                       client_longitude: null,
@@ -59,11 +63,9 @@ export default function form({
                   },
         [shipment]
     );
-
     // Uso de useCallback para memoizar funciones
     const { data, setData, post, patch, errors, processing } =
         useForm(initialData);
-
     const [selectionType, setSelectionType] = useState<"origen" | "destino">(
         "destino"
     );
@@ -83,6 +85,21 @@ export default function form({
         },
         [setData]
     );
+
+    const handleMineralChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedMineralId = parseFloat(e.target.value);
+        data.mineral_id = selectedMineralId;
+        // Buscar el precio del mineral seleccionado
+        const selectedMineral = tipoMineral.find(
+            (item) => item.id === selectedMineralId
+        );
+
+        if (selectedMineral) {
+            setData("sub_total", selectedMineral.precio); // Asignar el precio al sub_total
+        } else {
+            setData("sub_total", 0); // Si no se encuentra, establecer a 0
+        }
+    };
 
     const handleSubmit = useCallback(
         (e: React.FormEvent<HTMLFormElement>) => {
@@ -271,6 +288,40 @@ export default function form({
                                     message={errors.fecha_entrega}
                                 />
                             </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="mineral_id"
+                                    value="Seleccionar tipo mineral"
+                                />
+                                <SelectInput
+                                    isFocused
+                                    className="mt-1 block w-full"
+                                    required
+                                    onChange={handleMineralChange}
+                                    value={data.mineral_id || 0}
+                                >
+                                    <option value={0} disabled>
+                                        {tipoMineral && tipoMineral.length > 0
+                                            ? "Selecciona un mineral"
+                                            : "No hay datos disponibles"}
+                                    </option>
+                                    {tipoMineral && tipoMineral.length > 0
+                                        ? tipoMineral.map((item) => (
+                                              <option
+                                                  key={item.id}
+                                                  value={item.id}
+                                              >
+                                                  {item.nombre}
+                                              </option>
+                                          ))
+                                        : null}
+                                </SelectInput>
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.mineral_id}
+                                />
+                            </div>
                             <div>
                                 <InputLabel
                                     htmlFor="sub_total"
@@ -372,29 +423,48 @@ export default function form({
                         <h1 className="text-lg font-semibold text-gray-300">
                             Seleccionar ubicación
                         </h1>
-                        <div className="flex gap-4 mb-4">
-                            <button
-                                type="button"
-                                className={`px-2 py-1 rounded-lg text-sm text-white ${
-                                    selectionType === "origen"
-                                        ? "bg-green-700"
-                                        : "bg-gray-700"
-                                }`}
-                                onClick={() => setSelectionType("origen")}
-                            >
-                                Seleccionar Origen
-                            </button>
-                            <button
-                                type="button"
-                                className={`px-2 py-1 rounded-lg text-sm text-white ${
-                                    selectionType === "destino"
-                                        ? "bg-blue-700"
-                                        : "bg-gray-700"
-                                }`}
-                                onClick={() => setSelectionType("destino")}
-                            >
-                                Seleccionar Destino
-                            </button>
+                        <div className="flex flex-col lg:flex-row justify-between gap-4 mb-4">
+                            <div>
+                                <button
+                                    type="button"
+                                    className={`px-2 py-1 rounded-lg text-sm text-white ${
+                                        selectionType === "origen"
+                                            ? "bg-green-700"
+                                            : "bg-gray-700"
+                                    }`}
+                                    onClick={() => setSelectionType("origen")}
+                                >
+                                    Seleccionar Origen
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`px-2 py-1 rounded-lg text-sm text-white ${
+                                        selectionType === "destino"
+                                            ? "bg-blue-700"
+                                            : "bg-gray-700"
+                                    }`}
+                                    onClick={() => setSelectionType("destino")}
+                                >
+                                    Seleccionar Destino
+                                </button>
+                            </div>
+                            <div>
+                                <LinkButton href={"envios.list"}>
+                                    Cancelar
+                                </LinkButton>
+
+                                <PrimaryButton
+                                    type="submit"
+                                    className="ms-3"
+                                    disabled={processing}
+                                >
+                                    {processing
+                                        ? "Processing..."
+                                        : isEditing
+                                        ? "Save Changes"
+                                        : "Create Vehicle"}
+                                </PrimaryButton>
+                            </div>
                         </div>
                         <SelectOrigenDestinoMap
                             latitud={data.client_latitude}
@@ -405,21 +475,6 @@ export default function form({
                             geocercas={geocercas}
                             selectionType={selectionType}
                         />
-                    </div>
-                    <div className="mt-6 flex justify-end">
-                        <LinkButton href={"envios.list"}>Cancelar</LinkButton>
-
-                        <PrimaryButton
-                            type="submit"
-                            className="ms-3"
-                            disabled={processing}
-                        >
-                            {processing
-                                ? "Processing..."
-                                : isEditing
-                                ? "Save Changes"
-                                : "Create Vehicle"}
-                        </PrimaryButton>
                     </div>
                 </form>
             </div>

@@ -18,6 +18,8 @@ return new class extends Migration
             // Relación con clientes
             $table->unsignedBigInteger('client_id')->nullable();
             $table->foreign('client_id')->references('id')->on('personas')->onDelete('cascade');
+            $table->unsignedBigInteger('mineral_id')->nullable();
+            $table->foreign('mineral_id')->references('id')->on('tipo_minerals')->onDelete('set null');
             // Nuevos campos relevantes
             $table->decimal('peso', 10, 2);
             $table->string('origen');

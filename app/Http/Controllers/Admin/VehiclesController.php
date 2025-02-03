@@ -219,7 +219,7 @@ class VehiclesController extends Controller
         } catch (ModelNotFoundException $e) {
             return redirect()->route('vehicle.list')->with('error', 'Vehículo no encontrado.');
         } catch (\Exception $e) {
-            
+
             return redirect()->route('vehicle.list')->with('error', 'Ocurrió un error al obtener los datos. ');
         }
     }
@@ -229,7 +229,12 @@ class VehiclesController extends Controller
         $marks = Mark::all();
         $types = TypeVehicle::all();
         $vehicle = Vehicle::find($id);
-        $devices = Device::where('status', '!=', 'inactivo')->get();
+        // Obtener el ID del dispositivo asociado al vehículo
+        $deviceId = $vehicle->device_id;
+        // Obtener dispositivos activos más el dispositivo asociado al vehículo
+        $devices = Device::where('status', 'activo')
+            ->orWhere('id', $deviceId)
+            ->get();
         return Inertia::render('Admin/Vehicle/form', [
             'marcas' => $marks,
             'typesVehicle' => $types,
@@ -304,7 +309,7 @@ class VehiclesController extends Controller
             'fecha_fin' => 'required|date|after:fecha_inicio', // Correcto
             'observaciones' => 'nullable|string|max:255',
             'tipo' => 'required|numeric|exists:tipo_mantenimientos,id'
-        ]);        
+        ]);
         try {
             VehiculoMantenimiento::create($validatedData);
             return redirect()->back()->with(['success' => 'Mantenimiento programado exitosamente.'], 201);
@@ -322,7 +327,7 @@ class VehiclesController extends Controller
             'fecha_fin' => 'required|date|after:fecha_inicio', // Correcto
             'observaciones' => 'nullable|string|max:255',
             'tipo' => 'required|numeric|exists:tipo_mantenimientos,id'
-        ]);        
+        ]);
 
         try {
             VehiculoMantenimiento::findOrFail($id)->update($validatedData);
@@ -341,7 +346,8 @@ class VehiclesController extends Controller
             return redirect()->back()->with(['error' => 'Error al eliminar mantenimiento de vehículo: ' . $th->getMessage()], 500);
         }
     }
-    public function viewMapEnviosAll() {
+    public function viewMapEnviosAll()
+    {
         $envios = CargoShipment::with(['vehicleSchedules.vehicle.device'])->where('status', 'pendiente')->get();
         return Inertia::render('Admin/Map/allEnviosMap', [
             'envios' => $envios

@@ -152,7 +152,7 @@ function index({ envios }: Props) {
                     { name: "Lista de Envios" },
                 ]}
             />
-            <div className="flex justify-end my-4">
+            <div className="flex justify-end my-4 gap-4">
                 <LinkButton href={"all.map.envios"}>Mapa</LinkButton>
                 {rol === "Encargado_Control" ? null : (
                     <LinkButton href={"envios.create.form"}>Nuevo</LinkButton>

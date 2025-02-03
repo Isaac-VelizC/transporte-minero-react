@@ -33,10 +33,11 @@ const SelectOrigenDestinoMap: React.FC<Props> = ({
     };
 
     return (
-        <div className="w-full h-65">
+        <div className="w-full h-90">
             <Map
                 center={[latitud || -19.58361, longitud || -65.75306]}
                 zoom={13}
+                withSearch={true}
             >
                 <MapClickHandler />
                 {/* Mostrar marcador del destino */}

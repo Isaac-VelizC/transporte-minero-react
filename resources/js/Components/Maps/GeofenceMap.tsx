@@ -66,6 +66,7 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({
                         : [-19.58361, -65.75306]
                 }
                 zoom={13}
+                withSearch={true}
             >
                 <FeatureGroup>
                     <EditControl

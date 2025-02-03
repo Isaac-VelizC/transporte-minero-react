@@ -162,6 +162,34 @@ export default function ShowMapa({
             });
         }, []);
 
+    const getGoogleLocation = async (): Promise<{
+        lat: number;
+        lng: number;
+    } | null> => {
+        try {
+            const apiKey = "TU_GOOGLE_API_KEY"; // Reemplázalo con tu clave real
+            const response = await fetch(
+                `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ considerIp: true }),
+                }
+            );
+
+            const data = await response.json();
+            if (data.location) {
+                return { lat: data.location.lat, lng: data.location.lng };
+            }
+        } catch (error) {
+            console.error("Error obteniendo la ubicación de Google:", error);
+        }
+
+        return null;
+    };
+
     /**Prueba borrar despues */
     /*const updateLocation = async (latitude: number, longitude: number) => {
         try {
@@ -251,9 +279,10 @@ export default function ShowMapa({
         let isMounted = true;
         const intervalId = setInterval(async () => {
             try {
-                const coords = await getCurrentPosition();
+                //const coords = await getCurrentPosition();
+                const coords = await getGoogleLocation();
                 if (isMounted && coords) {
-                    updateLocation(coords.latitude, coords.longitude);
+                    updateLocation(coords.lat, coords.lng);
                 }
             } catch (err) {
                 if (isMounted) setError("No se pudo obtener la ubicación");
@@ -264,7 +293,7 @@ export default function ShowMapa({
             isMounted = false;
             clearInterval(intervalId);
         };
-    }, [getCurrentPosition, updateLocation]);
+    }, [getGoogleLocation, updateLocation]);
 
     const handleCloseAlert = () => {
         setAlerta(false);

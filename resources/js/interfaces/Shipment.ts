@@ -1,10 +1,12 @@
 import { CargoShipmentVehicleScheduleInterface } from "./CargoShipmentVehicleSchedule";
 import { PersonaInterface } from "./Persona";
+import { TipoMineralInterface } from "./TipoMineral";
 
 export interface ShipmentInterface {
     id: number;
     vehicle_schedules: CargoShipmentVehicleScheduleInterface[];
     client: PersonaInterface;
+    mineral: TipoMineralInterface;
     programming: number[];
     peso: string;
     origen: string;
@@ -27,6 +29,7 @@ export type FormShipmentType = {
     id: number;
     programming: number[];
     client_id: number;
+    mineral_id: number;
     peso: string;
     origen: string;
     destino: string;
