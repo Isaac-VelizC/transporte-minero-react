@@ -254,9 +254,6 @@ const Index: React.FC<Props> = ({
             <ModalAlerta show={alerta} onClose={handleCloseAlert} />
             <div className="h-150 w-full">
                 <Map center={envioCoords} zoom={15}>
-                    {/*route && (
-                <Polyline positions={route.coordinates} color="green" weight={4} />
-            )*/}
                     {/* Renderizar geocercas */}
                     {closedGeocercaCoords.map((geoData, index) => (
                         <Polygon

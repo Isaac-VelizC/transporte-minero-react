@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('car_id')->nullable();
             $table->foreign('car_id')->references('id')->on('vehicles')->onDelete('cascade');
             // Nuevos campos relevantes
-            $table->timestamp('start_time');
+            $table->timestamp('start_time')->default(now());
             $table->timestamp('end_time')->nullable();
             $table->unsignedBigInteger('driver_id')->nullable();
             $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null');

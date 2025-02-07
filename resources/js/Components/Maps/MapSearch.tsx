@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import GooglePlacesAutocomplete, {
@@ -19,17 +19,17 @@ const ChangeMapView: React.FC<{ position: [number, number] }> = ({
     position,
 }) => {
     const map = useMap();
-    map.setView(position, 13);
+
+    useEffect(() => {
+        if (map) {
+            map.setView(position, 13);
+        }
+    }, [position, map]); // Se ejecuta solo cuando `position` cambia
+
     return null;
 };
 
-const MapSeach: React.FC<Props> = ({
-    center,
-    zoom,
-    children,
-}) => {
-    let token =
-        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
+const MapSeach: React.FC<Props> = ({ center, zoom, children }) => {
     const [position, setPosition] = useState<[number, number]>([
         -19.58361, -65.75306,
     ]); // Coordenadas iniciales (Londres)
@@ -57,9 +57,6 @@ const MapSeach: React.FC<Props> = ({
                     zoom={zoom}
                     style={{ height: "100%", width: "100%" }}
                 >
-                    <TileLayer
-                        url={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${token}`}
-                    />
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
