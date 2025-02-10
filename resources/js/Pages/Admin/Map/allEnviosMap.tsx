@@ -29,7 +29,7 @@ export default function allEnviosMap({ envios }: Props) {
     ) => {
         try {
             const response = await axios.get(
-                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&access_token=${token}`
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&overview=full&access_token=${token}`
             );
             const route = response.data.routes[0].geometry.coordinates.map(
                 (coord: number[]) => [coord[1], coord[0]]

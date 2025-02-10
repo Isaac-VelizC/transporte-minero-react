@@ -6,7 +6,6 @@ import { DeviceInterface } from "@/interfaces/Device";
 import { Head } from "@inertiajs/react";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Marker, Polygon, Polyline, Popup } from "react-leaflet";
-import { RutaEnvioDeviceInterface } from "@/interfaces/RutaEnvioDevice";
 import { customIcon, deviceIcon, HomeIcon } from "@/Components/IconMap";
 import * as turf from "@turf/turf";
 import Map from "@/Components/Maps/Map";
@@ -17,9 +16,11 @@ type Props = {
     envio: ShipmentInterface;
     geocercas: GeocercaInterface[];
     device: DeviceInterface;
-    rutaEnvioDevice?: RutaEnvioDeviceInterface;
+    rutaEnvioDevice?: number[][];
 };
 
+const token =
+    "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA"; // Asegúrate de definirlo
 /*const rutaCoordenadas = [
     [-19.5638, -65.7391],
     [-19.5642, -65.7387],
@@ -38,6 +39,29 @@ type Props = {
     [-19.5705, -65.7329],
 ];*/
 
+// Función para calcular la distancia entre dos coordenadas en metros
+const calcularDistancia = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+) => {
+    const R = 6371000; // Radio de la Tierra en metros
+    const toRad = (value: number) => (value * Math.PI) / 180;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distancia en metros
+};
+
 export default function ShowMapa({
     envio,
     geocercas,
@@ -48,10 +72,9 @@ export default function ShowMapa({
     const [loading, setLoading] = useState(false);
     const [alertTriggered, setAlertTriggered] = useState(false);
     const [alerta, setAlerta] = useState(false);
-    const [rutaUpdated, setRutaUpdate] = useState(rutaEnvioDevice?.coordenadas);
-
-    let token =
-        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
+    const [rutaUpdated, setRutaUpdate] = useState<number[][]>(
+        rutaEnvioDevice || []
+    );
     const [error, setError] = useState<string | null>(null);
     const [routeCoordinates, setRouteCoordinates] = useState<
         [number, number][]
@@ -127,7 +150,7 @@ export default function ShowMapa({
     const fetchRoute = async () => {
         try {
             const response = await axios.get(
-                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&access_token=${token}`
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenCoords[1]},${origenCoords[0]};${envioCoords[1]},${envioCoords[0]}?geometries=geojson&overview=full&access_token=${token}`
             );
             const route = response.data.routes[0].geometry.coordinates.map(
                 (coord: number[]) => [coord[1], coord[0]]
@@ -144,23 +167,53 @@ export default function ShowMapa({
     }, []);
 
     /** Optiene la posision del dispositivo del navegador */
-    const getCurrentPosition = useCallback(async (): Promise<GeolocationCoordinates | null> => {
-        setLoading(true);
-        return new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
+    const getCurrentPosition =
+        useCallback(async (): Promise<GeolocationCoordinates | null> => {
+            setLoading(true);
+
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
                     setLoading(false);
-                    resolve(position.coords);
-                },
-                (err) => {
-                    setLoading(false);
-                    reject(err);
-                },
-                { enableHighAccuracy: true }
-            );
-        });
-    }, []);
-    
+                    reject(
+                        new Error(
+                            "Geolocalización no es compatible en este navegador."
+                        )
+                    );
+                    return;
+                }
+
+                navigator.permissions
+                    .query({ name: "geolocation" })
+                    .then((permission) => {
+                        if (permission.state === "denied") {
+                            setLoading(false);
+                            reject(new Error("Permiso de ubicación denegado."));
+                            return;
+                        }
+
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                setLoading(false);
+                                resolve(position.coords);
+                            },
+                            (err) => {
+                                setLoading(false);
+                                reject(err);
+                            },
+                            {
+                                enableHighAccuracy: true, // Usar GPS en lugar de torres de celular
+                                timeout: 10000, // Esperar hasta 10s por mejor precisión
+                                maximumAge: 0, // No usar caché de ubicación
+                            }
+                        );
+                    })
+                    .catch((err) => {
+                        setLoading(false);
+                        reject(err);
+                    });
+            });
+        }, []);
+
     /*const getGoogleLocation = async (): Promise<{ lat: number; lng: number;} | null> => {
             try {
                 const apiKey = "AIzaSyBkhbdloKALu7gJWvja0GT82-mtLvVFqWY"; // Reemplázalo con tu clave real
@@ -248,18 +301,36 @@ export default function ShowMapa({
     const updateLocation = useCallback(
         async (latitude: number, longitude: number) => {
             try {
-                if (
-                    !deviceLocation ||
-                    Math.abs(deviceLocation[0] - latitude) > 0.0001 ||
-                    Math.abs(deviceLocation[1] - longitude) > 0.0001
-                ) {
+                if (!deviceLocation) {
+                    // Si no hay ubicación previa, guardamos la nueva
+                    setDeviceLocation([latitude, longitude]);
+                } else {
+                    // Calculamos la distancia entre la nueva y la última ubicación registrada
+                    const distancia = calcularDistancia(
+                        deviceLocation[0],
+                        deviceLocation[1],
+                        latitude,
+                        longitude
+                    );
+
+                    console.log(
+                        `Distancia calculada: ${distancia.toFixed(2)} metros`
+                    );
+
+                    // Si la distancia es menor a 10m, no guardamos
+                    if (distancia < 10) {
+                        console.log(
+                            "No se guarda la ubicación, sigue en el mismo lugar."
+                        );
+                        return;
+                    }
+
+                    // Guardamos la nueva ubicación solo si supera los 10m de distancia
                     const response = await axios.put(
                         `/devices/${device.id}/location/${envio.id}`,
-                        {
-                            latitude,
-                            longitude,
-                        }
+                        { latitude, longitude }
                     );
+
                     if (response.status === 200) {
                         const { latitude, longitude, coordenadas } =
                             response.data;
@@ -288,17 +359,23 @@ export default function ShowMapa({
             } catch (err) {
                 setError("No se pudo obtener la ubicación");
             }
-        }, 10000);
-    
+        }, 30000);
+
         return () => {
             clearInterval(intervalId); // Limpieza del intervalo cuando el componente se desmonta
         };
-    }, [getCurrentPosition, updateLocation]);    
+    }, [getCurrentPosition, updateLocation]);
 
     const handleCloseAlert = () => {
         setAlerta(false);
         setAlertTriggered(true);
     };
+
+    useEffect(() => {
+        if (rutaUpdated.length > 1) {
+            obtenerRutaOptimizada(rutaUpdated, setRutaUpdate);
+        }
+    }, [updateLocation]);
 
     return (
         <Authenticated>
@@ -310,7 +387,10 @@ export default function ShowMapa({
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {loading && <p>Cargando ubicación...</p>}
             <div className="mt-4 w-full h-[500px]">
-                <Map center={deviceLocation ? deviceLocation : origenCoords} zoom={13}>
+                <Map
+                    center={deviceLocation ? deviceLocation : origenCoords}
+                    zoom={13}
+                >
                     {closedGeocercaCoords.map((geoData, index) => (
                         <Polygon
                             key={index}
@@ -333,12 +413,13 @@ export default function ShowMapa({
                         <Popup>{envio.origen}</Popup>
                     </Marker>
                     {/** Ruta del Camion o dispositivo */}
-                    {rutaUpdated && rutaUpdated.length > 0 && (
+                    {rutaUpdated.length > 0 && (
                         <Polyline
-                            positions={JSON.parse(rutaUpdated)}
-                            color={rutaEnvioDevice?.color}
+                            positions={rutaUpdated as [number, number][]}
+                            color={"green"}
                         />
                     )}
+
                     {/* Dibuja la ruta en el mapa */}
                     {routeCoordinates.length > 0 && (
                         <Polyline positions={routeCoordinates} color="red" />
@@ -348,3 +429,49 @@ export default function ShowMapa({
         </Authenticated>
     );
 }
+
+const obtenerRutaOptimizada = async (
+    rutaUpdated: number[][],
+    setRutaUpdate: (ruta: number[][]) => void
+) => {
+    try {
+        if (!Array.isArray(rutaUpdated) || rutaUpdated.length < 2) return;
+        const MAX_COORDS = 25; // Límite de Mapbox
+        let nuevaRuta: number[][] = [];
+
+        for (let i = 0; i < rutaUpdated.length; i += MAX_COORDS - 1) {
+            const segmento = rutaUpdated.slice(i, i + MAX_COORDS);
+
+            if (segmento.length < 2) break; // Evitar errores con segmentos menores a 2 puntos
+
+            const coordenadasString = segmento
+                .map((coord) => `${coord[1]},${coord[0]}`)
+                .join(";");
+
+            console.log("📌 Coordenadas enviadas a Mapbox:", coordenadasString);
+
+            const response = await axios.get(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${coordenadasString}?geometries=geojson&overview=full&steps=false&access_token=${token}`
+            );
+
+            if (!response.data.routes || response.data.routes.length === 0) {
+                console.warn(
+                    "⚠️ No se recibieron rutas de Mapbox para el segmento."
+                );
+                continue;
+            }
+
+            // Extraer coordenadas y convertirlas a [lat, lon]
+            let subRuta = response.data.routes[0].geometry.coordinates.map(
+                (coord: number[]) => [coord[1], coord[0]]
+            );
+
+            nuevaRuta = subRuta;
+        }
+
+        console.log("📌 Ruta final optimizada:", nuevaRuta);
+        setRutaUpdate(nuevaRuta);
+    } catch (error) {
+        console.error("❌ Error obteniendo la ruta optimizada:", error);
+    }
+};

@@ -114,7 +114,7 @@ class ClientDriverController extends Controller
                 'geocercas' => $geocercas,
                 'envio' => $envio,
                 'device' => $device,
-                'rutaEnvioDevice' => $rutaEnvioDevice
+                'rutaEnvioDevice' => json_decode($rutaEnvioDevice->coordenadas, true),
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
@@ -241,7 +241,7 @@ class ClientDriverController extends Controller
                 'success' => true,
                 'latitude' => $device->last_latitude,
                 'longitude' => $device->last_longitude,
-                'coordenadas' => $rutaDevice->coordenadas,
+                'coordenadas' => json_decode($rutaDevice->coordenadas, true),
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error actualizando la ubicación: ' . $e->getMessage()], 500);
