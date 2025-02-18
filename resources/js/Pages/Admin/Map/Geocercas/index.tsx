@@ -7,7 +7,22 @@ import LinkButton from "@/Components/Buttons/LinkButton";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import Map from "@/Components/Maps/Map";
-import { GeocercaIcon } from "@/Components/IconMap";
+import {
+    GeocercaIcon,
+    GeocercaIconDescanso,
+    GeocercaIconMantenimiento,
+    GeocercaIconPeligro,
+    GeocercaIconSeguridad,
+} from "@/Components/IconMap";
+
+// Mapeo de tipos de geocerca a iconos
+const geocercaIconMap: { [key: string]: L.Icon } = {
+    zona_de_trabajo: GeocercaIcon,
+    zona_de_peligro: GeocercaIconPeligro,
+    zona_de_descanso: GeocercaIconDescanso,
+    Zonas_de_mantenimiento: GeocercaIconMantenimiento,
+    Zonas_de_seguridad_y_emergencia: GeocercaIconSeguridad,
+};
 
 // Define props type
 interface Props {
@@ -60,6 +75,10 @@ const Index: React.FC<Props> = ({ geocercas }) => {
                             const centroid =
                                 calculateCentroid(polygonCoordinates);
 
+                            // Determinar el icono basado en el tipo de geocerca
+                            const geocercaTypeIcon =
+                                geocercaIconMap[geocerca.type] || GeocercaIcon; // Usa GeocercaIcon por defecto si no hay coincidencia
+
                             return (
                                 <React.Fragment key={geocerca.id}>
                                     {polygonCoordinates.length > 0 && (
@@ -80,7 +99,7 @@ const Index: React.FC<Props> = ({ geocercas }) => {
                                             position={
                                                 centroid as [number, number]
                                             }
-                                            icon={GeocercaIcon}
+                                            icon={geocercaTypeIcon} // Usa el icono determinado
                                         >
                                             <Popup>
                                                 {`Centro de ${geocerca.name}`}{" "}

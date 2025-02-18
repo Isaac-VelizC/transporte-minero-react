@@ -22,7 +22,7 @@ return new class extends Migration
             $table->decimal('longitude', 11, 8)->nullable();
             $table->integer('radius')->nullable();
             // Detalles de la geocerca
-            $table->enum('type', ['zona_de_trabajo', 'zona_de_peligro', 'zona_de_descanso'])->default('zona_de_trabajo');
+            $table->enum('type', ['zona_de_trabajo', 'zona_de_peligro', 'zona_de_descanso', 'Zonas_de_mantenimiento', 'Zonas_de_seguridad_y_emergencia'])->default('zona_de_trabajo');
             $table->text('description')->nullable();
             $table->string('color', 7)->default('#23c825');
             // Estado de la geocerca

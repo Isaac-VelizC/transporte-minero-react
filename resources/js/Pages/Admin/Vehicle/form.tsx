@@ -5,12 +5,14 @@ import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
+import { SelectorDeColor } from "@/Components/SelectorColor";
+import { coloresDisponibles } from "@/data";
 import { DeviceInterface } from "@/interfaces/Device";
 import { MarksInterface, TypeInterface } from "@/interfaces/Modelo";
 import { FormVehicleType } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 type Props = {
@@ -34,6 +36,7 @@ const showVehicle: React.FC<Props> = ({
     devices,
     isEditing,
 }) => {
+    const [colorSeleccionado, setColorSeleccionado] = useState<string>("");
     const initialData = vehicle || {
         id: null,
         matricula: "",
@@ -47,6 +50,13 @@ const showVehicle: React.FC<Props> = ({
         capacidad_carga: null,
         kilometrage: "",
     };
+
+    useEffect(() => {
+        if (isEditing) {
+            setData("color", vehicle.color);
+            setColorSeleccionado(vehicle.color);
+        }
+    }, [])
 
     const { data, setData, post, patch, errors, processing } =
         useForm(initialData);
@@ -67,6 +77,11 @@ const showVehicle: React.FC<Props> = ({
         });
     };
 
+    const handleColorSeleccionado = (color: string) => {
+        setData("color", color);
+        setColorSeleccionado(color);
+    };
+
     return (
         <Authenticated>
             <Head title={isEditing ? "Editar" : "Crear"} />
@@ -74,15 +89,15 @@ const showVehicle: React.FC<Props> = ({
                 breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Lista", path: "/vehicle" },
-                    { name: isEditing ? "Editar info" : "Registrar Vehiculo" },
+                    { name: isEditing ? "Editar información" : "Registrar Vehiculo" },
                 ]}
             />
             <div className="bg-gray-600 rounded-xl">
                 <form className="p-6" onSubmit={handleSubmit}>
                     <h2 className="text-lg font-bold text-gray-200 mb-2">
                         {isEditing
-                            ? "Edit Vehicle Information"
-                            : "Create New Vehicle"}
+                            ? "Editar información del vehiculo"
+                            : "Registrar nuevo vehiculo"}
                     </h2>
                     <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
@@ -92,7 +107,10 @@ const showVehicle: React.FC<Props> = ({
                                 className="mt-1 block w-full uppercase"
                                 value={data.matricula}
                                 onChange={(e) =>
-                                    setData("matricula", e.target.value.toUpperCase())
+                                    setData(
+                                        "matricula",
+                                        e.target.value.toUpperCase()
+                                    )
                                 }
                                 required
                             />
@@ -189,15 +207,14 @@ const showVehicle: React.FC<Props> = ({
                                 htmlFor="color"
                                 value="Color de Vehiculo"
                             />
-                            <TextInput
-                                id="color"
-                                className="mt-1 block w-full"
-                                value={data.color} // Cambia esto a 'data.color'
-                                onChange={(e) =>
-                                    setData("color", e.target.value)
-                                }
-                                isFocused
+                            <SelectorDeColor
+                                colores={coloresDisponibles}
+                                onColorSeleccionado={handleColorSeleccionado}
+                                colorSeleccionado={data.color}
                             />
+                            <p className="text-orange-500 text-sm">
+                                Color seleccionado: {colorSeleccionado}
+                            </p>
                             <InputError
                                 className="mt-2"
                                 message={errors.color}

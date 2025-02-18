@@ -25,7 +25,7 @@ class UsersController extends Controller
     }
 
     public function listConductores() {
-        $list = Persona::where('rol', 'conductor')->with('user', 'driver')->latest()->get();
+        $list = Persona::where('rol', 'Conductor')->with('user', 'driver')->latest()->get();
         return Inertia::render('Admin/Users/Conductor/index', [
             'drivers' => $list,
         ]);

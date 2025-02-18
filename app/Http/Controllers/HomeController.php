@@ -11,9 +11,12 @@ use App\Models\Persona;
 use App\Models\RenunciaUser;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Notifications\NotificacionMessage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -114,26 +117,42 @@ class HomeController extends Controller
         $request->validate([
             'body' => 'required|string|max:255',
         ]);
+
+        if (!Auth::check() || !Auth::user()->persona) {
+            return redirect()->back()->with('error', 'Usuario no autenticado o sin persona asociada');
+        }
+
+        $userPersona = Auth::user()->persona;
+        $encargado = Persona::where('rol', 'encargado_Control')->first();
+
+        if (!$encargado) {
+            return redirect()->back()->with('error', 'No se encontró un encargado con el rol indicado');
+        }
+
         try {
-            if (!Auth::check() || !Auth::user()->persona) {
-                throw new \Exception('Usuario no autenticado o sin persona asociada');
-            }
-            $encargado = Persona::where('rol', 'encargado_Control')->first();
-            if (!$encargado) {
-                throw new \Exception('No se encontró un encargado con el rol indicado');
-            }
-            $message = new Message();
-            $message->client_id = Auth::user()->persona->id;
-            $message->control_id = $encargado->id;
-            $message->body = $request->body;
-            $message->receptor = 'cliente';
-            $message->fecha = Carbon::now();
-            $message->save();
+            DB::transaction(function () use ($userPersona, $encargado, $request) {
+                Message::create([
+                    'client_id' => $userPersona->id,
+                    'control_id' => $encargado->id,
+                    'body' => $request->body,
+                    'receptor' => 'cliente',
+                    'fecha' => Carbon::now(),
+                ]);
+
+                $details = [
+                    'title' => '¡Nuevo Mensaje de ' . $userPersona->nombre . '!',
+                    'actionURL' => route('view.message'),
+                    'fas' => 'fa-star',
+                ];
+
+                if ($encargado->user) {
+                    Notification::send($encargado->user, new NotificacionMessage($details));
+                }
+            });
+
             return redirect()->back()->with('success', 'Mensaje enviado correctamente');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al enviar el mensaje. Por favor, inténtelo de nuevo.');
-        } catch (\Throwable $th) {
-            return redirect()->back()->with('error', 'Ocurrió un error inesperado. Por favor, inténtelo de nuevo.');
         }
     }
 

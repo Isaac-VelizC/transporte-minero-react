@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\LocationUpdated;
-use App\Events\RutaEnvioDeviceUpdated;
 use App\Models\AltercationReport;
 use App\Models\CargoShipment;
 use App\Models\CargoShipmentVehicleSchedule;
@@ -13,7 +11,6 @@ use App\Models\Geocerca;
 use App\Models\Persona;
 use App\Models\RenunciaUser;
 use App\Models\RutaDevice;
-use App\Models\Vehicle;
 use App\Models\VehicleSchedule;
 use App\Models\VehiculoMantenimiento;
 use Carbon\Carbon;

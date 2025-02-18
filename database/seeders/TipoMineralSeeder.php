@@ -42,6 +42,14 @@ class TipoMineralSeeder extends Seeder
                 'nombre' => 'Antimonio',
                 'precio' => 38666.67,
             ],
+            [
+                'nombre' => 'Complejo',
+                'precio' => 38666.67,
+            ],
+            [
+                'nombre' => 'Mezclas',
+                'precio' => 38666.67,
+            ],
         ];
 
         DB::table('tipo_minerals')->insert($minerales);

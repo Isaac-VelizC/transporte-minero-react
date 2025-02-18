@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\VehiclesController;
 use App\Http\Controllers\ClientDriverController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -99,6 +100,11 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::get('/altercados/{id}', [ShipmentsController::class, 'altercationsListControler'])->name('altercados.list');
     Route::post('/message/send/control', [HomeController::class, 'sendMessageControl'])->name('send.message.control');
     Route::get('/messages', [HomeController::class, 'viewMessage'])->name('view.message');
+    
+    // Notification
+    Route::get('/notification/{id}', [NotificationController::class, 'show'])->name('admin.notification');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('all.notification');
+    //Route::delete('/notification/{id}', [NotificationController::class, 'delete'])->name('notification.delete');
 });
 
 Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {

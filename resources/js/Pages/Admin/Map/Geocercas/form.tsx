@@ -4,8 +4,10 @@ import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import Checkbox from "@/Components/Forms/Checkbox";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
+import SelectInput from "@/Components/Forms/SelectInput";
 import TextInput from "@/Components/Forms/TextInput";
 import GeofenceMap from "@/Components/Maps/GeofenceMap";
+import { TipoGeocerca } from "@/data";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
@@ -99,67 +101,74 @@ export default function form({ isEditing, geocerca }: Props) {
                                 message={errors.name}
                             />
                         </div>
-                        {/*<div className="hidden lg:block">
+                        <div className="hidden lg:block">
                             <InputLabel
-                                htmlFor="polygon_coordinates"
+                                htmlFor="type"
                                 value="Coordenadas del poligono"
                             />
-                            <TextInput
-                                id="polygon_coordinates"
+                            <SelectInput
+                                id="type"
                                 type="text"
                                 className="mt-1 block w-full disabled:bg-gray-300"
-                                value={data.polygon_coordinates}
+                                value={data.type}
                                 onChange={(e) =>
-                                    setData(
-                                        "polygon_coordinates",
-                                        e.target.value
-                                    )
+                                    setData("type", e.target.value)
                                 }
                                 required
-                                disabled
-                                isFocused
-                            />
+                            >
+                                {TipoGeocerca.length <= 0 ? (
+                                    <option value={""}>No har datos</option>
+                                ) : (
+                                    TipoGeocerca.map((item, index) => (
+                                        <option key={index} value={item.nombre}>
+                                            {item.nombre}
+                                        </option>
+                                    ))
+                                )}
+                            </SelectInput>
                             <InputError
                                 className="mt-2"
-                                message={errors.polygon_coordinates}
-                            />
-                        </div>*/}
-                        <div>
-                            <InputLabel
-                                htmlFor="color"
-                                value="Color de la Geocerca"
-                            />
-                            <TextInput
-                                id="color"
-                                className="mt-1 block w-full"
-                                value={data.color || '#36f239'}
-                                type="color"
-                                onChange={(e) =>
-                                    setData("color", e.target.value)
-                                }
-                                required
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.color}
+                                message={errors.type}
                             />
                         </div>
-                        <div>
-                            <InputLabel
-                                htmlFor="is_active"
-                                value="Estado de la Geocerca"
-                            />
-                            <Checkbox
-                                id="is_active"
-                                checked={data.is_active}
-                                onChange={(e) =>
-                                    setData("is_active", e.target.checked)
-                                }
-                            />
-                            <InputError
-                                className="mt-2"
-                                message={errors.is_active}
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel
+                                    htmlFor="color"
+                                    value="Color de la Geocerca"
+                                />
+                                <TextInput
+                                    id="color"
+                                    className="mt-1 block w-full"
+                                    value={data.color || "#36f239"}
+                                    type="color"
+                                    onChange={(e) =>
+                                        setData("color", e.target.value)
+                                    }
+                                    required
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.color}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    htmlFor="is_active"
+                                    value="Estado de la Geocerca"
+                                />
+                                <Checkbox
+                                    id="is_active"
+                                    checked={data.is_active}
+                                    onChange={(e) =>
+                                        setData("is_active", e.target.checked)
+                                    }
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.is_active}
+                                />
+                            </div>
                         </div>
                     </div>
                     <div>

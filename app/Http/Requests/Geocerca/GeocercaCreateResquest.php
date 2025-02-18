@@ -59,7 +59,7 @@ class GeocercaCreateResquest extends FormRequest
             ],
             'type' => [
                 'required',
-                'in:zona_de_trabajo,zona_de_peligro,zona_de_descanso'
+                'in:zona_de_trabajo,zona_de_peligro,zona_de_descanso,Zonas_de_mantenimiento,Zonas_de_seguridad_y_emergencia'
             ],
             'description' => [
                 'nullable',
