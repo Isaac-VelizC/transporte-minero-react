@@ -18,7 +18,7 @@ export default function Authenticated({
     const fetchDevices = async () => {
         if (rol === "Conductor") {
             try {
-                const { data } = await axios.get("/list/devices/actives"); // Corregido: Usar axios en lugar de router.get
+                const { data } = await axios.get("/list/devices/actives");
                 setDevices(data); // Almacenar los dispositivos obtenidos
             } catch (error) {
                 console.error("Error al obtener dispositivos:", error);
@@ -35,7 +35,6 @@ export default function Authenticated({
         if (rol === "Conductor") {
             try {
                 const storedDeviceId = localStorage.getItem('deviceId');
-                console.log("deviceId:", storedDeviceId);
 
                 if (!devices) {
                     console.error("No devices available to compare.");
@@ -48,7 +47,6 @@ export default function Authenticated({
 
                 if (isDeviceAllowed) {
                     setDevicePermiso(true);
-                    console.log("Permitido");
                 } else {
                     setDevicePermiso(false);
                     console.log("No permitido");

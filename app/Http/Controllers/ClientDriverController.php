@@ -107,11 +107,17 @@ class ClientDriverController extends Controller
             $rutaEnvioDevice = RutaDevice::where('envio_id', $id)
                 ->where('device_id', $device->id)
                 ->first();
+
+            // Verifica si $rutaEnvioDevice es null
+            $coordenadas = $rutaEnvioDevice
+                ? json_decode($rutaEnvioDevice->coordenadas, true)
+                : []; // Devuelve un array vacío si es null
+
             return Inertia::render('Conductor/showMapa', [
                 'geocercas' => $geocercas,
                 'envio' => $envio,
                 'device' => $device,
-                'rutaEnvioDevice' => json_decode($rutaEnvioDevice->coordenadas, true),
+                'rutaEnvioDevice' => $coordenadas,
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);

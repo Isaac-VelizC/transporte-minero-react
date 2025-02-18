@@ -134,7 +134,6 @@ export default function drivers({ isEditing, driver }: Props) {
                                 onChange={(e) =>
                                     setData("ap_pat", e.target.value)
                                 }
-                                required
                                 isFocused
                             />
                             <InputError

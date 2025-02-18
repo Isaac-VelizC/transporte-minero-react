@@ -101,7 +101,7 @@ export default function form({ isEditing, geocerca }: Props) {
                                 message={errors.name}
                             />
                         </div>
-                        <div className="hidden lg:block">
+                        <div>
                             <InputLabel
                                 htmlFor="type"
                                 value="Coordenadas del poligono"

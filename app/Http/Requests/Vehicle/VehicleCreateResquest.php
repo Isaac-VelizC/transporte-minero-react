@@ -22,7 +22,7 @@ class VehicleCreateResquest extends FormRequest
     public function rules(): array
     {
         return [
-            'matricula' => 'required|string|max:10|unique:vehicles,matricula',
+            'matricula' => 'required|string|min:6|max:8|unique:vehicles,matricula|regex:/^(?=.*[a-zA-Z])(?=.*[0-9]).+$/',
             'mark_id' => 'required|exists:marks,id',
             'device_id' => 'nullable|exists:devices,id',
             'color' => 'required|string|max:15',
@@ -30,8 +30,16 @@ class VehicleCreateResquest extends FormRequest
             'type_id' => 'required|exists:type_vehicles,id',
             'fecha_compra' => 'required|date',
             'status' => 'required|in:activo,mantenimiento,inactivo',
-            'capacidad_carga' => 'nullable|integer|min:1',
+            'capacidad_carga' => 'nullable|integer|min:1|max:600',
             'kilometrage' => 'nullable|integer|min:1'
+        ];
+    }
+
+
+    public function messages(): array
+    {
+        return [
+            'matricula.regex' => 'La matrícula debe contener al menos una letra y un número.',
         ];
     }
 }

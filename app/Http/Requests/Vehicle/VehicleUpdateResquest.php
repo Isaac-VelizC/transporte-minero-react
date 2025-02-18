@@ -26,7 +26,7 @@ class VehicleUpdateResquest extends FormRequest
             'matricula' => [
                 'required',
                 'string',
-                'max:10',
+                'max:8',
                 Rule::unique('vehicles', 'matricula')->ignore($this->route('id')),
             ],
             'mark_id' => ['required', 'exists:marks,id'],
@@ -36,7 +36,7 @@ class VehicleUpdateResquest extends FormRequest
             'color' => 'required|string|max:30',
             'fecha_compra' => 'required|date',
             'status' => 'required|in:activo,mantenimiento,inactivo',
-            'capacidad_carga' => 'nullable|integer|min:0',
+            'capacidad_carga' => 'nullable|integer|min:1|max:600',
             'kilometrage' => 'nullable|integer|min:1'
         ];
     }

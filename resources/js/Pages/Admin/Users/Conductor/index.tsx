@@ -24,7 +24,17 @@ export default function index({ drivers }: Props) {
         },
         {
             name: "Nombre Completo",
-            cell: (row: PersonaInterface) => row.nombre + ' ' + row.ap_pat + ' ' + row.ap_mat,
+            cell: (row: PersonaInterface) => {
+                const nombreCompleto = [
+                    row.nombre,
+                    row.ap_pat || "",
+                    row.ap_mat || "",
+                ]
+                    .filter(Boolean)
+                    .join(" "); // Filtra valores falsy y une con espacio
+
+                return nombreCompleto || "";
+            },
             sortable: true,
         },
         {
@@ -39,12 +49,14 @@ export default function index({ drivers }: Props) {
         },
         {
             name: "Telefono",
-            cell: (row: PersonaInterface) => (row.numero ? row.numero : "unknown"),
+            cell: (row: PersonaInterface) =>
+                row.numero ? row.numero : "unknown",
             sortable: true,
         },
         {
             name: "Dirección",
-            cell: (row: PersonaInterface) => (row.driver?.direccion ? row.driver?.direccion : "unknown"),
+            cell: (row: PersonaInterface) =>
+                row.driver?.direccion ? row.driver?.direccion : "unknown",
             sortable: true,
         },
         {

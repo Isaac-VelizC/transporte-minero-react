@@ -96,7 +96,6 @@ const ModalFormUser: React.FC<Props> = ({
                             className="mt-1 block w-full"
                             value={data.ap_pat}
                             onChange={(e) => setData("ap_pat", e.target.value)}
-                            required
                             isFocused
                         />
                         <InputError className="mt-2" message={errors.ap_pat} />

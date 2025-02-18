@@ -26,12 +26,10 @@ export default function Index({ messages }: Props) {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         if (!selectedUser) {
             toast.error("Selecciona un usuario antes de enviar un mensaje.");
             return;
         }
-
         // Primero, aseguramos que client_id se establece antes de hacer el POST
         setData((prevData) => ({
             ...prevData,
@@ -137,7 +135,6 @@ export default function Index({ messages }: Props) {
                         {selectedUser && (
                             <div className="py-5">
                                 <form
-                                    method="post"
                                     onSubmit={handleSubmit}
                                     className="flex"
                                 >

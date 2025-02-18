@@ -100,6 +100,7 @@ export default function ShowMapa({
         return geocercas.map((geo) => ({
             coords: JSON.parse(geo.polygon_coordinates) as [number, number][],
             color: geo.color || "blue",
+            type: geo.type
         }));
     }, [geocercas]);
 
@@ -397,7 +398,9 @@ export default function ShowMapa({
                             positions={geoData.coords}
                             weight={2}
                             color={geoData.color}
-                        />
+                        >
+                            <Popup>{geoData.type}</Popup>
+                        </Polygon>
                     ))}
                     {deviceLocation && (
                         <Marker position={deviceLocation} icon={deviceIcon}>

@@ -24,7 +24,7 @@ const Index = ({ clientes }: Props) => {
     const handleEdit = useCallback(
         (row: PersonaInterface) => {
             if (!row || !row.user) {
-                toast.error('Error al tratar de editar la Información');
+                toast.error("Error al tratar de editar la Información");
                 return;
             }
 
@@ -99,8 +99,17 @@ const Index = ({ clientes }: Props) => {
             },
             {
                 name: "Nombre Completo",
-                cell: (row: PersonaInterface) =>
-                    row.nombre + " " + row.ap_pat + " " + row.ap_mat,
+                cell: (row: PersonaInterface) => {
+                    const nombreCompleto = [
+                        row.nombre,
+                        row.ap_pat || "",
+                        row.ap_mat || "",
+                    ]
+                        .filter(Boolean)
+                        .join(" "); // Filtra valores falsy y une con espacio
+
+                    return nombreCompleto || "";
+                },
                 sortable: true,
             },
             {

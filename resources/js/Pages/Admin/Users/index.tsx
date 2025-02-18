@@ -35,8 +35,17 @@ const Index: React.FC<Props> = ({ users, roles }) => {
             },
             {
                 name: "Nombre Completo",
-                cell: (row: PersonaInterface) =>
-                    row.nombre + " " + row.ap_pat + " " + row.ap_mat,
+                cell: (row: PersonaInterface) => {
+                    const nombreCompleto = [
+                        row.nombre,
+                        row.ap_pat || '',
+                        row.ap_mat || ''
+                    ]
+                    .filter(value => value && value.trim())
+                    .join(" ");
+            
+                    return nombreCompleto || null;
+                },
                 sortable: true,
             },
             {
@@ -53,7 +62,6 @@ const Index: React.FC<Props> = ({ users, roles }) => {
                 name: "Telefono",
                 cell: (row: PersonaInterface) =>
                     row.numero ? row.numero : "unknown",
-                sortable: true,
             },
             {
                 name: "Rol",
@@ -152,11 +160,11 @@ const Index: React.FC<Props> = ({ users, roles }) => {
 
     return (
         <Authenticated>
-            <Head title="Users" />
+            <Head title="Usuarios" />
             <Breadcrumb
                 breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
-                    { name: "Users" },
+                    { name: "Usuarios" },
                 ]}
             />
             <div className="flex justify-between my-10">

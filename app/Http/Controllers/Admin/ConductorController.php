@@ -25,6 +25,9 @@ class ConductorController extends Controller
 
     public function store(UserCreateResquest $request)
     {
+        if ($request->ap_pat === null && $request->ap_mat === null ) {
+            return back()->with('error', 'Debe registrar por lo menos un apellido');
+        }
         $data = $request->validated();
         DB::transaction(function () use ($data) {
             $user = User::updateOrCreate(
@@ -86,6 +89,10 @@ class ConductorController extends Controller
 
     public function update(UserUpdateResquest $request, $id)
     {
+        if ($request->ap_pat === null && $request->ap_mat === null ) {
+            return back()->with('error', 'Debe registrar por lo menos un apellido');
+        }
+
         try {
             $data = $request->validated();
             $user = User::findOrFail($id);

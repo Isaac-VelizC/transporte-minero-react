@@ -29,7 +29,7 @@ class UserCreateResquest extends FormRequest
                 'regex:/^[A-Za-zÑñáéíóúÁÉÍÓÚ ]+$/'
             ],
             'ap_pat' => [
-                'required',
+                'nullable',
                 'string',
                 'max:100',
                 'regex:/^[A-Za-zÑñáéíóúÁÉÍÓÚ ]+$/'

@@ -94,7 +94,7 @@ const DropdownNotification = () => {
                                                 </span>
                                                 <small className="text-xs text-gray-500">
                                                     {new Date(
-                                                        notification.read_at
+                                                        notification.updated_at
                                                     ).toLocaleDateString()}
                                                 </small>
                                             </div>
