@@ -111,8 +111,8 @@ class ClientDriverController extends Controller
             // Verifica si $rutaEnvioDevice es null
             $coordenadas = $rutaEnvioDevice
                 ? json_decode($rutaEnvioDevice->coordenadas, true)
-                : []; // Devuelve un array vacío si es null
-
+                : [];
+            
             return Inertia::render('Conductor/showMapa', [
                 'geocercas' => $geocercas,
                 'envio' => $envio,

@@ -26,6 +26,9 @@ type Props = {
     geocercas: GeocercaInterface[];
 };
 
+const token =
+    "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
+
 const Index: React.FC<Props> = ({
     envio,
     altercados = [],
@@ -34,30 +37,7 @@ const Index: React.FC<Props> = ({
     geocercas = [],
 }) => {
     const [alertTriggered, setAlertTriggered] = useState(false);
-    const token =
-        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
-    const [rutaUpdated, setRutaUpdate] = useState<[number, number][][]>([]);
-
-    //const [route, setRoute] = useState<any>(null);
-
-    /*useEffect(() => {
-        // Convertir coordenadas en formato adecuado para Mapbox Directions
-        const coordinates = rutaUpdated[0].map(coord => coord.join(",")).join(";");
-
-        // Llamar a la API de Mapbox Directions
-        const fetchRoute = async () => {
-            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&access_token=${token}`;
-
-            const res = await fetch(url);
-            const data = await res.json();
-
-            if (data.routes && data.routes.length > 0) {
-                setRoute(data.routes[0].geometry); // Ruta optimizada
-            }
-        };
-
-        fetchRoute();
-    }, []);*/
+    const [rutasUpdated, setRutasUpdate] = useState<number[][][]>([]);
 
     useEffect(() => {
         // Mapeamos los datos de rutaEnvioDevices para parsear las coordenadas
@@ -76,8 +56,8 @@ const Index: React.FC<Props> = ({
             }) || [];
 
         // Actualizamos el estado con las rutas parseadas
-        setRutaUpdate(parsedRoutes);
-    }, [rutaEnvioDevices]); // Solo ejecutamos cuando rutaEnvioDevices cambie
+        setRutasUpdate(parsedRoutes);
+    }, [rutaEnvioDevices]);
 
     const [routeCoordinates, setRouteCoordinates] = useState<
         [number, number][]
@@ -194,7 +174,7 @@ const Index: React.FC<Props> = ({
                         ]);
 
                         // Actualizar la ruta con las coordenadas del dispositivo
-                        setRutaUpdate((prevRoutes) => [
+                        setRutasUpdate((prevRoutes) => [
                             ...prevRoutes,
                             ...coordenadas,
                         ]);
@@ -221,7 +201,9 @@ const Index: React.FC<Props> = ({
                     await updateRutasDevices(deviceIds, envio.id); // Pasar el array completo
                 }
             }
-        }, 12000);
+        }, 30000);
+        
+        obtenerRutasOptimizadas(rutasUpdated, setRutasUpdate);
 
         return () => {
             isMounted = false;
@@ -295,20 +277,19 @@ const Index: React.FC<Props> = ({
                             <Popup>Vehículo {index + 1}</Popup>
                         </Marker>
                     ))}
-
-                    {/* Ruta del Camión o Dispositivo */}
-                    {rutaUpdated.length > 0 &&
-                        rutaUpdated.map((coords, index) => (
-                            <Polyline
-                                key={index}
-                                positions={coords}
-                                color={"green"}
-                            />
-                        ))}
                     {/* Dibuja la ruta en el mapa */}
                     {routeCoordinates.length > 0 && (
                         <Polyline positions={routeCoordinates} color="red" />
                     )}
+                    {/* Ruta del Camión o Dispositivo */}
+                    {rutasUpdated.length > 0 &&
+                        rutasUpdated.map((ruta, index) => (
+                            <Polyline
+                                key={index}
+                                positions={ruta as [number, number][]}
+                                color="green"
+                            />
+                        ))}
                 </Map>
             </div>
         </Authenticated>
@@ -316,3 +297,58 @@ const Index: React.FC<Props> = ({
 };
 
 export default Index;
+
+const obtenerRutasOptimizadas = async (
+    rutasOriginales: number[][][],
+    setRutasUpdate: (rutas: number[][][]) => void
+) => {
+    try {
+        if (!Array.isArray(rutasOriginales) || rutasOriginales.length === 0)
+            return;
+        const MAX_COORDS = 25; // Límite de Mapbox
+        let nuevasRutas: number[][][] = [];
+
+        for (const ruta of rutasOriginales) {
+            if (!Array.isArray(ruta) || ruta.length < 2) continue;
+            let nuevaRuta: number[][] = [];
+
+            for (let i = 0; i < ruta.length; i += MAX_COORDS - 1) {
+                const segmento = ruta.slice(i, i + MAX_COORDS);
+
+                if (segmento.length < 2) break; // Evitar errores con segmentos menores a 2 puntos
+
+                const coordenadasString = segmento
+                    .map((coord) => `${coord[1]},${coord[0]}`)
+                    .join(";");
+
+                const response = await axios.get(
+                    `https://api.mapbox.com/directions/v5/mapbox/driving/${coordenadasString}?geometries=geojson&overview=full&steps=false&access_token=${token}`
+                );
+
+                if (
+                    !response.data.routes ||
+                    response.data.routes.length === 0
+                ) {
+                    console.warn(
+                        "⚠️ No se recibieron rutas de Mapbox para el segmento."
+                    );
+                    continue;
+                }
+
+                // Extraer coordenadas y convertirlas a [lat, lon]
+                let subRuta = response.data.routes[0].geometry.coordinates.map(
+                    (coord: number[]) => [coord[1], coord[0]]
+                );
+
+                nuevaRuta = [...nuevaRuta, ...subRuta]; // Acumular segmentos
+            }
+
+            nuevasRutas.push(nuevaRuta);
+        }
+
+        console.log("Rutas finales optimizadas:", nuevasRutas);
+        setRutasUpdate(nuevasRutas);
+    } catch (error) {
+        console.error("Error obteniendo las rutas optimizadas:", error);
+    }
+};

@@ -19,26 +19,7 @@ type Props = {
     rutaEnvioDevice?: number[][];
 };
 
-const token =
-    "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA"; // Asegúrate de definirlo
-/*const rutaCoordenadas = [
-    [-19.5638, -65.7391],
-    [-19.5642, -65.7387],
-    [-19.5645, -65.7383],
-    [-19.565, -65.7378],
-    [-19.5655, -65.7374],
-    [-19.566, -65.7369],
-    [-19.5665, -65.7365],
-    [-19.567, -65.736],
-    [-19.5675, -65.7355],
-    [-19.568, -65.735],
-    [-19.5685, -65.7346],
-    [-19.569, -65.7342],
-    [-19.5695, -65.7337],
-    [-19.57, -65.7333],
-    [-19.5705, -65.7329],
-];*/
-
+const token = "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
 // Función para calcular la distancia entre dos coordenadas en metros
 const calcularDistancia = (
     lat1: number,
@@ -319,7 +300,7 @@ export default function ShowMapa({
                     );
 
                     // Si la distancia es menor a 10m, no guardamos
-                    if (distancia < 10) {
+                    if (distancia < 15) {
                         console.log(
                             "No se guarda la ubicación, sigue en el mismo lugar."
                         );
@@ -360,10 +341,10 @@ export default function ShowMapa({
             } catch (err) {
                 setError("No se pudo obtener la ubicación");
             }
-        }, 30000);
+        }, 25000);
 
         return () => {
-            clearInterval(intervalId); // Limpieza del intervalo cuando el componente se desmonta
+            clearInterval(intervalId);
         };
     }, [getCurrentPosition, updateLocation]);
 
@@ -458,9 +439,7 @@ const obtenerRutaOptimizada = async (
             );
 
             if (!response.data.routes || response.data.routes.length === 0) {
-                console.warn(
-                    "⚠️ No se recibieron rutas de Mapbox para el segmento."
-                );
+                //console.warn("No se recibieron rutas de Mapbox para el segmento.");
                 continue;
             }
 
@@ -468,13 +447,12 @@ const obtenerRutaOptimizada = async (
             let subRuta = response.data.routes[0].geometry.coordinates.map(
                 (coord: number[]) => [coord[1], coord[0]]
             );
-
             nuevaRuta = subRuta;
         }
 
-        console.log("📌 Ruta final optimizada:", nuevaRuta);
+        console.log("Ruta final optimizada:", nuevaRuta);
         setRutaUpdate(nuevaRuta);
     } catch (error) {
-        console.error("❌ Error obteniendo la ruta optimizada:", error);
+        console.error("Error obteniendo la ruta optimizada:", error);
     }
 };

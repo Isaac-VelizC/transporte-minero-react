@@ -8,7 +8,6 @@ use App\Models\Driver;
 use App\Models\Persona;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ReportController extends Controller
