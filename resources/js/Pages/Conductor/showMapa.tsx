@@ -299,8 +299,8 @@ export default function ShowMapa({
                         `Distancia calculada: ${distancia.toFixed(2)} metros`
                     );
 
-                    // Si la distancia es menor a 10m, no guardamos
-                    if (distancia < 15) {
+                    // Si la distancia es menor a 20m, no guardamos
+                    if (distancia < 20) {
                         console.log(
                             "No se guarda la ubicación, sigue en el mismo lugar."
                         );

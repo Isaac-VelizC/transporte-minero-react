@@ -195,16 +195,13 @@ const Index: React.FC<Props> = ({
             if (isMounted && vehicleSeleccionados.length > 0) {
                 const deviceIds = vehicleSeleccionados
                     .map((device) => device.vehicle.device?.id)
-                    .filter((id): id is number => id !== undefined); // Filtrar IDs válidos y asegurar que son números
+                    .filter((id): id is number => id !== undefined);
 
                 if (deviceIds.length > 0) {
                     await updateRutasDevices(deviceIds, envio.id); // Pasar el array completo
                 }
             }
         }, 30000);
-        
-        obtenerRutasOptimizadas(rutasUpdated, setRutasUpdate);
-
         return () => {
             isMounted = false;
             clearInterval(intervalId);
@@ -225,6 +222,10 @@ const Index: React.FC<Props> = ({
             console.error("Error fetching route:", err);
         }
     };
+
+    useEffect(() => {
+        obtenerRutasOptimizadas(rutasUpdated, setRutasUpdate);
+    }, [rutasUpdated]);
 
     useEffect(() => {
         fetchRoute();
@@ -298,6 +299,36 @@ const Index: React.FC<Props> = ({
 
 export default Index;
 
+// Función para calcular la distancia entre dos coordenadas (Haversine)
+const calcularDistancia = (coord1: number[], coord2: number[]): number => {
+    const [lat1, lon1] = coord1;
+    const [lat2, lon2] = coord2;
+    const R = 6371e3; // Radio de la Tierra en metros
+    const rad = (deg: number) => (deg * Math.PI) / 180;
+    const dLat = rad(lat2 - lat1);
+    const dLon = rad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distancia en metros
+};
+
+// Filtrar coordenadas demasiado cercanas
+const filtrarCoordenadas = (ruta: number[][], umbral = 20): number[][] => {
+    if (ruta.length < 2) return ruta;
+    let resultado = [ruta[0]];
+    for (let i = 1; i < ruta.length; i++) {
+        if (
+            calcularDistancia(ruta[i], resultado[resultado.length - 1]) > umbral
+        ) {
+            resultado.push(ruta[i]);
+        }
+    }
+    return resultado;
+};
+
+// Función para obtener rutas optimizadas
 const obtenerRutasOptimizadas = async (
     rutasOriginales: number[][][],
     setRutasUpdate: (rutas: number[][][]) => void
@@ -305,15 +336,20 @@ const obtenerRutasOptimizadas = async (
     try {
         if (!Array.isArray(rutasOriginales) || rutasOriginales.length === 0)
             return;
+
         const MAX_COORDS = 25; // Límite de Mapbox
         let nuevasRutas: number[][][] = [];
 
         for (const ruta of rutasOriginales) {
             if (!Array.isArray(ruta) || ruta.length < 2) continue;
+
+            // Filtrar puntos cercanos antes de enviarlos a Mapbox
+            const rutaFiltrada = filtrarCoordenadas(ruta);
+
             let nuevaRuta: number[][] = [];
 
-            for (let i = 0; i < ruta.length; i += MAX_COORDS - 1) {
-                const segmento = ruta.slice(i, i + MAX_COORDS);
+            for (let i = 0; i < rutaFiltrada.length; i += MAX_COORDS - 1) {
+                const segmento = rutaFiltrada.slice(i, i + MAX_COORDS);
 
                 if (segmento.length < 2) break; // Evitar errores con segmentos menores a 2 puntos
 
@@ -352,3 +388,91 @@ const obtenerRutasOptimizadas = async (
         console.error("Error obteniendo las rutas optimizadas:", error);
     }
 };
+
+/*
+// 📌 Función para calcular la distancia entre dos coordenadas (Haversine Formula)
+const getDistance = ([lat1, lon1]: number[], [lat2, lon2]: number[]) => {
+    const R = 6371e3; // Radio de la Tierra en metros
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // Distancia en metros
+};
+
+// 📌 Algoritmo de Ramer-Douglas-Peucker para simplificar la ruta
+const simplifyPath = (points: number[][], tolerance = 10) => {
+    if (points.length < 3) return points; // Si tiene 2 o menos puntos, no simplificar
+
+    const sqTolerance = tolerance * tolerance;
+
+    const simplifyDPStep = (pts: number[][], first: number, last: number, simplified: number[][]) => {
+        let maxSqDist = sqTolerance;
+        let index = -1;
+        for (let i = first + 1; i < last; i++) {
+            const sqDist = Math.pow(pts[i][0] - pts[first][0], 2) + Math.pow(pts[i][1] - pts[first][1], 2);
+            if (sqDist > maxSqDist) {
+                index = i;
+                maxSqDist = sqDist;
+            }
+        }
+        if (index !== -1) {
+            if (index - first > 1) simplifyDPStep(pts, first, index, simplified);
+            simplified.push(pts[index]);
+            if (last - index > 1) simplifyDPStep(pts, index, last, simplified);
+        }
+    };
+
+    const newPoints = [points[0]];
+    simplifyDPStep(points, 0, points.length - 1, newPoints);
+    newPoints.push(points[points.length - 1]);
+
+    return newPoints;
+};
+
+// 📌 Función para optimizar la ruta con Mapbox
+const obtenerRutaOptimizada = async (rutaUpdated: number[][], setRutaUpdate: (ruta: number[][]) => void) => {
+    try {
+        if (!Array.isArray(rutaUpdated) || rutaUpdated.length < 2) return;
+
+        // 1️⃣ Filtrar coordenadas muy cercanas (< 10m de distancia)
+        let puntosFiltrados: number[][] = [rutaUpdated[0]];
+        for (let i = 1; i < rutaUpdated.length; i++) {
+            if (getDistance(puntosFiltrados[puntosFiltrados.length - 1], rutaUpdated[i]) > 10) {
+                puntosFiltrados.push(rutaUpdated[i]);
+            }
+        }
+
+        // 2️⃣ Simplificar la ruta con RDP
+        let rutaSimplificada = simplifyPath(puntosFiltrados, 10);
+
+        const MAX_COORDS = 25; // Límite de Mapbox
+        let nuevaRuta: number[][] = [];
+
+        for (let i = 0; i < rutaSimplificada.length; i += MAX_COORDS - 1) {
+            const segmento = rutaSimplificada.slice(i, i + MAX_COORDS);
+
+            if (segmento.length < 2) break;
+
+            const coordenadasString = segmento.map((coord) => `${coord[1]},${coord[0]}`).join(";");
+
+            const response = await axios.get(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${coordenadasString}?geometries=geojson&overview=full&steps=false&access_token=${"TU_MAPBOX_ACCESS_TOKEN"}`
+            );
+
+            if (!response.data.routes || response.data.routes.length === 0) {
+                console.warn("⚠️ No se recibieron rutas de Mapbox para el segmento.");
+                continue;
+            }
+
+            let subRuta = response.data.routes[0].geometry.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
+            nuevaRuta = nuevaRuta.concat(subRuta);
+        }
+
+        setRutaUpdate(nuevaRuta);
+    } catch (error) {
+        console.error("Error obteniendo la ruta optimizada:", error);
+    }
+};*/
