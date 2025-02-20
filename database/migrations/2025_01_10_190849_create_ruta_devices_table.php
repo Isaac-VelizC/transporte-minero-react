@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('device_id')->nullable();
             $table->foreign('device_id')->references('id')->on('devices')->onDelete('cascade');
             $table->json('coordenadas');
-            $table->string('color', 10)->default('blue');
+            $table->string('color', 10)->default('green');
             $table->timestamps();
         });
     }

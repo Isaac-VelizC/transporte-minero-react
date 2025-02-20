@@ -11,6 +11,7 @@ use App\Models\Geocerca;
 use App\Models\Persona;
 use App\Models\RenunciaUser;
 use App\Models\RutaDevice;
+use App\Models\Vehicle;
 use App\Models\VehicleSchedule;
 use App\Models\VehiculoMantenimiento;
 use Carbon\Carbon;
@@ -27,10 +28,15 @@ class ClientDriverController extends Controller
         try {
             $envio = CargoShipment::with(['client'])->findOrFail($id);
             $item = AltercationReport::where('envio_id', $id)->get();
+            // Obtener el vehículo del responsable
+            $vehicle = Vehicle::where('responsable_id', Auth::id())->first();
+            // Verificar si se encontró un vehículo
+            $deviceId = $vehicle ? $vehicle->device_id : null;
 
             return Inertia::render('Conductor/showEnvio', [
                 'dataCarga' => $envio,
-                'altercados' => $item
+                'altercados' => $item,
+                'device_id' => $deviceId,
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
@@ -91,37 +97,45 @@ class ClientDriverController extends Controller
     public function showMapMonitoreo($id)
     {
         try {
-            $envio = CargoShipment::with([
-                'client',
-            ])->findOrFail($id);
+            $envio = CargoShipment::with(['client'])->findOrFail($id);
             $geocercas = Geocerca::where('is_active', true)->get();
+
             $userId = Persona::where('user_id', Auth::user()->id)->first()->id;
             $datosEnvios = CargoShipmentVehicleSchedule::where('cargo_shipment_id', $envio->id)
                 ->where('conductor_id', $userId)
                 ->first();
+
+            if (!$datosEnvios || !$datosEnvios->vehicle) {
+                return redirect()->back()->with('error', 'No se encontró un vehículo asignado a este envío.');
+            }
+
             $device = Device::find($datosEnvios->vehicle->device_id);
 
             if (is_null($device)) {
                 return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
             }
-            $rutaEnvioDevice = RutaDevice::where('envio_id', $id)
-                ->where('device_id', $device->id)
-                ->first();
 
-            // Verifica si $rutaEnvioDevice es null
-            $coordenadas = $rutaEnvioDevice
-                ? json_decode($rutaEnvioDevice->coordenadas, true)
-                : [];
-            
             return Inertia::render('Conductor/showMapa', [
                 'geocercas' => $geocercas,
                 'envio' => $envio,
-                'device' => $device,
-                'rutaEnvioDevice' => $coordenadas,
+                'device' => $device->id,
+                'last_location' => [
+                    'latitude' => $device->last_latitude ?? 0,
+                    'longitude' => $device->last_longitude ?? 0,
+                ],
+                'origen' => [
+                    'latitude' => $envio->origen_latitude ?? 0,
+                    'longitude' => $envio->origen_longitude ?? 0,
+                ],
+                'destino' => [
+                    'latitude' => $envio->client_latitude ?? 0,
+                    'longitude' => $envio->client_longitude ?? 0,
+                ],
+                'status' => $envio->status,
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
-            return redirect()->back()->with('error', 'Envio no encontrado.');
+            return redirect()->back()->with('error', 'Envío no encontrado.');
         } catch (\Exception $e) {
             Log::error('Error retrieving shipment data: ', ['error' => $e]);
             return redirect()->back()->with('error', 'Ocurrió un error al obtener los datos.');
@@ -206,50 +220,60 @@ class ClientDriverController extends Controller
     public function updateLocationDevice(Request $request, $id, $envio_id)
     {
         try {
-            // Validación de las coordenadas
             $validated = $request->validate([
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
             ]);
-            // Obtener el dispositivo
+
+            // Buscar el dispositivo
             $device = Device::findOrFail($id);
-            // Actualizar las coordenadas del dispositivo
+
+            // Evitar guardar coordenadas duplicadas
+            if (
+                $device->last_latitude == $validated['latitude'] &&
+                $device->last_longitude == $validated['longitude']
+            ) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Ubicación sin cambios.',
+                    'latitude' => $device->last_latitude,
+                    'longitude' => $device->last_longitude,
+                ]);
+            }
+
+            // Actualizar coordenadas
             $device->last_latitude = $validated['latitude'];
             $device->last_longitude = $validated['longitude'];
             $device->save();
-            // Obtener las coordenadas actuales (o inicializarlas si es la primera vez)
-            $rutaDevice = RutaDevice::firstOrNew(
-                [
-                    'envio_id' => $envio_id,
-                    'device_id' => $device->id
-                ]
-            );
-            // Si ya existen coordenadas, decodificarlas; si no, inicializar un array vacío
-            if ($rutaDevice->coordenadas) {
-                $coordenadas = json_decode($rutaDevice->coordenadas, true);
-            } else {
-                $coordenadas = [];
-            }
-            // Agregar nuevas coordenadas al array
+
+            // Guardar la ruta del dispositivo
+            $rutaDevice = RutaDevice::firstOrNew([
+                'envio_id' => $envio_id,
+                'device_id' => $device->id
+            ]);
+
+            $coordenadas = $rutaDevice->coordenadas ? json_decode($rutaDevice->coordenadas, true) : [];
             $coordenadas[] = [$device->last_latitude, $device->last_longitude];
-            // Guardar las coordenadas actualizadas como JSON
+
             $rutaDevice->coordenadas = json_encode($coordenadas);
             $rutaDevice->save();
 
-            // Emitir evento a través de WebSocket
-            //event(new LocationUpdated($device));
-            //event(new RutaEnvioDeviceUpdated($rutaDevice));
+            // Emitir evento si usas WebSockets
+            // event(new LocationUpdated($device));
+            // event(new RutaEnvioDeviceUpdated($rutaDevice));
 
             return response()->json([
                 'success' => true,
                 'latitude' => $device->last_latitude,
                 'longitude' => $device->last_longitude,
-                'coordenadas' => json_decode($rutaDevice->coordenadas, true),
+                'coordenadas' => $coordenadas,
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error actualizando la ubicación: ' . $e->getMessage()], 500);
+            Log::error('Error actualizando ubicación: ' . $e->getMessage());
+            return response()->json(['error' => 'Error actualizando la ubicación.'], 500);
         }
     }
+
 
     public function createAltercado($id)
     {

@@ -11,6 +11,7 @@ use App\Http\Controllers\ClientDriverController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RutaController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -115,12 +116,18 @@ Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
     Route::get('/driver/envio/show/{id}', [ClientDriverController::class, 'showEnvio'])->name('driver.envio.show');
     Route::get('/driver/show/map/{id}', [ClientDriverController::class, 'showMapMonitoreo'])->name('driver.show.map');
     Route::get('/driver/mantenimientos/', [ClientDriverController::class, 'mantenimientosVehiculosList'])->name('driver.mantenimientos.list');
-    Route::put('/devices/{id}/location/{envio_id}', [ClientDriverController::class, 'updateLocationDevice']);
+    Route::post('/devices/{id}/location/{envio_id}', [ClientDriverController::class, 'updateLocationDevice']);
     Route::patch('/driver/mantenimiento/{id}/confirm',[ClientDriverController::class, 'updateEstatusMantenimiento'])->name('driver.confirm.status');
     Route::get('/driver/create/form/altercado/{id}', [ClientDriverController::class, 'createAltercado'])->name('create.altercation');
     Route::post('driver/store/artercado', [ClientDriverController::class, 'storeReporteAltercados'])->name('driver.store.altercado');
     Route::patch('/driver/envios/{id}/confirm', [ClientDriverController::class, 'confirmEntrega'])->name('client.envios.status');
 });
+
+Route::post('/ruta_devices', [RutaController::class, 'guardarPunto']);
+Route::get('/ruta_devices/{envio_id}/ruta/{device_id}', [RutaController::class, 'obtenerRuta']);
+Route::get('/envios/{envio_id}/rutas', [RutaController::class, 'obtenerRutaAll']);
+Route::get('/api/user', [RutaController::class, 'getUser']);
+Route::get('/api/envio/activo', [RutaController::class, 'getEnvioActivo']);
 
 Route::middleware(['auth', 'checkRole:Cliente'])->group(function () {
     Route::get('/client/pedidos/', [ShipmentsController::class, 'listEnviosCliente'])->name('client.pedido.list');

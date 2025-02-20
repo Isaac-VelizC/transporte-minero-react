@@ -30,37 +30,67 @@ class GeocercasController extends Controller
      */
     public function showMap($id)
     {
-        // Obtener el envío junto con las relaciones necesarias
+        // Obtener el envío con vehículos y dispositivos asociados
         $envio = CargoShipment::with(['vehicleSchedules.vehicle.device', 'altercadoReports'])
             ->findOrFail($id);
 
-        // Obtener los vehículos asociados al envío
+        // Obtener los vehículos con sus dispositivos
         $vehiclesShipments = $envio->vehicleSchedules()
-            ->with('vehicle.device')
+            ->with(['vehicle.device', 'vehicle.driver'])
             ->get();
 
-        // Verificar si hay vehículos y si tienen dispositivos
-        $device = null;
+        $rutasDevices = [];
+        $lastLocations = [];
+
         foreach ($vehiclesShipments as $shipment) {
             if ($shipment->vehicle && $shipment->vehicle->device) {
                 $device = $shipment->vehicle->device;
-                break; // Salir del bucle si encontramos un dispositivo
+
+                // Obtener todas las rutas del dispositivo para el envío
+                $rutas = RutaDevice::where('device_id', $device->id)
+                    ->where('envio_id', $id)
+                    ->orderBy('created_at')
+                    ->get();
+
+                $coordenadas = [];
+                foreach ($rutas as $ruta) {
+                    // Decodificar coordenadas (asumiendo que están en JSON)
+                    $coords = json_decode($ruta->coordenadas, true);
+                    if (is_array($coords)) {
+                        $coordenadas = array_merge($coordenadas, $coords);
+                    }
+                }
+
+                if (!empty($coordenadas)) {
+                    $rutasDevices[] = [
+                        'device_id' => $device->id,
+                        'ruta' => $coordenadas
+                    ];
+                }
+
+                // Obtener la última ubicación (última coordenada del último registro)
+                $lastRoute = $rutas->last();
+                if ($lastRoute) {
+                    $lastCoords = json_decode($lastRoute->coordenadas, true);
+                    if (!empty($lastCoords)) {
+                        $lastLocations[] = [
+                            'conductor' => $shipment->vehicle->driver->nombre. ' '. $shipment->vehicle->driver->ap_pat,
+                            'device_id' => $device->id,
+                            'latitude' => $lastCoords[count($lastCoords) - 1][0], // Última latitud
+                            'longitude' => $lastCoords[count($lastCoords) - 1][1] // Última longitud
+                        ];
+                    }
+                }
             }
         }
 
-        if (is_null($device)) {
-            return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
-        }
-
-        // Obtener la ruta del dispositivo
-        $rutaEnvioDevices = RutaDevice::with('device')->where('envio_id', $id)->get();
         $geocercas = Geocerca::where('is_active', true)->get();
-
         return Inertia::render('Admin/Map/index', [
             'envio' => $envio,
-            'altercados' => $envio->altercadoReports, // Usar relación cargada
-            'rutaEnvioDevices' => $rutaEnvioDevices,
-            'vehicleSeleccionados' => $vehiclesShipments,
+            'altercados' => $envio->altercadoReports,
+            'vehicles' => $vehiclesShipments,
+            'rutasDevices' => $rutasDevices,
+            'lastLocations' => $lastLocations,
             'geocercas' => $geocercas
         ]);
     }
