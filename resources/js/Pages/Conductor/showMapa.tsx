@@ -108,7 +108,7 @@ export default function ShowMapa({
     };
     /**Api del Mapa */
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: "AIzaSyCxdnXI9ynUVZZrYRISuq2Tn04IO50a_64",
+        googleMapsApiKey: import.meta.env.GOOGLE_KEY_MAPS,
     });
     
     const fetchRuta = async () => {

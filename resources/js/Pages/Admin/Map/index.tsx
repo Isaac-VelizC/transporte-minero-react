@@ -70,7 +70,7 @@ const Index: React.FC<Props> = ({
     const [ruta, setRuta] = useState<{ lat: number; lng: number }[]>([]);
     /**Api del Mapa */
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: "AIzaSyCxdnXI9ynUVZZrYRISuq2Tn04IO50a_64",
+        googleMapsApiKey: import.meta.env.GOOGLE_KEY_MAPS,
     });
     const [rutas, setRutas] =
         useState<{ device_id: number; ruta: number[][] }[]>(rutasDevices);
