@@ -1,11 +1,8 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
-//import { DeviceInterface } from "@/interfaces/Device";
 import { Head } from "@inertiajs/react";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-//import { customIcon, deviceIcon, HomeIcon } from "@/Components/IconMap";
-//import * as turf from "@turf/turf";
 import {
     GoogleMap,
     Marker,
@@ -46,8 +43,9 @@ export default function ShowMapa({
     status,
 }: Props) {
     const [map, setMap] = useState<google.maps.Map | null>(null);
-    const [ruta, setRuta] = useState<{ lat: number; lng: number }[]>([]);
-    const [rutaEnvioDevice, setRutaEnvioDevice] = useState<number[][]>([]);
+    //const [ruta, setRuta] = useState<{ lat: number; lng: number }[]>([]);
+    const [ruta, setRuta] = useState<google.maps.LatLngLiteral[]>([]);
+    //const [rutaEnvioDevice, setRutaEnvioDevice] = useState<number[][]>([]);
     //const [alertTriggered, setAlertTriggered] = useState(false);
     //const [alerta, setAlerta] = useState(false);
     //const { location, error } = useUserLocation();
@@ -78,55 +76,76 @@ export default function ShowMapa({
             color: geo.color || "blue",
         }));
     }, [geocercas]);
-    /** Vrea una ruta del origen al destino */
+    
+    /** Creates a route from origin to destination */
     const obtenerRuta = (
-        origenLat: number,
-        origenLng: number,
-        destinoLat: number,
-        destinoLng: number
+        origenLat: any,
+        origenLng: any,
+        destinoLat: any,
+        destinoLng: any,
+        waypoints: google.maps.DirectionsWaypoint[] = []
     ) => {
+        // Asegurar que sean números
+        const origen = { lat: Number(origenLat), lng: Number(origenLng) };
+        const destino = { lat: Number(destinoLat), lng: Number(destinoLng) };
+    
+        if (isNaN(origen.lat) || isNaN(origen.lng) || isNaN(destino.lat) || isNaN(destino.lng)) {
+            console.error("Error: Las coordenadas no son válidas", origen, destino);
+            return;
+        }
+    
+        //console.log("Calculando ruta desde", origen, "hasta", destino);
+    
         const directionsService = new google.maps.DirectionsService();
         directionsService.route(
             {
-                origin: { lat: +origenLat, lng: +origenLng },
-                destination: { lat: +destinoLat, lng: +destinoLng },
-                travelMode: google.maps.TravelMode.DRIVING, // Puede ser WALKING, BICYCLING, TRANSIT
+                origin: origen,
+                destination: destino,
+                travelMode: google.maps.TravelMode.DRIVING,
+                waypoints,
+                optimizeWaypoints: true,
             },
             (result, status) => {
-                if (status === "OK" && result?.routes[0]?.overview_path) {
-                    setRuta(
-                        result.routes[0].overview_path.map((point) => ({
-                            lat: point.lat(),
-                            lng: point.lng(),
-                        }))
-                    );
+                if (status === google.maps.DirectionsStatus.OK && result?.routes[0]?.legs) {
+                    const detailedPath: google.maps.LatLngLiteral[] = [];
+    
+                    result.routes[0].legs.forEach((leg) => {
+                        leg.steps.forEach((step) => {
+                            if (step.polyline && step.polyline.points) {
+                                const stepPath = google.maps.geometry.encoding.decodePath(step.polyline.points);
+                                stepPath.forEach((point) => {
+                                    detailedPath.push({ lat: point.lat(), lng: point.lng() });
+                                });
+                            }
+                        });
+                    });
+                    //console.log("Ruta generada correctamente", detailedPath);
+                    setRuta(detailedPath);
                 } else {
                     console.error("Error obteniendo la ruta:", status);
                 }
             }
         );
     };
+    
+
     /**Api del Mapa */
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: import.meta.env.GOOGLE_KEY_MAPS,
     });
-    
-    const fetchRuta = async () => {
+
+    /*const fetchRuta = async () => {
         try {
-            const response = await axios.get(`/ruta_devices/${envio.id}/ruta/${device}`);
+            const response = await axios.get(
+                `/ruta_devices/${envio.id}/ruta/${device}`
+            );
             if (response.data) {
                 setRutaEnvioDevice(response.data);
             }
         } catch (error) {
             console.error("Error obteniendo la ruta del dispositivo:", error);
         }
-    };
-
-    //const { isLoaded } = useLoadScript({ googleMapsApiKey: "AIzaSyBo-dWYW5JkpbSRrgtOSipl2P5rTX8mlJA" });
-    /*const { isLoaded } = useLoadScript({
-        googleMapsApiKey: "AIzaSyCxdnXI9ynUVZZrYRISuq2Tn04IO50a_64",
-        libraries: ["places"],
-    });*/
+    };*/
 
     /**Control de alertas* */
     /*const checkInsideGeofence = useCallback(
@@ -162,13 +181,13 @@ export default function ShowMapa({
             }
         }
     }, [deviceLocation, processedGeocercas, alertTriggered]);*/
-    
+
     const deviceLocationNew = useDeviceTracking(envio.id, device);
 
     useEffect(() => {
         if (deviceLocationNew) {
             setDeviceLocation(deviceLocationNew);
-            fetchRuta();
+            //fetchRuta();
         }
     }, [deviceLocationNew]);
 
@@ -179,13 +198,18 @@ export default function ShowMapa({
                 last_location.longitude,
             ]);
         }
-        obtenerRuta(
-            origen.latitude,
-            origen.longitude,
-            destino.latitude,
-            destino.longitude
-        );
-    }, [last_location]);
+        // Check if origen and destino are defined and have valid latitude and longitude properties
+        if (origen && origen.latitude && origen.longitude && destino && destino.latitude && destino.longitude) {
+            obtenerRuta(
+                origen.latitude,
+                origen.longitude,
+                destino.latitude,
+                destino.longitude
+            );
+        } else {
+            console.warn("Origen or destino is missing latitude or longitude properties.");
+        }
+    }, [last_location, origen, destino]);
 
     return (
         <Authenticated>
@@ -201,7 +225,7 @@ export default function ShowMapa({
                             lat: +deviceLocation[0],
                             lng: +deviceLocation[1],
                         }}
-                        zoom={14}
+                        zoom={16}
                         onLoad={(map) => setMap(map)}
                     >
                         {/* Marker del origen */}
@@ -236,12 +260,13 @@ export default function ShowMapa({
                                 path={ruta}
                                 options={{
                                     strokeColor: "#FF0000",
+                                    strokeOpacity: 1,
                                     strokeWeight: 4,
                                 }}
                             />
                         )}
                         {/* 📌 Dibujar ruta del dispositivo */}
-                        {rutaEnvioDevice && (
+                        {/*rutaEnvioDevice && (
                             <Polyline
                                 path={rutaEnvioDevice.map(([lat, lng]) => ({
                                     lat,
@@ -253,7 +278,7 @@ export default function ShowMapa({
                                     strokeWeight: 4,
                                 }}
                             />
-                        )}
+                        )*/}
                         {/* 📌 Dibujar geocercas */}
                         {processedGeocercas.map((geo, index) => (
                             <Polygon
@@ -266,6 +291,7 @@ export default function ShowMapa({
                                     strokeOpacity: 0.8,
                                     strokeWeight: 2,
                                 }}
+                                
                             />
                         ))}
                     </GoogleMap>

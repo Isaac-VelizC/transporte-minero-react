@@ -350,7 +350,8 @@ class VehiclesController extends Controller
     }
     public function viewMapEnviosAll()
     {
-        $envios = CargoShipment::with(['vehicleSchedules.vehicle.device'])->where('status', 'pendiente')->get();
+        $envios = CargoShipment::with(['vehicleSchedules.vehicle.device', 'vehicleSchedules.vehicle.driver'])->where('status', 'en_transito')->get();
+        //dd($envios);
         return Inertia::render('Admin/Map/allEnviosMap', [
             'envios' => $envios
         ]);

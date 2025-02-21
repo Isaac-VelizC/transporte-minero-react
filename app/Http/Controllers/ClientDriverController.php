@@ -55,8 +55,8 @@ class ClientDriverController extends Controller
                 'client',
             ])->where('client_id', $idUser)
                 ->findOrFail($id);
-            $altercados = AltercationReport::where('envio_id', $envio->id)->get();
-            $schedules = CargoShipmentVehicleSchedule::with(['vehicle'])->where('cargo_shipment_id', $id)->get();
+            $altercados = AltercationReport::with('vehiculo')->where('envio_id', $envio->id)->get();
+            $schedules = CargoShipmentVehicleSchedule::with(['vehicle.device'])->where('cargo_shipment_id', $id)->get();
             return Inertia::render('Client/show', [
                 'envio' => $envio,
                 'altercados' => $altercados,

@@ -154,7 +154,7 @@ const index: React.FC<Props> = ({ schedules }) => {
                 breadcrumbs={[
                     { name: "Dashboard", path: "/dashboard" },
                     { name: "Vehiculos", path: "/vehicle" },
-                    { name: "Lista Vehiculos asigandos" },
+                    { name: "Lista Vehiculos asignados" },
                 ]}
             />
             <DataTableComponent columns={columnSchedule} data={schedules} />

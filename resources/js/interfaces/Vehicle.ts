@@ -1,5 +1,6 @@
 import { DeviceInterface } from "./Device";
 import { MarksInterface, TypeInterface } from "./Modelo";
+import { PersonaInterface } from "./Persona";
 
 // Definición de la interfaz para un usuario
 export interface VehicleInterface {
@@ -11,7 +12,7 @@ export interface VehicleInterface {
     color: string;
     fecha_compra: string;
     status: string;
-    driver?: string;
+    driver?: PersonaInterface;
     responsable_id: number;
     kilometrage: number;
     capacidad_carga: string;

@@ -3,7 +3,6 @@ import PrimaryButton from "@/Components/Buttons/PrimaryButton";
 import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import Card from "@/Components/Cards/Card";
 import Modal from "@/Components/Modal/Modal";
-//import { useTracking } from "@/Context/TrackingProvider";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
@@ -20,8 +19,6 @@ type Props = {
 export default function showEnvio({ dataCarga, altercados }: Props) {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const [confirmingShow, setConfirmingShow] = useState(false);
-    //const [status, setStatus] = useState(dataCarga.status);
-    //const { startTracking, stopTracking, isTracking } = useTracking();
     const { flash } = usePage().props;
 
     const handleToggle = useCallback(
@@ -58,31 +55,6 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
             toast.error("Error al cancelar el envío");
         }
     };
-
-    /*const handleToggleTracking = async () => {
-        try {
-            const newStatus = status === "en_transito" ? "finalizado" : "en_transito";
-            await axios.patch(route("client.envios.status", dataCarga.id), {
-                status: newStatus,
-            });
-
-            setStatus(newStatus);
-
-            if (newStatus === "en_transito") {
-                if (device_id !== null) {
-                    startTracking(dataCarga.id, device_id);
-                } else {
-                    toast.error("Device ID is required to start tracking.");
-                }
-                toast.success("Rastreo activado.");
-            } else {
-                stopTracking();
-                toast.success("Rastreo detenido.");
-            }
-        } catch (error) {
-            toast.error("Error al cambiar el estado del envío.");
-        }
-    };*/
 
     return (
         <Authenticated>
@@ -145,9 +117,6 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
                                 Confirmar Entrega
                             </PrimaryButton>
                         ) : null}
-                        {/*<PrimaryButton type="button" onClick={handleToggleTracking}>
-                            {status === "en_transito" ? "Finalizar Envío" : "Iniciar Envío"}
-                        </PrimaryButton>*/}
                     </div>
                 </Card>
                 <Card>

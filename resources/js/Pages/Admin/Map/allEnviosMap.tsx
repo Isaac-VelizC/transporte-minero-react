@@ -12,12 +12,11 @@ type Props = {
 };
 
 export default function allEnviosMap({ envios }: Props) {
+    console.log(envios);
+    
     const token =
         "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
 
-    const [routeCoordinates, setRouteCoordinates] = useState<
-        [number, number][]
-    >([]);
     const [routes, setRoutes] = useState<{ [key: string]: [number, number][] }>(
         {}
     );
@@ -72,7 +71,7 @@ export default function allEnviosMap({ envios }: Props) {
                                 ]}
                                 icon={customIcon}
                             >
-                                <Popup>{envio.destino}</Popup>
+                                <Popup>Destino: {envio.destino}</Popup>
                             </Marker>
                             {/* Marcador para el origen */}
                             <Marker
@@ -82,10 +81,10 @@ export default function allEnviosMap({ envios }: Props) {
                                 ]}
                                 icon={HomeIcon}
                             >
-                                <Popup>{envio.origen}</Popup>
+                                <Popup>Origén: {envio.origen}</Popup>
                             </Marker>
                             {/* Marcadores para los horarios de vehículos */}
-                            {envio.vehicle_schedules.map((location, index) => (
+                            {envio.vehicle_schedules.map((location) => (
                                 <Marker
                                     key={location.vehicle.id}
                                     position={[
@@ -100,7 +99,14 @@ export default function allEnviosMap({ envios }: Props) {
                                     ]}
                                     icon={deviceIcon}
                                 >
-                                    <Popup>Vehículo {index + 1}</Popup>
+                                    <Popup>
+                                        <div>
+                                            <h1 className="text-sm font-bold">Matricula{location.vehicle.matricula}</h1>
+                                            <span>Modelo: {location.vehicle.modelo}</span><br />
+                                            <span>Conductor: {location.vehicle?.driver?.nombre} {location.vehicle?.driver?.ap_pat} {location.vehicle?.driver?.ap_mat}</span><br />
+                                            <span>Telefono: {location.vehicle.driver?.numero}</span>
+                                        </div>
+                                    </Popup>
                                 </Marker>
                             ))}
                             {/* Dibuja la ruta en el mapa si las coordenadas existen */}

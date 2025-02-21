@@ -26,7 +26,7 @@ class EnviosCreateResquest extends FormRequest
             'client_id' => 'required|exists:personas,id',
             'conductor_id' => 'nullable|exists:personas,id',
             'mineral_id' => 'nullable|exists:tipo_minerals,id',
-            'peso' => 'required|numeric|min:0', // Peso requerido y debe ser un número positivo
+            'peso' => 'required|numeric|min:100|max:2000', // Peso requerido y debe ser un número positivo
             'origen' => 'required|string|max:255', // Destino requerido y no puede exceder 255 caracteres
             'destino' => 'required|string|max:255', // Destino requerido y no puede exceder 255 caracteres
             'fecha_envio' => 'required|date|after_or_equal:today',
@@ -48,7 +48,8 @@ class EnviosCreateResquest extends FormRequest
             'client_id.exists' => 'El cliente seleccionado no existe.',
             'peso.required' => 'El peso es obligatorio.',
             'peso.numeric' => 'El peso debe ser un número.',
-            'peso.min' => 'El peso debe ser al menos 0.',
+            'peso.min' => 'El peso debe ser al menos 100.',
+            'peso.max' => 'El peso debe ser maximo 2000.',
             'destino.required' => 'El destino es obligatorio.',
             'destino.string' => 'El destino debe ser una cadena de texto.',
             'destino.max' => 'El destino no puede exceder 255 caracteres.',

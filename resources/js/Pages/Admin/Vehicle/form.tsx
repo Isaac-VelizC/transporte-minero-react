@@ -367,10 +367,10 @@ const showVehicle: React.FC<Props> = ({
                             disabled={processing}
                         >
                             {processing
-                                ? "Processing..."
+                                ? "Procesando..."
                                 : isEditing
-                                ? "Save Changes"
-                                : "Create Vehicle"}
+                                ? "Guardando"
+                                : "Guardar Vehiculo"}
                         </PrimaryButton>
                     </div>
                 </form>

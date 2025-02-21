@@ -32,6 +32,7 @@ export default function Show({ envio, altercados, schedules }: Props) {
 
     const deviceLocations: [number, number][] = schedules
         .map((schedule) => {
+            
             if (
                 schedule.vehicle.device?.last_latitude &&
                 schedule.vehicle.device?.last_longitude
@@ -43,8 +44,8 @@ export default function Show({ envio, altercados, schedules }: Props) {
             }
             return null;
         })
-        .filter((coords): coords is [number, number] => coords !== null); // Filtra los valores nulos
-
+        .filter((coords): coords is [number, number] => coords !== null);
+    
     return (
         <Authenticated>
             <Head title="Show Envio" />
@@ -130,7 +131,13 @@ export default function Show({ envio, altercados, schedules }: Props) {
                                         ]}
                                         icon={AltercadoIcon}
                                     >
-                                        <Popup>{item.description}</Popup>
+                                        <Popup>
+                                            <div className="flex flex-col">
+                                                <h1>Matricula: {item.vehiculo.matricula}</h1>
+                                                <span>{item.fecha}</span>
+                                                <p>{item.description}</p>
+                                            </div>
+                                        </Popup>
                                     </Marker>
                                 ))}
                             {/* Ubicación del dispositivo */}
@@ -141,16 +148,18 @@ export default function Show({ envio, altercados, schedules }: Props) {
                                     icon={deviceIcon}
                                 >
                                     <Popup>
-                                        {schedules[index]?.vehicle.device
-                                            ?.name_device ||
-                                            "Dispositivo desconocido"}
+                                        <div className="flex flex-col">
+                                            <h1 className="text-sm font-bold">Matricula: {schedules[index].vehicle.matricula}</h1>
+                                            <span>Modelos: {schedules[index].vehicle.modelo}</span>
+                                            <span>Color: {schedules[index].vehicle.color}</span>
+                                        </div>
                                     </Popup>
                                 </Marker>
                             ))}
 
                             {origenCoords && (
                                 <Marker position={origenCoords} icon={HomeIcon}>
-                                    <Popup>{envio.origen}</Popup>
+                                    <Popup>Origén: {envio.origen}</Popup>
                                 </Marker>
                             )}
 
@@ -159,10 +168,9 @@ export default function Show({ envio, altercados, schedules }: Props) {
                                     position={envioCoords}
                                     icon={customIcon}
                                 >
-                                    <Popup>{envio.destino}</Popup>
+                                    <Popup>Destino: {envio.destino}</Popup>
                                 </Marker>
                             )}
-
                         </Map>
                     </div>
                 </div>
