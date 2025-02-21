@@ -86,6 +86,8 @@ class GeocercasController extends Controller
 
         $geocercas = Geocerca::where('is_active', true)->get();
         return Inertia::render('Admin/Map/index', [
+            'googleMapsApiKey' => env('VITE_GOOGLE_KEY_MAPS'),
+            'mapBoxsApiKey' => env('VITE_MAPBOX_TOKEN'),
             'envio' => $envio,
             'altercados' => $envio->altercadoReports,
             'vehicles' => $vehiclesShipments,

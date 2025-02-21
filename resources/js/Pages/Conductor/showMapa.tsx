@@ -21,6 +21,8 @@ type Props = {
     origen: { latitude: number; longitude: number };
     destino: { latitude: number; longitude: number };
     status: string;
+    googleMapsApiKey: string;
+    mapBoxsApiKey: string;
 };
 
 type LatLngLiteral = {
@@ -41,12 +43,15 @@ export default function ShowMapa({
     origen,
     destino,
     status,
+    googleMapsApiKey,
+    mapBoxsApiKey,
 }: Props) {
-    const token = import.meta.env.VITE_MAPBOX_TOKEN;
     const [map, setMap] = useState<google.maps.Map | null>(null);
     //const [ruta, setRuta] = useState<{ lat: number; lng: number }[]>([]);
     //const [ruta, setRuta] = useState<google.maps.LatLngLiteral[]>([]);
-    const [routeCoordinates, setRouteCoordinates] = useState<LatLngLiteral[]>([]);
+    const [routeCoordinates, setRouteCoordinates] = useState<
+        [number, number][]
+    >([]);
     //const [rutaEnvioDevice, setRutaEnvioDevice] = useState<number[][]>([]);
     //const [alertTriggered, setAlertTriggered] = useState(false);
     //const [alerta, setAlerta] = useState(false);
@@ -78,25 +83,35 @@ export default function ShowMapa({
             color: geo.color || "blue",
         }));
     }, [geocercas]);
-    
+
     /** Creates a route from origin to destination */
     const fetchRoute = async () => {
         try {
             const response = await axios.get(
-                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenLocation[1]},${origenLocation[0]};${destinoLocation[1]},${destinoLocation[0]}?geometries=geojson&access_token=${token}`
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${envio.origen_longitude},${envio.origen_latitude};${envio.client_longitude},${envio.client_latitude}?geometries=geojson&access_token=${mapBoxsApiKey}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
             );
-            const route: LatLngLiteral[] = response.data.routes[0].geometry.coordinates.map(
-                (coord: number[]) => ({ lat: coord[1], lng: coord[0] })
+            if (!response.data.routes || response.data.routes.length === 0) {
+                throw new Error("No routes found");
+            }
+
+            const route = response.data.routes[0].geometry.coordinates.map(
+                (coord: number[]) => [coord[1], coord[0]]
             );
+
             setRouteCoordinates(route);
         } catch (err) {
-            //setError("No se pudo obtener la ruta.");
+            console.error("Error fetching route:", err);
         }
     };
 
     /**Api del Mapa */
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: import.meta.env.GOOGLE_KEY_MAPS,
+        googleMapsApiKey: googleMapsApiKey,
     });
 
     /*const fetchRuta = async () => {
@@ -163,8 +178,14 @@ export default function ShowMapa({
                 last_location.longitude,
             ]);
         }
-        // Check if origen and destino are defined and have valid latitude and longitude properties
-        fetchRoute();
+        if (
+            envio.origen_latitude &&
+            envio.origen_longitude &&
+            envio.client_latitude &&
+            envio.client_longitude
+        ) {
+            fetchRoute();
+        }
     }, [last_location, origen, destino]);
 
     return (
@@ -212,9 +233,19 @@ export default function ShowMapa({
                             }}
                         />
                         {/* Dibuja la ruta en el mapa */}
-                    {routeCoordinates.length > 0 && (
-                        <Polyline path={routeCoordinates} options={{ strokeColor: "red" }} />
-                    )}
+                        {routeCoordinates.length > 0 && (
+                            <Polyline
+                                path={routeCoordinates.map(([lat, lng]) => ({
+                                    lat,
+                                    lng,
+                                }))}
+                                options={{
+                                    strokeColor: "red",
+                                    strokeOpacity: 0.8,
+                                    strokeWeight: 4,
+                                }}
+                            />
+                        )}
                         {/* 📌 Dibujar ruta del dispositivo */}
                         {/*rutaEnvioDevice && (
                             <Polyline
@@ -241,7 +272,6 @@ export default function ShowMapa({
                                     strokeOpacity: 0.8,
                                     strokeWeight: 2,
                                 }}
-                                
                             />
                         ))}
                     </GoogleMap>

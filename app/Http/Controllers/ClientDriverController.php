@@ -132,6 +132,8 @@ class ClientDriverController extends Controller
                     'longitude' => $envio->client_longitude ?? 0,
                 ],
                 'status' => $envio->status,
+                'googleMapsApiKey' => env('VITE_GOOGLE_KEY_MAPS'),
+                'mapBoxsApiKey' => env('VITE_MAPBOX_TOKEN'),
             ]);
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);

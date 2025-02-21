@@ -16,6 +16,7 @@ import axios from "axios";
 import ModalAlerta from "./ModalAlerta";
 import { CargoShipmentVehicleScheduleInterface } from "@/interfaces/CargoShipmentVehicleSchedule";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
+
 import {
     GoogleMap,
     InfoWindow,
@@ -41,6 +42,8 @@ type Props = {
     rutasDevices: { device_id: number; ruta: number[][] }[];
     lastLocations: DatosLastLocation[];
     altercados: AltercationReportInterface[];
+    googleMapsApiKey: string;
+    mapBoxsApiKey: string;
 };
 
 const Index: React.FC<Props> = ({
@@ -50,6 +53,8 @@ const Index: React.FC<Props> = ({
     rutasDevices,
     lastLocations,
     altercados,
+    googleMapsApiKey,
+    mapBoxsApiKey,
 }) => {
     const [selectedLocation, setSelectedLocation] = useState<{
         lat: number;
@@ -67,17 +72,55 @@ const Index: React.FC<Props> = ({
 
     const [map, setMap] = useState<google.maps.Map | null>(null);
     const iconSize = new window.google.maps.Size(50, 50);
-    const [ruta, setRuta] = useState<{ lat: number; lng: number }[]>([]);
+    //const [ruta, setRuta] = useState<{ lat: number; lng: number }[]>([]);
+    const [routeCoordinates, setRouteCoordinates] = useState<
+        [number, number][]
+    >([]);
     /**Api del Mapa */
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: import.meta.env.GOOGLE_KEY_MAPS,
+        googleMapsApiKey: googleMapsApiKey,
     });
     const [rutas, setRutas] =
         useState<{ device_id: number; ruta: number[][] }[]>(rutasDevices);
     const [ubicaciones, setUbicaciones] = useState(lastLocations);
 
     /** Vrea una ruta del origen al destino */
-    const obtenerRuta = (
+    const fetchRoute = async () => {
+        try {
+            const response = await axios.get(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${envio.origen_longitude},${envio.origen_latitude};${envio.client_longitude},${envio.client_latitude}?geometries=geojson&access_token=${mapBoxsApiKey}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            if (!response.data.routes || response.data.routes.length === 0) {
+                throw new Error("No routes found");
+            }
+
+            const route = response.data.routes[0].geometry.coordinates.map(
+                (coord: number[]) => [coord[1], coord[0]]
+            );
+
+            setRouteCoordinates(route);
+        } catch (err) {
+            console.error("Error fetching route:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (
+            envio.origen_latitude &&
+            envio.origen_longitude &&
+            envio.client_latitude &&
+            envio.client_longitude
+        ) {
+            fetchRoute();
+        }
+    }, [envio]);
+    
+    /*const obtenerRuta = (
         origenLat: number,
         origenLng: number,
         destinoLat: number,
@@ -112,7 +155,7 @@ const Index: React.FC<Props> = ({
             envio.client_latitude,
             envio.client_longitude
         );
-    }, []);
+    }, []);*/
 
     useEffect(() => {
         // Obtener rutas de todos los dispositivos en tiempo real
@@ -180,9 +223,12 @@ const Index: React.FC<Props> = ({
                         zoom={14}
                         onLoad={(map) => setMap(map)}
                     >
-                        {ruta.length > 0 && (
+                        {routeCoordinates.length > 0 && (
                             <Polyline
-                                path={ruta}
+                                path={routeCoordinates.map(([lat, lng]) => ({
+                                    lat,
+                                    lng,
+                                }))}
                                 options={{
                                     strokeColor: "red",
                                     strokeOpacity: 0.8,
@@ -190,6 +236,12 @@ const Index: React.FC<Props> = ({
                                 }}
                             />
                         )}
+                        {/*routeCoordinates.length > 0 && (
+                            <Polyline
+                                positions={routeCoordinates}
+                                color="red"
+                            />
+                        )*/}
                         {/* 📍 Dibujar Geocercas */}
                         {geocercas.map((geo) => {
                             const paths = JSON.parse(geo.polygon_coordinates); // Convertir string a array de coordenadas
@@ -346,8 +398,14 @@ const Index: React.FC<Props> = ({
                                         {selectedLocationVehicle.matricula}
                                     </h3>
                                     <ul>
-                                        <li>Conductor: {selectedLocationVehicle.conductor}</li>
-                                        <li>Teléfono: {selectedLocationVehicle.telefono}</li>
+                                        <li>
+                                            Conductor:{" "}
+                                            {selectedLocationVehicle.conductor}
+                                        </li>
+                                        <li>
+                                            Teléfono:{" "}
+                                            {selectedLocationVehicle.telefono}
+                                        </li>
                                     </ul>
                                 </div>
                             </InfoWindow>
