@@ -42,9 +42,11 @@ export default function ShowMapa({
     destino,
     status,
 }: Props) {
+    const token = import.meta.env.VITE_MAPBOX_TOKEN;
     const [map, setMap] = useState<google.maps.Map | null>(null);
     //const [ruta, setRuta] = useState<{ lat: number; lng: number }[]>([]);
-    const [ruta, setRuta] = useState<google.maps.LatLngLiteral[]>([]);
+    //const [ruta, setRuta] = useState<google.maps.LatLngLiteral[]>([]);
+    const [routeCoordinates, setRouteCoordinates] = useState<LatLngLiteral[]>([]);
     //const [rutaEnvioDevice, setRutaEnvioDevice] = useState<number[][]>([]);
     //const [alertTriggered, setAlertTriggered] = useState(false);
     //const [alerta, setAlerta] = useState(false);
@@ -78,56 +80,19 @@ export default function ShowMapa({
     }, [geocercas]);
     
     /** Creates a route from origin to destination */
-    const obtenerRuta = (
-        origenLat: any,
-        origenLng: any,
-        destinoLat: any,
-        destinoLng: any,
-        waypoints: google.maps.DirectionsWaypoint[] = []
-    ) => {
-        // Asegurar que sean números
-        const origen = { lat: Number(origenLat), lng: Number(origenLng) };
-        const destino = { lat: Number(destinoLat), lng: Number(destinoLng) };
-    
-        if (isNaN(origen.lat) || isNaN(origen.lng) || isNaN(destino.lat) || isNaN(destino.lng)) {
-            console.error("Error: Las coordenadas no son válidas", origen, destino);
-            return;
+    const fetchRoute = async () => {
+        try {
+            const response = await axios.get(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${origenLocation[1]},${origenLocation[0]};${destinoLocation[1]},${destinoLocation[0]}?geometries=geojson&access_token=${token}`
+            );
+            const route: LatLngLiteral[] = response.data.routes[0].geometry.coordinates.map(
+                (coord: number[]) => ({ lat: coord[1], lng: coord[0] })
+            );
+            setRouteCoordinates(route);
+        } catch (err) {
+            //setError("No se pudo obtener la ruta.");
         }
-    
-        //console.log("Calculando ruta desde", origen, "hasta", destino);
-    
-        const directionsService = new google.maps.DirectionsService();
-        directionsService.route(
-            {
-                origin: origen,
-                destination: destino,
-                travelMode: google.maps.TravelMode.DRIVING,
-                waypoints,
-                optimizeWaypoints: true,
-            },
-            (result, status) => {
-                if (status === google.maps.DirectionsStatus.OK && result?.routes[0]?.legs) {
-                    const detailedPath: google.maps.LatLngLiteral[] = [];
-    
-                    result.routes[0].legs.forEach((leg) => {
-                        leg.steps.forEach((step) => {
-                            if (step.polyline && step.polyline.points) {
-                                const stepPath = google.maps.geometry.encoding.decodePath(step.polyline.points);
-                                stepPath.forEach((point) => {
-                                    detailedPath.push({ lat: point.lat(), lng: point.lng() });
-                                });
-                            }
-                        });
-                    });
-                    //console.log("Ruta generada correctamente", detailedPath);
-                    setRuta(detailedPath);
-                } else {
-                    console.error("Error obteniendo la ruta:", status);
-                }
-            }
-        );
     };
-    
 
     /**Api del Mapa */
     const { isLoaded } = useJsApiLoader({
@@ -199,16 +164,7 @@ export default function ShowMapa({
             ]);
         }
         // Check if origen and destino are defined and have valid latitude and longitude properties
-        if (origen && origen.latitude && origen.longitude && destino && destino.latitude && destino.longitude) {
-            obtenerRuta(
-                origen.latitude,
-                origen.longitude,
-                destino.latitude,
-                destino.longitude
-            );
-        } else {
-            console.warn("Origen or destino is missing latitude or longitude properties.");
-        }
+        fetchRoute();
     }, [last_location, origen, destino]);
 
     return (
@@ -255,16 +211,10 @@ export default function ShowMapa({
                                 scaledSize: new google.maps.Size(24, 24),
                             }}
                         />
-                        {ruta.length > 0 && (
-                            <Polyline
-                                path={ruta}
-                                options={{
-                                    strokeColor: "#FF0000",
-                                    strokeOpacity: 1,
-                                    strokeWeight: 4,
-                                }}
-                            />
-                        )}
+                        {/* Dibuja la ruta en el mapa */}
+                    {routeCoordinates.length > 0 && (
+                        <Polyline path={routeCoordinates} options={{ strokeColor: "red" }} />
+                    )}
                         {/* 📌 Dibujar ruta del dispositivo */}
                         {/*rutaEnvioDevice && (
                             <Polyline

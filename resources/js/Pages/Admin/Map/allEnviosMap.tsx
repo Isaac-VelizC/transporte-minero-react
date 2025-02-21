@@ -12,11 +12,7 @@ type Props = {
 };
 
 export default function allEnviosMap({ envios }: Props) {
-    console.log(envios);
-    
-    const token =
-        "pk.eyJ1IjoiaXNhay0tanVseSIsImEiOiJjbTRobmJrY28wOTBxMndvZ2dpNnA0bTRuIn0.RU4IuqQPw1evHwaks9yxqA";
-
+    const token = import.meta.env.VITE_MAPBOX_TOKEN;
     const [routes, setRoutes] = useState<{ [key: string]: [number, number][] }>(
         {}
     );
