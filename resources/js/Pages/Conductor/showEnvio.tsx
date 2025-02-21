@@ -5,7 +5,6 @@ import Card from "@/Components/Cards/Card";
 import Modal from "@/Components/Modal/Modal";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import { ShipmentInterface } from "@/interfaces/Shipment";
-import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -16,7 +15,7 @@ type Props = {
     device_id: number | null;
 };
 
-export default function showEnvio({ dataCarga, altercados }: Props) {
+export default function ShowEnvio({ dataCarga, altercados }: Props) {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const [confirmingShow, setConfirmingShow] = useState(false);
     const { flash } = usePage().props;
@@ -57,17 +56,13 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
     };
 
     return (
-        <Authenticated>
-            <Head title="Show" />
+        <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                     <div className="flex items-center justify-between px-4 py-2 border-b">
                         <h1 className="font-semibold text-sm md:text-lg pb-3">
                             Información del envio de carga
                         </h1>
-                        <Link href={route("driver.show.map", dataCarga.id)}>
-                            <i className="bi bi-map"></i>
-                        </Link>
                     </div>
                     <div className="pl-4 space-y-1">
                         <p>
@@ -170,6 +165,6 @@ export default function showEnvio({ dataCarga, altercados }: Props) {
                     </div>
                 </div>
             </Modal>
-        </Authenticated>
+        </>
     );
 }

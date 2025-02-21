@@ -82,24 +82,9 @@ export default function listEnviosConducto({ envios, vehicleId }: Props) {
                                 </button>
                             )}
                             {row.status === "en_transito" && (
-                                <>
-                                    <Link
-                                        href={route(
-                                            "driver.envio.show",
-                                            row.id
-                                        )}
-                                    >
-                                        <i className="bi bi-geo-fill"></i>
-                                    </Link>
-                                    <Link
-                                        href={route(
-                                            "driver.show.map",
-                                            row.id
-                                        )}
-                                    >
-                                        <i className="bi bi-map"></i>
-                                    </Link>
-                                </>
+                                <Link href={route("driver.show.map", row.id)}>
+                                    <i className="bi bi-map"></i>
+                                </Link>
                             )}
                         </>
                     )}

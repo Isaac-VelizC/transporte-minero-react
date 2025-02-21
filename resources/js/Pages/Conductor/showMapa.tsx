@@ -12,10 +12,13 @@ import {
 } from "@react-google-maps/api";
 import useDeviceTracking from "@/Components/Maps/Api/userLocation";
 import axios from "axios";
+import ShowEnvio from "./showEnvio";
+import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 
 type Props = {
     envio: ShipmentInterface;
     geocercas: GeocercaInterface[];
+    altercados: AltercationReportInterface[];
     device: number;
     last_location: { latitude: number; longitude: number };
     origen: { latitude: number; longitude: number };
@@ -45,6 +48,7 @@ export default function ShowMapa({
     status,
     googleMapsApiKey,
     mapBoxsApiKey,
+    altercados
 }: Props) {
     const [map, setMap] = useState<google.maps.Map | null>(null);
     //const [ruta, setRuta] = useState<{ lat: number; lng: number }[]>([]);
@@ -191,6 +195,7 @@ export default function ShowMapa({
     return (
         <Authenticated>
             <Head title="Show Mapa" />
+            <ShowEnvio dataCarga={envio} device_id={device} altercados={altercados} />
             <h1 className="text-xl font-semibold text-gray-300">
                 Mapa de Envío
             </h1>

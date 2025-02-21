@@ -104,7 +104,7 @@ export default function form({ isEditing, geocerca }: Props) {
                         <div>
                             <InputLabel
                                 htmlFor="type"
-                                value="Coordenadas del poligono"
+                                value="Tipo"
                             />
                             <SelectInput
                                 id="type"

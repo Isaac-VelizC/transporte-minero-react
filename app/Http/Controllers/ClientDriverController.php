@@ -36,6 +36,7 @@ class ClientDriverController extends Controller
             return Inertia::render('Conductor/showEnvio', [
                 'dataCarga' => $envio,
                 'altercados' => $item,
+
                 'device_id' => $deviceId,
             ]);
         } catch (ModelNotFoundException $e) {
@@ -114,9 +115,12 @@ class ClientDriverController extends Controller
             if (is_null($device)) {
                 return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
             }
+            
+            $item = AltercationReport::where('envio_id', $id)->get();
 
             return Inertia::render('Conductor/showMapa', [
                 'geocercas' => $geocercas,
+                'altercados' => $item,
                 'envio' => $envio,
                 'device' => $device->id,
                 'last_location' => [

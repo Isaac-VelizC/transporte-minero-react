@@ -16,39 +16,39 @@ class TipoMineralSeeder extends Seeder
         $minerales = [
             [
                 'nombre' => 'Oro',
-                'precio' => 85000,
+                'precio' => 8000,
             ],
             [
                 'nombre' => 'Plata',
-                'precio' => 960,
+                'precio' => 560,
             ],
             [
                 'nombre' => 'Estaño',
-                'precio' => 27450,
+                'precio' => 2450,
             ],
             [
                 'nombre' => 'Zinc',
-                'precio' => 2461,
+                'precio' => 1461,
             ],
             [
                 'nombre' => 'Plomo',
-                'precio' => 2056,
+                'precio' => 1056,
             ],
             [
                 'nombre' => 'Cobre',
-                'precio' => 4010,
+                'precio' => 2010,
             ],
             [
                 'nombre' => 'Antimonio',
-                'precio' => 38666.67,
+                'precio' => 3866,
             ],
             [
                 'nombre' => 'Complejo',
-                'precio' => 38666.67,
+                'precio' => 1900,
             ],
             [
                 'nombre' => 'Mezclas',
-                'precio' => 38666.67,
+                'precio' => 2500,
             ],
         ];
 
