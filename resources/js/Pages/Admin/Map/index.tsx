@@ -88,7 +88,7 @@ const Index: React.FC<Props> = ({
     const fetchRoute = async () => {
         try {
             const response = await axios.get(
-                `https://api.mapbox.com/directions/v5/mapbox/driving/${envio.origen_longitude},${envio.origen_latitude};${envio.client_longitude},${envio.client_latitude}?geometries=geojson&access_token=${mapBoxsApiKey}`,
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${envio.origen_longitude},${envio.origen_latitude};${envio.client_longitude},${envio.client_latitude}?geometries=geojson&overview=full&access_token=${mapBoxsApiKey}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
