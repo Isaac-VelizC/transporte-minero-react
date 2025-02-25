@@ -115,7 +115,9 @@ function ModalFormSchedule({
                             <option key={index} value={item.id}>
                                 {item.persona.nombre +
                                     " " +
-                                    item.persona.ap_pat}
+                                    (item.persona.ap_pat ?? "") +
+                                    " " +
+                                    (item.persona.ap_mat ?? "")}
                             </option>
                         ))}
                     </SelectInput>

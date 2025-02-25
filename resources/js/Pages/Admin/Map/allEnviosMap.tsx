@@ -52,13 +52,16 @@ export default function allEnviosMap({ envios }: Props) {
         });
     }, [envios]);
 
+    // Colores para las rutas de los vehículos
+    const colors = ["blue", "green", "purple", "orange", "cyan"];
+
     return (
         <Authenticated>
             <Head title="Mapa" />
             <div className="h-150 w-full">
                 <Map center={[-16.290154, -63.588653]} zoom={6}>
-                    {envios.map((envio) => (
-                        <React.Fragment key={envio.id}>
+                    {envios.map((envio, index) => (
+                        <React.Fragment key={index}>
                             {/* Marcador para el destino del cliente */}
                             <Marker
                                 position={[
@@ -97,10 +100,38 @@ export default function allEnviosMap({ envios }: Props) {
                                 >
                                     <Popup>
                                         <div>
-                                            <h1 className="text-sm font-bold">Matricula{location.vehicle.matricula}</h1>
-                                            <span>Modelo: {location.vehicle.modelo}</span><br />
-                                            <span>Conductor: {location.vehicle?.driver?.nombre} {location.vehicle?.driver?.ap_pat} {location.vehicle?.driver?.ap_mat}</span><br />
-                                            <span>Telefono: {location.vehicle.driver?.numero}</span>
+                                            <h1 className="text-sm font-bold">
+                                                Matricula
+                                                {location.vehicle.matricula}
+                                            </h1>
+                                            <span>
+                                                Modelo:{" "}
+                                                {location.vehicle.modelo}
+                                            </span>
+                                            <br />
+                                            <span>
+                                                Conductor:{" "}
+                                                {
+                                                    location.vehicle?.driver
+                                                        ?.nombre
+                                                }{" "}
+                                                {
+                                                    location.vehicle?.driver
+                                                        ?.ap_pat
+                                                }{" "}
+                                                {
+                                                    location.vehicle?.driver
+                                                        ?.ap_mat
+                                                }
+                                            </span>
+                                            <br />
+                                            <span>
+                                                Telefono:{" "}
+                                                {
+                                                    location.vehicle.driver
+                                                        ?.numero
+                                                }
+                                            </span>
                                         </div>
                                     </Popup>
                                 </Marker>
@@ -109,7 +140,7 @@ export default function allEnviosMap({ envios }: Props) {
                             {routes[envio.id] && (
                                 <Polyline
                                     positions={routes[envio.id]}
-                                    color="red"
+                                    color={colors[index % colors.length]}
                                 />
                             )}
                         </React.Fragment>

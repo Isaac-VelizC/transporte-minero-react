@@ -3,7 +3,6 @@ import { EditControl } from "react-leaflet-draw";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { useEffect, useState } from "react";
-import Map from "./Map";
 import MapSeach from "./MapSearch";
 
 interface GeofenceMapProps {
@@ -59,7 +58,7 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({
     }, [initialCoordinates]);
 
     return (
-        <div style={{ height: "400px", width: "100%" }}>
+        <div style={{ height: "500px", width: "100%" }}>
             <MapSeach
                 center={
                     initialCoordinates.length > 0 && initialCoordinates[0].length === 2

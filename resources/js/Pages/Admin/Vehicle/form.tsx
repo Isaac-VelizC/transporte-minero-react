@@ -229,6 +229,8 @@ const showVehicle: React.FC<Props> = ({
                                 id="capacidad_carga"
                                 className="mt-1 block w-full"
                                 type="number"
+                                min={10}
+                                max={500}
                                 value={data.capacidad_carga}
                                 onChange={(e) =>
                                     setData(
@@ -307,6 +309,7 @@ const showVehicle: React.FC<Props> = ({
                             <TextInput
                                 id="kilometrage"
                                 type="number"
+                                min={1}
                                 className="mt-1 block w-full"
                                 value={data.kilometrage}
                                 onChange={(e) =>

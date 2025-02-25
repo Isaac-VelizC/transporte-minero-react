@@ -1,64 +1,64 @@
 import L from "leaflet";
 
 export const customIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854866.png", // URL de la imagen del ícono
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 export const deviceIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/1514/1514801.png", // URL del ícono de dispositivo móvil
-    iconSize: [44, 44], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "https://maps.google.com/mapfiles/kml/pal4/icon15.png",
+    iconSize: [44, 44],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 export const HomeIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/3654/3654735.png", // URL del ícono de dispositivo móvil
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 export const AltercadoIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/814/814108.png", // URL del ícono de dispositivo móvil
-    iconSize: [24, 24], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+    iconSize: [24, 24],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 export const GeocercaIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/128/13707/13707082.png", // URL del ícono de dispositivo móvil
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 export const GeocercaIconPeligro = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/128/9509/9509818.png", // URL del ícono de dispositivo móvil
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "https://maps.google.com/mapfiles/kml/pal3/icon34.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 export const GeocercaIconDescanso = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/128/15344/15344415.png", // URL del ícono de dispositivo móvil
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 export const GeocercaIconMantenimiento = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/128/1040/1040221.png", // URL del ícono de dispositivo móvil
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 export const GeocercaIconSeguridad = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/128/3448/3448513.png", // URL del ícono de dispositivo móvil
-    iconSize: [32, 32], // Tamaño del ícono
-    iconAnchor: [16, 32], // Punto de anclaje del ícono (en píxeles)
-    popupAnchor: [0, -32], // Punto de anclaje del popup relativo al ícono
+    iconUrl: "https://maps.google.com/mapfiles/kml/pal3/icon38.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });

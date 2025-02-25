@@ -41,17 +41,16 @@ const MapSeach: React.FC<Props> = ({ center, zoom, children }) => {
     };
 
     return (
-        <div className="flex h-150">
-            <div className="w-full lg:w-2/6">
+        <div className="relative flex h-[500px] w-full">
+            <div className="absolute top-2 left-14 w-[260px] lg:w-2/5 z-99999">
                 <GooglePlacesAutocomplete
-                    //apiKey="TU_CLAVE_API"
                     selectProps={{
                         onChange: handleSelect,
                         placeholder: "Buscar una ubicación...",
                     }}
                 />
             </div>
-            <div className="w-full lg:w-3/5 h-90">
+            <div className=" relative w-full h-[480px]">
                 <MapContainer
                     center={center}
                     zoom={zoom}

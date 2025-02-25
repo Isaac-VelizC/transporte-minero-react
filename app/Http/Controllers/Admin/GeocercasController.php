@@ -75,6 +75,8 @@ class GeocercasController extends Controller
                     if (!empty($lastCoords)) {
                         $lastLocations[] = [
                             'conductor' => $shipment->vehicle->driver->nombre. ' '. $shipment->vehicle->driver->ap_pat,
+                            'carga' => $envio->mineral->nombre . ' '. $envio->peso .'t.',
+                            'tiempo' => 'No disonible',
                             'device_id' => $device->id,
                             'latitude' => $lastCoords[count($lastCoords) - 1][0], // Última latitud
                             'longitude' => $lastCoords[count($lastCoords) - 1][1] // Última longitud
@@ -90,7 +92,6 @@ class GeocercasController extends Controller
             'mapBoxsApiKey' => env('VITE_MAPBOX_TOKEN'),
             'envio' => $envio,
             'altercados' => $envio->altercadoReports,
-            'vehicles' => $vehiclesShipments,
             'rutasDevices' => $rutasDevices,
             'lastLocations' => $lastLocations,
             'geocercas' => $geocercas

@@ -30,9 +30,9 @@ function index({ envios }: Props) {
             cell: (row: ShipmentInterface) =>
                 row.client.nombre +
                 " " +
-                row.client.ap_pat +
+                (row.client.ap_pat ?? "") +
                 " " +
-                row.client.ap_mat,
+                (row.client.ap_mat ?? ""),
             sortable: true,
         },
         {

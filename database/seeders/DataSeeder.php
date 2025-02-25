@@ -22,8 +22,8 @@ class DataSeeder extends Seeder
         Mark::create(['name' => 'RENAULT']);
 
         // Insertar tipos de vehículos
-        TypeVehicle::create(['name' => 'Camiones de volteo (Dump Trucks)']);
-        TypeVehicle::create(['name' => 'Tractocamiones (Tipper Trucks)']);
+        TypeVehicle::create(['name' => 'Camiones de volteo']);
+        TypeVehicle::create(['name' => 'Tractocamiones']);
         
         TipoMantenimiento::create(['name' => 'Cambios de Aceite']);
         TipoMantenimiento::create(['name' => 'Revisión de Neumáticos']);

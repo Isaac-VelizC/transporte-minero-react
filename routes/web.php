@@ -114,7 +114,7 @@ Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
     Route::post('/driver/envios/renuncia', [ClientDriverController::class, 'renunciaEnvio'])->name('driver.envios.renuncia');
 
     Route::get('/driver/envio/show/{id}', [ClientDriverController::class, 'showEnvio'])->name('driver.envio.show');
-    Route::get('/driver/show/map/{id}', [ClientDriverController::class, 'showMapMonitoreo'])->name('driver.show.map');
+    Route::get('/driver/show/map', [ClientDriverController::class, 'showMapMonitoreo'])->name('driver.show.map');
     Route::get('/driver/mantenimientos/', [ClientDriverController::class, 'mantenimientosVehiculosList'])->name('driver.mantenimientos.list');
     Route::post('/devices/{id}/location/{envio_id}', [ClientDriverController::class, 'updateLocationDevice']);
     Route::patch('/driver/mantenimiento/{id}/confirm',[ClientDriverController::class, 'updateEstatusMantenimiento'])->name('driver.confirm.status');
@@ -128,6 +128,8 @@ Route::get('/ruta_devices/{envio_id}/ruta/{device_id}', [RutaController::class, 
 Route::get('/envios/{envio_id}/rutas', [RutaController::class, 'obtenerRutaAll']);
 Route::get('/api/user', [RutaController::class, 'getUser']);
 Route::get('/api/envio/activo', [RutaController::class, 'getEnvioActivo']);
+Route::post('/api/sync-route/', [RutaController::class, 'updateRutasOffline']);
+Route::get('/api/travel-time', [RutaController::class, 'getTravelTime']);
 
 Route::middleware(['auth', 'checkRole:Cliente'])->group(function () {
     Route::get('/client/pedidos/', [ShipmentsController::class, 'listEnviosCliente'])->name('client.pedido.list');

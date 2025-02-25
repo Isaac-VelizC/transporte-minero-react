@@ -83,22 +83,28 @@ class ClientDriverController extends Controller
             if (array_key_exists($item->status, $statusMap)) {
                 $item->status = $statusMap[$item->status];
                 $item->save();
-                return redirect()->route('driver.envios.list')->with('success', 'Estado del envío actualizado correctamente.');
+                return redirect()->back()->with('success', 'Estado del envío actualizado correctamente.');
             }
-            return redirect()->route('driver.envios.list')->with('error', 'Estado no válido para la actualización.');
+            return redirect()->back()->with('error', 'Estado no válido para la actualización.');
         } catch (ModelNotFoundException $e) {
             Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
-            return redirect()->route('driver.envios.list')->with('error', 'Envio no encontrado.');
+            return redirect()->back()->with('error', 'Envio no encontrado.');
         } catch (\Exception $e) {
             Log::error('Error updating shipment status: ', ['error' => $e]);
-            return redirect()->route('driver.envios.list')->with('error', 'Ocurrió un error al actualizar el estado.');
+            return redirect()->back()->with('error', 'Ocurrió un error al actualizar el estado.');
         }
     }
 
-    public function showMapMonitoreo($id)
+    public function showMapMonitoreo()
     {
         try {
-            $envio = CargoShipment::with(['client'])->findOrFail($id);
+            $envio = CargoShipment::with(['client'])
+                ->whereNotIn('status', ['entregado', 'cancelado'])
+                ->first();
+            if (!$envio) {
+                return redirect()->route('dashboard')->with('error', 'No tienes envios pendientes');
+            }
+
             $geocercas = Geocerca::where('is_active', true)->get();
 
             $userId = Persona::where('user_id', Auth::user()->id)->first()->id;
@@ -115,14 +121,15 @@ class ClientDriverController extends Controller
             if (is_null($device)) {
                 return redirect()->back()->with('error', 'El vehículo no cuenta con un dispositivo de rastreo.');
             }
-            
-            $item = AltercationReport::where('envio_id', $id)->get();
+
+            $item = AltercationReport::where('envio_id', $envio->id)->get();
 
             return Inertia::render('Conductor/showMapa', [
                 'geocercas' => $geocercas,
                 'altercados' => $item,
                 'envio' => $envio,
                 'device' => $device->id,
+                'vehicleId' => $datosEnvios->vehicle->id,
                 'last_location' => [
                     'latitude' => $device->last_latitude ?? 0,
                     'longitude' => $device->last_longitude ?? 0,
@@ -140,7 +147,7 @@ class ClientDriverController extends Controller
                 'mapBoxsApiKey' => env('VITE_MAPBOX_TOKEN'),
             ]);
         } catch (ModelNotFoundException $e) {
-            Log::error('CargoShipment not found: ', ['id' => $id, 'error' => $e]);
+            Log::error('CargoShipment not found: ', ['id' => $envio->id, 'error' => $e]);
             return redirect()->back()->with('error', 'Envío no encontrado.');
         } catch (\Exception $e) {
             Log::error('Error retrieving shipment data: ', ['error' => $e]);
@@ -280,7 +287,6 @@ class ClientDriverController extends Controller
         }
     }
 
-
     public function createAltercado($id)
     {
         // Obtener el envío con las relaciones necesarias
@@ -307,7 +313,6 @@ class ClientDriverController extends Controller
         ]);
     }
 
-
     public function storeReporteAltercados(Request $request)
     {
         $validatedData = $request->validate([
@@ -322,7 +327,7 @@ class ClientDriverController extends Controller
         try {
             // Crear la programación del vehículo
             AltercationReport::create($validatedData);
-            return redirect()->route('driver.envio.show', $validatedData['envio_id'])->with(['success' => 'Registrado exitosamente.'], 201);
+            return redirect()->route('driver.show.map')->with(['success' => 'Registrado exitosamente.'], 201);
         } catch (\Throwable $th) {
             // Manejo de errores
             return redirect()->back()->with(['error' => 'Error al reportar: ' . $th->getMessage()], 500);
@@ -362,11 +367,11 @@ class ClientDriverController extends Controller
                 'schedule_id' => $vehicleSchedule->id,
             ]);
 
-            return redirect()->back()->with('success', 'Renunciaste a la entrega exitosamente.');
+            return redirect()->route('dashboard')->with('success', 'Renunciaste a la entrega exitosamente.');
         } catch (ModelNotFoundException $e) {
-            return redirect()->back()->with('error', 'Vehículo o envío no encontrado.');
+            return redirect()->route('dashboard')->with('error', 'Vehículo o envío no encontrado.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocurrió un error al renunciar al envío.');
+            return redirect()->route('dashboard')->with('error', 'Ocurrió un error al renunciar al envío.');
         }
     }
 }

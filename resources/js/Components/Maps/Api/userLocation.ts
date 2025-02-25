@@ -1,11 +1,9 @@
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 
-// 🟢 Función para almacenar datos en localStorage si no hay conexión
+// 🟢 Almacena ubicaciones en localStorage cuando no hay internet
 const storeOfflineRoute = (latitude: number, longitude: number) => {
-    const offlineRoutes = JSON.parse(
-        localStorage.getItem("offline_routes") || "[]"
-    );
+    const offlineRoutes = JSON.parse(localStorage.getItem("offline_routes") || "[]");
     offlineRoutes.push({
         latitude,
         longitude,
@@ -14,100 +12,123 @@ const storeOfflineRoute = (latitude: number, longitude: number) => {
     localStorage.setItem("offline_routes", JSON.stringify(offlineRoutes));
 };
 
-// 🟢 Función para enviar las ubicaciones almacenadas en localStorage cuando haya conexión
-const syncOfflineRoutes = async () => {
-    if (navigator.onLine) {
-        const offlineRoutes = JSON.parse(
-            localStorage.getItem("offline_routes") || "[]"
-        );
-        if (offlineRoutes.length > 0) {
-            try {
-                /*await fetch("/api/sync-route", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        rutas: offlineRoutes,
-                        envioId: envio.id,
-                    }),
-                });*/
+// 🟢 Sincroniza ubicaciones guardadas en localStorage con el backend
+const syncOfflineRoutes = async (deviceId: number, envioId: number) => {
+    const offlineRoutes = JSON.parse(localStorage.getItem("offline_routes") || "[]");
+    
+    if (offlineRoutes.length === 0) return; // No hay datos para sincronizar
 
-                localStorage.removeItem("offline_routes"); // Borrar datos después de sincronizar
-            } catch (error) {
-                console.error("Error al sincronizar rutas:", error);
-            }
+    try {
+        const response = await axios.post("/api/sync-route", {
+            rutas: offlineRoutes,
+            envioId,
+            device: deviceId,
+        });
+
+        if (response.status === 200) {
+            console.log("✅ Rutas sincronizadas con éxito");
+            localStorage.removeItem("offline_routes");
         }
+    } catch (error) {
+        console.error("❌ Error al sincronizar rutas:", error);
     }
 };
 
-const useDeviceTracking = (envioId: number, deviceId: number) => {
+// 🟢 Hook para rastrear la ubicación del dispositivo en tiempo real
+const useDeviceTracking = (envioId: number, deviceId: number, isTracking: boolean) => {
     const [deviceLocation, setDeviceLocation] = useState<[number, number] | null>(null);
     const lastLocationRef = useRef<[number, number] | null>(null);
 
     useEffect(() => {
+        if (!isTracking) return; // Si el rastreo no está activo, no iniciar
+
         let cancelTokenSource = axios.CancelToken.source();
+        let watchId: number;
+
         const trackLocation = () => {
             if (!("geolocation" in navigator)) return;
 
-            const watchId = navigator.geolocation.watchPosition(
-                
+            watchId = navigator.geolocation.watchPosition(
                 async (position) => {
                     const { latitude, longitude } = position.coords;
                     const newLocation: [number, number] = [latitude, longitude];
 
-                    // Evitar envíos innecesarios si la ubicación no ha cambiado
                     if (
                         lastLocationRef.current &&
                         lastLocationRef.current[0] === latitude &&
                         lastLocationRef.current[1] === longitude
                     ) {
-                        return;
+                        return; // Si la ubicación no ha cambiado, no hacer nada
                     }
+
                     lastLocationRef.current = newLocation;
                     setDeviceLocation(newLocation);
+
                     if (navigator.onLine) {
                         try {
-                            await axios.post(`/devices/${deviceId}/location/${envioId}`, { latitude, longitude },
+                            await axios.post(
+                                `/devices/${deviceId}/location/${envioId}`,
+                                { latitude, longitude },
                                 {
                                     withCredentials: true,
                                     cancelToken: cancelTokenSource.token,
                                 }
                             );
-                            console.log("Ubicación enviada:", { latitude, longitude });
+                            console.log("✅ Ubicación enviada:", { latitude, longitude });
                         } catch (error: any) {
                             if (axios.isCancel(error)) {
-                                console.log("Petición cancelada:", error.message);
+                                console.log("⚠️ Petición cancelada:", error.message);
                             } else {
-                                console.error("Error enviando ubicación:", error);
+                                console.error("❌ Error enviando ubicación:", error);
+                                storeOfflineRoute(latitude, longitude); // Si falla, guardar offline
                             }
                         }
                     } else {
-                        storeOfflineRoute(latitude, longitude);
+                        storeOfflineRoute(latitude, longitude); // Guardar offline si no hay conexión
                     }
                 },
-                (error) => console.error("Error obteniendo ubicación:", error),
+                //(error) => console.error("❌ Error obteniendo ubicación:", error),
+                (error) => {
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            console.error("El usuario negó el permiso para acceder a la ubicación.");
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            console.error("La ubicación no está disponible.");
+                            break;
+                        case error.TIMEOUT:
+                            console.error("Tiempo de espera agotado para obtener la ubicación.");
+                            break;
+                        //case error.UNKNOWN_ERROR:
+                        default:
+                            console.error("Error desconocido al obtener la ubicación.");
+                            break;
+                    }
+                },
                 {
                     enableHighAccuracy: true,
-                    maximumAge: 10000,
-                    timeout: 5000,
+                    maximumAge: 15000,
+                    timeout: 8000,
                 }
             );
-
-            return () => {
-                navigator.geolocation.clearWatch(watchId);
-                cancelTokenSource.cancel("Componente desmontado, petición cancelada.");
-            };
         };
 
         trackLocation();
 
-        // Sincronizar rutas cuando haya conexión
-        window.addEventListener("online", syncOfflineRoutes);
+        // 🟢 Evento para detectar cuándo vuelve la conexión y sincronizar datos
+        const handleOnline = async () => {
+            console.log("🌍 Conexión restablecida. Intentando sincronizar datos...");
+            await syncOfflineRoutes(deviceId, envioId);
+        };
+
+        window.addEventListener("online", handleOnline);
 
         return () => {
-            window.removeEventListener("online", syncOfflineRoutes);
+            navigator.geolocation.clearWatch(watchId);
+            window.removeEventListener("online", handleOnline);
             cancelTokenSource.cancel("Componente desmontado, petición cancelada.");
         };
-    }, [envioId, deviceId]);
+    }, [envioId, deviceId, isTracking]);
 
     return deviceLocation;
 };

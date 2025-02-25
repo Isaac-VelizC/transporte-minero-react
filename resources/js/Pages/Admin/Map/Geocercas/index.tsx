@@ -99,7 +99,7 @@ const Index: React.FC<Props> = ({ geocercas }) => {
                                             position={
                                                 centroid as [number, number]
                                             }
-                                            icon={geocercaTypeIcon} // Usa el icono determinado
+                                            icon={geocercaTypeIcon}
                                         >
                                             <Popup>
                                                 {`Centro de ${geocerca.name}`}{" "}

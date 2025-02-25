@@ -36,7 +36,7 @@ class VehicleUpdateResquest extends FormRequest
             'color' => 'required|string|max:30',
             'fecha_compra' => 'required|date',
             'status' => 'required|in:activo,mantenimiento,inactivo',
-            'capacidad_carga' => 'nullable|integer|min:20|max:600',
+            'capacidad_carga' => 'nullable|integer|min:10|max:500',
             'kilometrage' => 'nullable|integer|min:1'
         ];
     }

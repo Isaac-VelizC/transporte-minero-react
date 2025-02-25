@@ -8,16 +8,19 @@ import { ShipmentInterface } from "@/interfaces/Shipment";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import ModalEnvioAccept from "./ModalEnvioAccept";
 
 type Props = {
     dataCarga: ShipmentInterface;
     altercados: AltercationReportInterface[];
     device_id: number | null;
+    vehicleId: number | null;
 };
 
-export default function ShowEnvio({ dataCarga, altercados }: Props) {
+export default function ShowEnvio({ dataCarga, altercados, vehicleId }: Props) {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const [confirmingShow, setConfirmingShow] = useState(false);
+    const [modalEnvioAccept, setModalEnvioAccept] = useState(false);
     const { flash } = usePage().props;
 
     const handleToggle = useCallback(
@@ -40,8 +43,13 @@ export default function ShowEnvio({ dataCarga, altercados }: Props) {
         setConfirmingShow(true);
     }, []);
 
+    const handleModalEnvioAccept = useCallback(() => {
+        setModalEnvioAccept(true);
+    }, []);
+
     const closeModal = useCallback(() => {
         setConfirmingShow(false);
+        setModalEnvioAccept(false);
     }, []);
 
     const handleConfirm = async () => {
@@ -91,26 +99,39 @@ export default function ShowEnvio({ dataCarga, altercados }: Props) {
                             <strong>Estado: </strong>
                             {dataCarga.status}
                         </p>
-                        
+
                         <p>
                             <strong>Notas: </strong>
                             {dataCarga.notas}
                         </p>
                     </div>
                     <div className="flex items-center justify-center h-16 gap-4">
-                        <Link
-                            href={route("create.altercation", dataCarga.id)}
-                            className="bg-white rounded-md px-4 py-1"
-                        >
-                            Reportar
-                        </Link>
-                        {dataCarga?.status === "en_transito" ? (
-                            <PrimaryButton
-                                type="button"
-                                onClick={handleViewEnvio}
+                        {dataCarga.status !== "pendiente" ? null : (
+                            <SecondaryButton
+                                onClick={() => handleModalEnvioAccept()}
                             >
-                                Confirmar Entrega
-                            </PrimaryButton>
+                                <i className="bi bi-info-circle"></i>{" "}
+                                Aceptar Envio
+                            </SecondaryButton>
+                        )}
+                        {dataCarga?.status === "en_transito" ? (
+                            <>
+                                <Link
+                                    href={route(
+                                        "create.altercation",
+                                        dataCarga.id
+                                    )}
+                                    className="bg-white rounded-md px-4 py-1"
+                                >
+                                    Reportar
+                                </Link>
+                                <PrimaryButton
+                                    type="button"
+                                    onClick={handleViewEnvio}
+                                >
+                                    Confirmar Entrega
+                                </PrimaryButton>
+                            </>
                         ) : null}
                     </div>
                 </Card>
@@ -139,6 +160,12 @@ export default function ShowEnvio({ dataCarga, altercados }: Props) {
                     )}
                 </Card>
             </div>
+            <ModalEnvioAccept
+                showModal={modalEnvioAccept}
+                closeModal={closeModal}
+                vehicleId={vehicleId}
+                cargaData={dataCarga}
+            />
             <Modal show={confirmingShow} onClose={closeModal} maxWidth="md">
                 <div className="p-6">
                     <h1 className="font-medium text-base text-gray-900">

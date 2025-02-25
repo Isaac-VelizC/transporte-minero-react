@@ -105,8 +105,8 @@ export const roleNavItems: Record<
             label: "Dashboard",
         },
         {
-            href: "driver.envios.list",
-            icon: <i className="bi bi-truck"></i>,
+            href: "driver.show.map",
+            icon: <i className="bi bi-map"></i>,
             label: "Envios",
         },
         {

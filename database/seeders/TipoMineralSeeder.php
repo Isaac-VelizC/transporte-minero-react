@@ -28,19 +28,19 @@ class TipoMineralSeeder extends Seeder
             ],
             [
                 'nombre' => 'Zinc',
-                'precio' => 1461,
+                'precio' => 1400,
             ],
             [
                 'nombre' => 'Plomo',
-                'precio' => 1056,
+                'precio' => 1100,
             ],
             [
                 'nombre' => 'Cobre',
-                'precio' => 2010,
+                'precio' => 2000,
             ],
             [
                 'nombre' => 'Antimonio',
-                'precio' => 3866,
+                'precio' => 3860,
             ],
             [
                 'nombre' => 'Complejo',

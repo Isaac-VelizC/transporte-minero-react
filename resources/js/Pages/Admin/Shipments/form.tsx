@@ -69,7 +69,8 @@ export default function form({
     const [selectionType, setSelectionType] = useState<"origen" | "destino">(
         "destino"
     );
-
+    const hoy = new Date();
+    const fechaActual = hoy.toISOString().slice(0, -8);
     const total = useMemo(() => {
         return (data.sub_total || 0) * (parseInt(data.peso) || 0);
     }, [data.sub_total, data.peso]);
@@ -196,7 +197,11 @@ export default function form({
                                                   key={item.id}
                                                   value={item.id}
                                               >
-                                                  {item.nombre}
+                                                  {item.nombre +
+                                                      " " +
+                                                      (item.ap_pat ?? "") +
+                                                      " " +
+                                                      (item.ap_mat ?? "")}
                                               </option>
                                           ))
                                         : null}
@@ -259,6 +264,7 @@ export default function form({
                                     onChange={(e) =>
                                         setData("fecha_envio", e.target.value)
                                     }
+                                    min={fechaActual}
                                     required
                                     isFocused
                                 />
@@ -280,6 +286,7 @@ export default function form({
                                     onChange={(e) =>
                                         setData("fecha_entrega", e.target.value)
                                     }
+                                    min={fechaActual}
                                     required
                                     isFocused
                                 />
@@ -364,6 +371,7 @@ export default function form({
                                     onChange={(e) =>
                                         setData("peso", e.target.value)
                                     }
+                                    min={10}
                                     required
                                 />
                                 <InputError

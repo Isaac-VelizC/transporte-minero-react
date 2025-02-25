@@ -44,3 +44,33 @@ const useOrigenDestino = () => {
 };
 
 export default useOrigenDestino;
+
+{/**
+    const [time, setTime] = useState("");
+
+    const fetchTravelTime = async () => {
+        const origin = "40.712776,-74.005974"; // Coordenadas de origen
+        const destination = "34.052235,-118.243683"; // Coordenadas de destino
+
+        try {
+            const response = await axios.get(`/api/travel-time`, {
+                params: { origin, destination },
+            });
+
+            const duration = response.data.rows[0].elements[0].duration.text;
+            setTime(duration);
+        } catch (error) {
+            console.error("Error obteniendo el tiempo de ruta", error);
+        }
+    };
+
+    <div>
+                <div>
+                    <button onClick={fetchTravelTime}>
+                        Obtener Tiempo de Ruta
+                    </button>
+                    {time && <p>Tiempo estimado: {time}</p>}
+                </div>
+            </div>
+
+    */}

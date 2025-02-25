@@ -13,8 +13,6 @@ type Props = {
 };
 
 function show({ datos, reportes }: Props) {
-    console.log(datos);
-
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const handleToggle = useCallback(
         (index: number) => {
@@ -42,9 +40,9 @@ function show({ datos, reportes }: Props) {
                             <strong>Cliente:</strong>{" "}
                             {datos.client.nombre +
                                 " " +
-                                datos.client.ap_pat +
+                                (datos.client.ap_pat ?? "") +
                                 " " +
-                                datos.client.ap_mat}
+                                (datos.client.ap_mat ?? "" )}
                         </p>
                         <p>
                             <strong>Telefono del Cliente:</strong>{" "}

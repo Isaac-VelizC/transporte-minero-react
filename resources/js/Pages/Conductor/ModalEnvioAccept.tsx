@@ -4,115 +4,31 @@ import SecondaryButton from "@/Components/Buttons/SecondaryButton";
 import InputError from "@/Components/Forms/InputError";
 import InputLabel from "@/Components/Forms/InputLabel";
 import Modal from "@/Components/Modal/Modal";
-import DataTableComponent from "@/Components/Table";
 import { ShipmentInterface } from "@/interfaces/Shipment";
-import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
-import { useCallback, useEffect, useState } from "react";
+import { router, useForm } from "@inertiajs/react";
 import toast from "react-hot-toast";
 
 type Props = {
-    envios: ShipmentInterface[];
+    showModal: boolean;
+    cargaData: ShipmentInterface;
     vehicleId?: number | null;
+    closeModal: () => void
 };
 
-export default function listEnviosConducto({ envios, vehicleId }: Props) {
-    const [confirmingShow, setConfirmingShow] = useState(false);
-    const [cargaData, setCargaData] = useState<ShipmentInterface | null>(null);
+export default function ModalEnvioAccept({ showModal, vehicleId, closeModal, cargaData }: Props) {
     const initialData = {
         message: "",
         vehicle: vehicleId,
         envio: cargaData?.id,
     };
 
-    const { data, setData, post, errors, processing } = useForm(initialData);
-
-    const columns = [
-        {
-            name: "#",
-            cell: (_: ShipmentInterface, index: number) => index + 1,
-            width: "50px",
-        },
-        {
-            name: "Cliente",
-            cell: (row: ShipmentInterface) =>
-                row.client.nombre + " " + row.client.ap_pat,
-            sortable: true,
-        },
-        {
-            name: "Fecha de envio",
-            cell: (row: ShipmentInterface) => row.fecha_envio,
-            sortable: true,
-        },
-        {
-            name: "Fecha de Entrega",
-            cell: (row: ShipmentInterface) => row.fecha_entrega,
-            sortable: true,
-        },
-        {
-            name: "Origen de envio",
-            cell: (row: ShipmentInterface) => row.origen,
-            sortable: true,
-        },
-        {
-            name: "Destino de envio",
-            cell: (row: ShipmentInterface) => row.destino,
-            sortable: true,
-        },
-        {
-            name: "Estado",
-            cell: (row: ShipmentInterface) => (
-                <span
-                    className={`rounded-lg px-2 font-semibold py-1 border border-gray-600 bg-gray-800/5`}
-                >
-                    {row.status}
-                </span>
-            ),
-            width: "150px",
-        },
-        {
-            name: "Acciones",
-            cell: (row: ShipmentInterface) => (
-                <div className="flex gap-2">
-                    {vehicleId != null && (
-                        <>
-                            {row.status !== "pendiente" ? null : (
-                                <button onClick={() => handleViewEnvio(row)}>
-                                    <i className="bi bi-info-circle"></i>
-                                </button>
-                            )}
-                            {row.status === "en_transito" && (
-                                <Link href={route("driver.show.map", row.id)}>
-                                    <i className="bi bi-map"></i>
-                                </Link>
-                            )}
-                        </>
-                    )}
-                </div>
-            ),
-            ignoreRowClick: true,
-            width: "120px",
-        },
-    ];
-
-    const handleViewEnvio = useCallback((row: ShipmentInterface) => {
-        setCargaData(row);
-        setConfirmingShow(true);
-    }, []);
-
-    const closeModal = useCallback(() => {
-        setConfirmingShow(false);
-        setCargaData(null);
-    }, []);
+    const { data, setData, post, errors } = useForm(initialData);
 
     const handleConfirm = async () => {
         if (cargaData !== null) {
             try {
                 // Realiza la solicitud para cambiar el estado del envío
-                await router.get(
-                    route("driver.envios.status", cargaData.id),
-                    {}
-                );
+                await router.get(route("driver.envios.status", cargaData.id));
             } catch (error) {
                 toast.error("Error al cambiar el estado del envío");
             }
@@ -129,7 +45,11 @@ export default function listEnviosConducto({ envios, vehicleId }: Props) {
             try {
                 data.envio = cargaData?.id;
                 // Realiza la solicitud para cambiar el estado del envío
-                post(route("driver.envios.renuncia"));
+                post(route("driver.envios.renuncia"), {
+                    onSuccess: ({ props: { flash } }) => {
+                        if (flash.success) toast.success(flash.success);
+                    }
+                });
                 //toast.success("El estado del envío ha sido cambiado exitosamente.");
             } catch (error) {
                 console.error("Error al cambiar el estado del envío:", error);
@@ -142,27 +62,8 @@ export default function listEnviosConducto({ envios, vehicleId }: Props) {
         }
     };
 
-    const { flash } = usePage().props;
-
-    useEffect(() => {
-        if (flash.success) {
-            toast.success(flash.success);
-        }
-        if (flash.error) {
-            toast.error(flash.error);
-        }
-    }, [flash]);
-
     return (
-        <Authenticated>
-            <Head title="Envios" />
-            <div className="flex flex-col lg:flex-row items-center justify-between my-4">
-                <h1 className="text-lg font-semibold text-gray-200">
-                    Envios Asigandos
-                </h1>
-            </div>
-            <DataTableComponent columns={columns} data={envios} />
-            <Modal show={confirmingShow} onClose={closeModal}>
+            <Modal show={showModal} onClose={closeModal}>
                 <div className="p-6">
                     <h3 className="font-medium text-base text-gray-900">
                         Datos de la carga
@@ -235,6 +136,5 @@ export default function listEnviosConducto({ envios, vehicleId }: Props) {
                     </form>
                 </div>
             </Modal>
-        </Authenticated>
     );
 }
