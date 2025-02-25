@@ -108,7 +108,7 @@ class ClientDriverController extends Controller
             $geocercas = Geocerca::where('is_active', true)->get();
 
             $userId = Persona::where('user_id', Auth::user()->id)->first()->id;
-            $datosEnvios = CargoShipmentVehicleSchedule::where('cargo_shipment_id', $envio->id)
+            $datosEnvios = CargoShipmentVehicleSchedule::with('vehicle')->where('cargo_shipment_id', $envio->id)
                 ->where('conductor_id', $userId)
                 ->first();
 
