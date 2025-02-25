@@ -4,8 +4,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, usePage } from "@inertiajs/react";
 import MensajesCliente from "./Client/mensajes";
 import { RenunciaUser } from "@/interfaces/RenunciaUser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ModalReasignacion from "./Admin/modalReasignacion";
+import toast from "react-hot-toast";
 
 type Props = {
     usersCount: number;
@@ -51,6 +52,14 @@ export default function Dashboard({
         setVehicleId(null);
         setrenunciaId(null);
     };
+
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <AuthenticatedLayout

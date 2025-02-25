@@ -194,18 +194,30 @@ const Index: React.FC<Props> = ({
     // Colores para las rutas de los vehículos
     const colors = ["blue", "green", "purple", "orange", "cyan"];
 
-    // Coordenadas iniciales
-    const defaultCenter = {
+    const [center, setCenter] = useState<{ lat: number; lng: number }>({
         lat: +envio.origen_latitude,
         lng: +envio.origen_longitude,
-    };
+    });
 
-    //const targetLocation = { lat: 40.758, lng: -73.9855 };
+    useEffect(() => {
+        setCenter((prevCenter) => {
+            const newCenter = {
+                lat: +envio.origen_latitude,
+                lng: +envio.origen_longitude,
+            };
 
+            // Solo actualiza si realmente cambió
+            return JSON.stringify(prevCenter) !== JSON.stringify(newCenter)
+                ? newCenter
+                : prevCenter;
+        });
+    }, [envio.origen_latitude, envio.origen_longitude]);
+
+    // Función para mover el mapa manualmente
     const moveToLocation = (lat: number, lng: number) => {
         if (map) {
-            map.panTo({ lat: lat, lng: lng }); // Mueve el mapa al destino
-            map.setZoom(15); // Ajusta el zoom si es necesario
+            map.panTo({ lat, lng });
+            map.setZoom(15);
         }
     };
 
@@ -221,7 +233,7 @@ const Index: React.FC<Props> = ({
                                 width: "100%",
                                 height: "100%",
                             }}
-                            center={defaultCenter}
+                            center={center}
                             zoom={14}
                             onLoad={(map) => setMap(map)}
                         >
