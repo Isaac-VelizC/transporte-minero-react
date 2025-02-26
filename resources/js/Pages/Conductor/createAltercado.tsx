@@ -150,7 +150,7 @@ export default function createAltercation({
                         </div>
                         <div className="mt-6 flex justify-end">
                             <Link
-                                href={route("driver.envio.show", dataCarga.id)}
+                                href={route("driver.show.map")}
                             >
                                 Cancelar
                             </Link>

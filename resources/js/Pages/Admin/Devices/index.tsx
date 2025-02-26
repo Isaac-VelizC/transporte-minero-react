@@ -76,31 +76,50 @@ export default function index({ devices, vehicles }: Props) {
             const fp = await FingerprintJS.load();
             const result = await fp.get();
             const deviceId = result.visitorId;
-
-            // Asegurarse de que el visorID se establezca antes de continuar
+    
+            // Asegurar que deviceId tiene un valor válido
             if (!deviceId) {
-                throw new Error(
-                    "No se pudo obtener el ID del dispositivo, intenta nuevamente."
-                );
+                throw new Error("No se pudo obtener el ID del dispositivo, intenta nuevamente.");
             }
+            
             localStorage.setItem("deviceId", deviceId);
-            // Ejecutar la acción correspondiente
+    
+            // Ejecutar la solicitud con Axios
             const response = await axios.put(
                 route("devices.update.storage", row),
                 { visorID: deviceId }
             );
-
+    
+            // Manejar respuesta exitosa
             if (response.data.status === "success") {
                 toast.success(response.data.message);
             } else {
                 toast.error(response.data.message || "Error inesperado.");
-                toast.error(response.data.erros.message || "Error inesperado.");
             }
-        } catch (error) {
-            if (error instanceof Error) {
-                toast.error(error.message); // Ahora TypeScript sabe que 'error' es un objeto Error
+    
+        } catch (error: any) {
+            // Si el error proviene de la respuesta del servidor (Axios)
+            if (axios.isAxiosError(error) && error.response) {
+                const { status, data } = error.response;
+    
+                if (status === 422) {
+                    // Error de validación: mostrar mensajes específicos
+                    const validationErrors = data.errors || {};
+                    Object.values(validationErrors).forEach((messages: any) => {
+                        messages.forEach((msg: string) => toast.error(msg));
+                    });
+                } else if (status === 404) {
+                    toast.error("El dispositivo no fue encontrado.");
+                }else if (status === 422) {
+                    toast.error("Error de validación. el codigo del dispositivo ya esta registrado");
+                } else if (status === 500) {
+                    toast.error("Error interno del servidor. Intenta más tarde.");
+                } else {
+                    toast.error(data.message || "Error inesperado.");
+                }
             } else {
-                console.log("Error desconocido"); // Manejo de otros tipos de errores
+                // Error inesperado
+                toast.error(error.message || "Ocurrió un error desconocido.");
             }
         }
     };

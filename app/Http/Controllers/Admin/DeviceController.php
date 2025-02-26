@@ -7,13 +7,15 @@ use App\Models\Device;
 use App\Models\RutaDevice;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class DeviceController extends Controller
 {
-    public function listDevicesActive() {
+    public function listDevicesActive()
+    {
         $devices = Device::where('status', '!=', 'inactivo')->get();
-    
+
         if ($devices->isEmpty()) {
             return response()->json(['message' => 'No hay dispositivos activos'], 404);
         }
@@ -74,28 +76,44 @@ class DeviceController extends Controller
         }
     }
 
-    public function updateStorageDevice(Request $request, $id) {
-        // Validación de los datos de entrada
-        $validatedData = $request->validate([
-            'visorID' => 'required|string|max:255|unique:devices,visorID,' . $id,
-        ]);
-    
+    public function updateStorageDevice(Request $request, $id)
+    {
         try {
-            // Actualizar el dispositivo
+            // Buscar el dispositivo antes de validar
             $device = Device::findOrFail($id);
+
+            // Validación manual para capturar errores
+            $validatedData = $request->validate([
+                'visorID' => 'required|string|max:255|unique:devices,visorID,' . $id . ',id',
+            ]);
+
+            // Actualizar el visorID
             $device->visorID = $validatedData['visorID'];
-            $device->save();  // Guardar cambios en el modelo
-    
-            return response()->json(['status' => 'success', 'message' => 'Código actualizado exitosamente.']);
+            $device->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Código actualizado exitosamente.'
+            ]);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => 'error', 'message' => 'Código no encontrado.'], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Dispositivo no encontrado.'
+            ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error de validación.',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Throwable $th) {
-            // Manejo de errores
-            return response()->json(['status' => 'error', 'message' => 'Error al actualizar código: ' . $th->getMessage()], 500);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error al actualizar código: ' . $th->getMessage()
+            ], 500);
         }
     }
-    
-    
+
     public function getLocations()
     {
         return Device::select('id', 'device_name', 'latitude', 'longitude')->get();

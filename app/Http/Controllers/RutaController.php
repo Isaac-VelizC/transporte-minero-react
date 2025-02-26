@@ -35,7 +35,6 @@ class RutaController extends Controller
 
     public function obtenerRutaAll($envio_id)
     {
-        
         $envioItems = CargoShipment::with('mineral')->findOrFail($envio_id);
         $rutasDevices = [];
         $lastLocations = [];
@@ -106,7 +105,6 @@ class RutaController extends Controller
             'lastLocations' => $lastLocations,
         ]);
     }
-
 
     public function updateRutasOffline(Request $request)
     {

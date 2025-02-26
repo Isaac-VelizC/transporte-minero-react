@@ -7,6 +7,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import { GeocercaInterface } from "@/interfaces/Geocerca";
 import Map from "./Map";
+import { AltercadoIcon } from "../IconMap";
 
 type Props = {
     latitud: number | null;
@@ -43,7 +44,7 @@ const SelectLatLonMap: React.FC<Props> = ({
 
             {/* Mostrar marcador */}
             {latitud !== null && longitud !== null && (
-                <Marker position={[latitud, longitud]} />
+                <Marker position={[latitud, longitud]} icon={AltercadoIcon} />
             )}
 
             {/* Mostrar geocercas */}

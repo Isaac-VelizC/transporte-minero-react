@@ -1,3 +1,4 @@
+import { AltercationReportInterface } from "./AltercationReport";
 import { CargoShipmentVehicleScheduleInterface } from "./CargoShipmentVehicleSchedule";
 import { PersonaInterface } from "./Persona";
 import { TipoMineralInterface } from "./TipoMineral";
@@ -5,6 +6,7 @@ import { TipoMineralInterface } from "./TipoMineral";
 export interface ShipmentInterface {
     id: number;
     vehicle_schedules: CargoShipmentVehicleScheduleInterface[];
+    altercado_reports?: AltercationReportInterface[];
     client: PersonaInterface;
     mineral: TipoMineralInterface;
     programming: number[];

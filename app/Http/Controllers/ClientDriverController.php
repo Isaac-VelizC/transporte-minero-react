@@ -98,17 +98,31 @@ class ClientDriverController extends Controller
     public function showMapMonitoreo()
     {
         try {
-            $envio = CargoShipment::with(['client'])
-                ->whereNotIn('status', ['entregado', 'cancelado'])
+            $userId = Persona::where('user_id', Auth::id())->value('id');
+
+            $car = Vehicle::with('cargoShipments')
+                ->where('responsable_id', $userId)
                 ->first();
-            if (!$envio) {
-                return redirect()->route('dashboard')->with('error', 'No tienes envios pendientes');
+
+            if (!$car || $car->cargoShipments->isEmpty()) {
+                return redirect()->route('dashboard')->with('error', 'No tienes envíos pendientes');
             }
 
+            // Obtener el primer envío del vehículo
+            $envio = CargoShipment::with('client')
+                ->whereNotIn('status', ['entregado', 'cancelado'])
+                ->where('id', $car->cargoShipments->first()->id)
+                ->first();
+
+            if (!$envio) {
+                return redirect()->route('dashboard')->with('error', 'No tienes envíos pendientes');
+            }
+
+            // Obtener las geocercas activas
             $geocercas = Geocerca::where('is_active', true)->get();
 
-            $userId = Persona::where('user_id', Auth::user()->id)->first()->id;
-            $datosEnvios = CargoShipmentVehicleSchedule::with('vehicle')->where('cargo_shipment_id', $envio->id)
+            // Verificar si el usuario está asignado al envío como conductor
+            $datosEnvios = CargoShipmentVehicleSchedule::where('cargo_shipment_id', $envio->id)
                 ->where('conductor_id', $userId)
                 ->first();
 

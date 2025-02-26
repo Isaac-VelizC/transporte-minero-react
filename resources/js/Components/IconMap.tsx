@@ -9,7 +9,7 @@ export const customIcon = L.icon({
 
 export const deviceIcon = L.icon({
     iconUrl: "https://maps.google.com/mapfiles/kml/pal4/icon15.png",
-    iconSize: [44, 44],
+    iconSize: [40, 40],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
 });
@@ -23,7 +23,7 @@ export const HomeIcon = L.icon({
 
 export const AltercadoIcon = L.icon({
     iconUrl: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-    iconSize: [24, 24],
+    iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
 });

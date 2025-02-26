@@ -30,8 +30,8 @@ class VehicleCreateResquest extends FormRequest
             'type_id' => 'required|exists:type_vehicles,id',
             'fecha_compra' => 'required|date',
             'status' => 'required|in:activo,mantenimiento,inactivo',
-            'capacidad_carga' => 'nullable|integer|min:10|max:500',
-            'kilometrage' => 'nullable|integer|min:1'
+            'capacidad_carga' => 'nullable|integer|min:10|max:50',
+            'kilometrage' => 'nullable|integer|min:100'
         ];
     }
 
