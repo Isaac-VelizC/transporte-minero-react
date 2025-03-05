@@ -8,6 +8,12 @@ import { BrowserRouter } from "react-router-dom";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("../../js/service-worker.js")
+        .then(() => console.log("Service Worker registrado"))
+        .catch((err) => console.error("Error al registrar Service Worker", err));
+}
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) =>

@@ -113,7 +113,7 @@ class RutaController extends Controller
                 'rutas' => 'required|array',
                 'rutas.*.latitude' => 'required|numeric',
                 'rutas.*.longitude' => 'required|numeric',
-                'envioId' => 'required|integer|exists:envios,id',
+                'envioId' => 'required|integer|exists:cargo_shipments,id',
                 'device' => 'required|integer|exists:devices,id'
             ]);
 

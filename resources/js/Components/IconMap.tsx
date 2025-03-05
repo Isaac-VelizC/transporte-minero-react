@@ -14,6 +14,13 @@ export const deviceIcon = L.icon({
     popupAnchor: [0, -32],
 });
 
+export const deviceOffLine = L.icon({
+    iconUrl: "./../assets/icons/icon15.png",
+    iconSize: [40, 40],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+});
+
 export const HomeIcon = L.icon({
     iconUrl: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
     iconSize: [32, 32],

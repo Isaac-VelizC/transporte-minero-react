@@ -16,6 +16,7 @@ import axios from "axios";
 import ShowEnvio from "./showEnvio";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import ModalAlerta from "../Admin/Map/ModalAlerta";
+import LeafletMapComponent from "./LeafletMapComponent";
 
 type Props = {
     envio: ShipmentInterface;
@@ -162,6 +163,19 @@ export default function ShowMapa({
         }
     }, [deviceLocation, closedGeocercaCoords, alertTriggered]);
 
+    useEffect(() => {
+        if (deviceLocation) {
+            localStorage.setItem("last_device_location", JSON.stringify(deviceLocation));
+        }
+    }, [deviceLocation]);
+
+    useEffect(() => {
+        const savedLocation = localStorage.getItem("last_device_location");
+        if (savedLocation) {
+            setDeviceLocation(JSON.parse(savedLocation));
+        }
+    }, []);    
+
     const deviceLocationNew = useDeviceTracking(envio.id, device, isTracking);
 
     useEffect(() => {
@@ -197,6 +211,21 @@ export default function ShowMapa({
         setAlertTriggered(true);
     };
 
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    
+    useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+            window.removeEventListener("offline", handleOffline);
+        };
+    }, []);
+
     return (
         <Authenticated>
             <Head title="Ver Mapa" />
@@ -227,108 +256,128 @@ export default function ShowMapa({
                     </button>
                 )}
                 <div className="w-full h-[500px]">
-                    {isLoaded ? (
-                        <GoogleMap
-                            mapContainerStyle={{
-                                width: "100%",
-                                height: "100%",
-                            }}
-                            center={{
-                                lat: +deviceLocation[0],
-                                lng: +deviceLocation[1],
-                            }}
-                            zoom={16}
-                            onLoad={(map) => setMap(map)}
-                        >
-                            {/* Marker del origen */}
-                            <Marker
-                                position={{
-                                    lat: +destinoLocation[0],
-                                    lng: +destinoLocation[1],
-                                }}
-                                icon={{
-                                    url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                                    scaledSize: iconSize,
-                                }}
-                            />
-                            {/* Marker del origen */}
-                            <Marker
-                                position={{
-                                    lat: +origenLocation[0],
-                                    lng: +origenLocation[1],
-                                }}
-                                icon={{
-                                    url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-                                    scaledSize: iconSize,
-                                }}
-                            />
-                            {/* 📌 Marker del vehículo en tiempo real */}
-                            <Marker
-                                position={{
-                                    lat: +deviceLocation[0],
-                                    lng: +deviceLocation[1],
-                                }}
-                                icon={{
-                                    url: "https://maps.google.com/mapfiles/kml/pal4/icon15.png",
-                                    scaledSize: new google.maps.Size(24, 24),
-                                }}
-                            />
-                            {/* Dibuja la ruta en el mapa */}
-                            {routeCoordinates.length > 0 && (
-                                <Polyline
-                                    path={routeCoordinates.map(
-                                        ([lat, lng]) => ({
-                                            lat,
-                                            lng,
-                                        })
-                                    )}
-                                    options={{
-                                        strokeColor: "red",
-                                        strokeOpacity: 0.8,
-                                        strokeWeight: 4,
+                    {isOnline ? (
+                        <>
+                            {isLoaded ? (
+                                <GoogleMap
+                                    mapContainerStyle={{
+                                        width: "100%",
+                                        height: "100%",
                                     }}
-                                />
-                            )}
-                            {/* 📌 Dibujar ruta del dispositivo */}
-                            {rutaEnvioDevice && (
-                                <Polyline
-                                    path={rutaEnvioDevice.map(([lat, lng]) => ({
-                                        lat,
-                                        lng,
-                                    }))}
-                                    options={{
-                                        strokeColor: "green",
-                                        strokeOpacity: 0.8,
-                                        strokeWeight: 4,
+                                    center={{
+                                        lat: +deviceLocation[0],
+                                        lng: +deviceLocation[1],
                                     }}
-                                />
-                            )}
-                            {/* 📌 Dibujar geocercas */}
-                            {geocercas.map((geo) => {
-                                const paths = JSON.parse(
-                                    geo.polygon_coordinates
-                                ); // Convertir string a array de coordenadas
-                                return (
-                                    <Polygon
-                                        key={geo.id}
-                                        paths={paths.map(
-                                            ([lat, lng]: [number, number]) => ({
-                                                lat,
-                                                lng,
-                                            })
-                                        )}
-                                        options={{
-                                            fillColor: geo.color || "#FF0000",
-                                            fillOpacity: 0.3,
-                                            strokeColor: geo.color || "#FF0000",
-                                            strokeWeight: 2,
+                                    zoom={16}
+                                    onLoad={(map) => setMap(map)}
+                                >
+                                    {/* Marker del origen */}
+                                    <Marker
+                                        position={{
+                                            lat: +destinoLocation[0],
+                                            lng: +destinoLocation[1],
+                                        }}
+                                        icon={{
+                                            url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                                            scaledSize: iconSize,
                                         }}
                                     />
-                                );
-                            })}
-                        </GoogleMap>
+                                    {/* Marker del origen */}
+                                    <Marker
+                                        position={{
+                                            lat: +origenLocation[0],
+                                            lng: +origenLocation[1],
+                                        }}
+                                        icon={{
+                                            url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+                                            scaledSize: iconSize,
+                                        }}
+                                    />
+                                    {/* 📌 Marker del vehículo en tiempo real */}
+                                    <Marker
+                                        position={{
+                                            lat: +deviceLocation[0],
+                                            lng: +deviceLocation[1],
+                                        }}
+                                        icon={{
+                                            url: "https://maps.google.com/mapfiles/kml/pal4/icon15.png",
+                                            scaledSize: new google.maps.Size(
+                                                24,
+                                                24
+                                            ),
+                                        }}
+                                    />
+                                    {/* Dibuja la ruta en el mapa */}
+                                    {routeCoordinates.length > 0 && (
+                                        <Polyline
+                                            path={routeCoordinates.map(
+                                                ([lat, lng]) => ({
+                                                    lat,
+                                                    lng,
+                                                })
+                                            )}
+                                            options={{
+                                                strokeColor: "red",
+                                                strokeOpacity: 0.8,
+                                                strokeWeight: 4,
+                                            }}
+                                        />
+                                    )}
+                                    {/* 📌 Dibujar ruta del dispositivo */}
+                                    {rutaEnvioDevice && (
+                                        <Polyline
+                                            path={rutaEnvioDevice.map(
+                                                ([lat, lng]) => ({
+                                                    lat,
+                                                    lng,
+                                                })
+                                            )}
+                                            options={{
+                                                strokeColor: "green",
+                                                strokeOpacity: 0.8,
+                                                strokeWeight: 4,
+                                            }}
+                                        />
+                                    )}
+                                    {/* 📌 Dibujar geocercas */}
+                                    {geocercas.map((geo) => {
+                                        const paths = JSON.parse(
+                                            geo.polygon_coordinates
+                                        ); // Convertir string a array de coordenadas
+                                        return (
+                                            <Polygon
+                                                key={geo.id}
+                                                paths={paths.map(
+                                                    ([lat, lng]: [
+                                                        number,
+                                                        number
+                                                    ]) => ({
+                                                        lat,
+                                                        lng,
+                                                    })
+                                                )}
+                                                options={{
+                                                    fillColor:
+                                                        geo.color || "#FF0000",
+                                                    fillOpacity: 0.3,
+                                                    strokeColor:
+                                                        geo.color || "#FF0000",
+                                                    strokeWeight: 2,
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </GoogleMap>
+                            ) : (
+                                <p>Cargando mapa...</p>
+                            )}
+                        </>
                     ) : (
-                        <p>Cargando mapa...</p>
+                        <LeafletMapComponent
+                        center={[deviceLocation[0], deviceLocation[1]]}
+                        markers={[{ lat: deviceLocation[0], lng: deviceLocation[1], label: "Ubicación" }]}
+                        polyline={routeCoordinates}
+                    />
                     )}
                 </div>
             </div>

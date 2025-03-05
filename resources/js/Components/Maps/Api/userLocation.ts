@@ -16,8 +16,7 @@ const storeOfflineRoute = (latitude: number, longitude: number) => {
 const syncOfflineRoutes = async (deviceId: number, envioId: number) => {
     const offlineRoutes = JSON.parse(localStorage.getItem("offline_routes") || "[]");
     
-    if (offlineRoutes.length === 0) return; // No hay datos para sincronizar
-
+    if (offlineRoutes.length === 0) return;
     try {
         const response = await axios.post("/api/sync-route", {
             rutas: offlineRoutes,
@@ -38,9 +37,10 @@ const syncOfflineRoutes = async (deviceId: number, envioId: number) => {
 const useDeviceTracking = (envioId: number, deviceId: number, isTracking: boolean) => {
     const [deviceLocation, setDeviceLocation] = useState<[number, number] | null>(null);
     const lastLocationRef = useRef<[number, number] | null>(null);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null); // Referencia del intervalo
 
     useEffect(() => {
-        if (!isTracking) return; // Si el rastreo no está activo, no iniciar
+        if (!isTracking) return;
 
         let cancelTokenSource = axios.CancelToken.source();
         let watchId: number;
@@ -80,14 +80,13 @@ const useDeviceTracking = (envioId: number, deviceId: number, isTracking: boolea
                                 console.log("⚠️ Petición cancelada:", error.message);
                             } else {
                                 console.error("❌ Error enviando ubicación:", error);
-                                storeOfflineRoute(latitude, longitude); // Si falla, guardar offline
+                                storeOfflineRoute(latitude, longitude);
                             }
                         }
                     } else {
                         storeOfflineRoute(latitude, longitude); // Guardar offline si no hay conexión
                     }
                 },
-                //(error) => console.error("❌ Error obteniendo ubicación:", error),
                 (error) => {
                     switch (error.code) {
                         case error.PERMISSION_DENIED:
@@ -99,7 +98,6 @@ const useDeviceTracking = (envioId: number, deviceId: number, isTracking: boolea
                         case error.TIMEOUT:
                             console.error("Tiempo de espera agotado para obtener la ubicación.");
                             break;
-                        //case error.UNKNOWN_ERROR:
                         default:
                             console.error("Error desconocido al obtener la ubicación.");
                             break;
@@ -123,10 +121,20 @@ const useDeviceTracking = (envioId: number, deviceId: number, isTracking: boolea
 
         window.addEventListener("online", handleOnline);
 
+        // 🟢 Guardar ubicación en localStorage cada 20 segundos si no hay internet
+        intervalRef.current = setInterval(() => {
+            if (!navigator.onLine && lastLocationRef.current) {
+                const [latitude, longitude] = lastLocationRef.current;
+                console.log("📌 Guardando ubicación offline:", { latitude, longitude });
+                storeOfflineRoute(latitude, longitude);
+            }
+        }, 20000);
+
         return () => {
             navigator.geolocation.clearWatch(watchId);
             window.removeEventListener("online", handleOnline);
             cancelTokenSource.cancel("Componente desmontado, petición cancelada.");
+            if (intervalRef.current) clearInterval(intervalRef.current); // Limpiar intervalo
         };
     }, [envioId, deviceId, isTracking]);
 

@@ -467,10 +467,10 @@ export default function form({
                                     disabled={processing}
                                 >
                                     {processing
-                                        ? "Processing..."
+                                        ? "Procesando..."
                                         : isEditing
-                                        ? "Save Changes"
-                                        : "Create Vehicle"}
+                                        ? "Guardar Cambios"
+                                        : "Registrar Envio"}
                                 </PrimaryButton>
                             </div>
                         </div>

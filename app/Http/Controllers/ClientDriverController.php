@@ -99,19 +99,17 @@ class ClientDriverController extends Controller
     {
         try {
             $userId = Persona::where('user_id', Auth::id())->value('id');
-
             $car = Vehicle::with('cargoShipments')
                 ->where('responsable_id', $userId)
                 ->first();
-
             if (!$car || $car->cargoShipments->isEmpty()) {
                 return redirect()->route('dashboard')->with('error', 'No tienes envíos pendientes');
             }
 
-            // Obtener el primer envío del vehículo
-            $envio = CargoShipment::with('client')
+            $envio = $car->cargoShipments()
                 ->whereNotIn('status', ['entregado', 'cancelado'])
-                ->where('id', $car->cargoShipments->first()->id)
+                ->latest('id')
+                ->with('client')
                 ->first();
 
             if (!$envio) {
