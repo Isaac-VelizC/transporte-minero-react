@@ -69,6 +69,10 @@ export default function ShowMapa({
         origen.longitude,
     ]);
 
+    // Función para guardar la ruta de Mapbox en localStorage
+    const storeRoute = (route: [number, number][]) => {
+        localStorage.setItem("mapbox_route", JSON.stringify(route));
+    };
     /** Creates a route from origin to destination */
     const fetchRoute = async () => {
         try {
@@ -89,6 +93,7 @@ export default function ShowMapa({
             );
 
             setRouteCoordinates(route);
+            storeRoute(route); // Guardar la ruta en localStorage
         } catch (err) {
             console.error("Error fetching route:", err);
         }
@@ -376,7 +381,6 @@ export default function ShowMapa({
                         <LeafletMapComponent
                         center={[deviceLocation[0], deviceLocation[1]]}
                         markers={[{ lat: deviceLocation[0], lng: deviceLocation[1], label: "Ubicación" }]}
-                        polyline={routeCoordinates}
                     />
                     )}
                 </div>

@@ -1,21 +1,34 @@
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import { useEffect, useState } from "react";
-import { deviceOffLine } from "@/Components/IconMap";
+import { svgIcon } from "@/Components/IconMap";
 
 interface LeafletMapProps {
     center: [number, number];
     markers: { lat: number; lng: number; label: string }[];
-    polyline?: [number, number][];
 }
 
-const LeafletMapComponent: React.FC<LeafletMapProps> = ({ center, markers, polyline }) => {
+const LeafletMapComponent: React.FC<LeafletMapProps> = ({ center, markers }) => {
     const [offlineRoutes, setOfflineRoutes] = useState<{ latitude: number; longitude: number }[]>([]);
-    
+    const [routeCoordinates, setRouteCoordinates] = useState<[number, number][] | null>(null);
     // Función para obtener las rutas desde localStorage
     const getOfflineRoutes = () => {
         const storedRoutes = JSON.parse(localStorage.getItem("offline_routes") || "[]");
         setOfflineRoutes(storedRoutes);
     };
+
+    // Función para obtener la ruta de Mapbox desde localStorage
+    const getStoredRoute = () => {
+        const storedRoute = localStorage.getItem("mapbox_route");
+        if (storedRoute) {
+            setRouteCoordinates(JSON.parse(storedRoute));
+        }
+    };
+
+    useEffect(() => {
+        if (!navigator.onLine) {
+            getStoredRoute(); // Cargar la ruta almacenada si no hay conexión
+        }
+    }, []);
 
     // Escucha cambios en localStorage y actualiza las rutas
     useEffect(() => {
@@ -63,11 +76,13 @@ const LeafletMapComponent: React.FC<LeafletMapProps> = ({ center, markers, polyl
         <MapContainer center={finalCenter} zoom={16} style={{ width: "100%", height: "500px" }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             {markers.map((marker, index) => (
-                <Marker key={index} position={[marker.lat, marker.lng]} icon={deviceOffLine}>
+                <Marker key={index} position={[marker.lat, marker.lng]} icon={svgIcon}>
                     <Popup>{marker.label}</Popup>
                 </Marker>
             ))}
-            {polyline && <Polyline positions={polyline} pathOptions={{ color: "red" }} />}
+            {(routeCoordinates) && (
+                <Polyline positions={routeCoordinates} pathOptions={{ color: "red" }} />
+            )}
             {offlineRoutes.map((route, index) => (
                 <Marker key={index} position={[route.latitude, route.longitude]}>
                     <Popup>Ubicación registrada en offline</Popup>
