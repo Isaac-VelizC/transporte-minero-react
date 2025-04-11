@@ -96,7 +96,7 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     //Route::get('/devices/locations', [DeviceController::class, 'getLocations']);
     //Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.view');
-    Route::post('/reports/filter', [ReportController::class, 'filterConsult'])->name('admin.resports.filter');
+    Route::post('/reports/filter', [ReportController::class, 'filterConsult'])->name('admin.reports.filter');
     ///Altecados
     Route::get('/altercados/{id}', [ShipmentsController::class, 'altercationsListControler'])->name('altercados.list');
     Route::post('/message/send/control', [HomeController::class, 'sendMessageControl'])->name('send.message.control');

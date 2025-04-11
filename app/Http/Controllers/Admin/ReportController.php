@@ -68,10 +68,7 @@ class ReportController extends Controller
             $results = $query->with(['client', 'vehicleSchedules.vehicle'])->get();
 
             // Enviar los resultados a la vista con Inertia
-            return Inertia::render('Admin/Reports/index', [
-                'clientes' => $this->getClientes(),
-                'drivers' => $this->getDrivers(),
-                'vehiculos' => $this->getVehiculos(),
+            return response()->json([
                 'results' => $results,
             ]);
         } catch (\Throwable $th) {

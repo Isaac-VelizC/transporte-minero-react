@@ -159,35 +159,36 @@ class ShipmentsController extends Controller
 
         try {
             $validatedData = $request->validated();
-            $vehicleSchedules = VehicleSchedule::findMany($request->programming);
+            //$vehicleSchedules = VehicleSchedule::findMany($request->programming);
+            $vehicleSchedules = VehicleSchedule::findMany($request->programming)->sortByDesc(fn($schedule) => $schedule->vehicle->capacidad_carga);
             $totalPeso = $request->peso;
             // 1. Calcular la capacidad acumulada de los vehículos seleccionados
             $totalCapacidad = 0;
-            $vehiculosSeleccionados = [];
+            //$vehiculosSeleccionados = [];
 
-            foreach ($vehicleSchedules as $schedule) {
-                $capacidadVehiculo = $schedule->vehicle->capacidad_carga;
-
-                // Agregar vehículos hasta alcanzar el peso o sobrepasar la capacidad
-                if ($totalCapacidad + $capacidadVehiculo <= $totalPeso || empty($vehiculosSeleccionados)) {
+            if (count($vehicleSchedules) > 1) {
+                foreach ($vehicleSchedules as $schedule) {
+                    $capacidadVehiculo = $schedule->vehicle->capacidad_carga;
                     $totalCapacidad += $capacidadVehiculo;
-                    $vehiculosSeleccionados[] = $schedule->id;
-                } else {
-                    // Si se excede el peso, notificar al usuario
-                    return back()->with('error', 'Has seleccionado demasiados vehículos. Por favor, selecciona los adecuados para el peso de carga de ' . $totalPeso . ' kg.');
+                    //$vehiculosSeleccionados[] = $schedule->id;
+                }
+
+                $capacidadMinimaRequerida = $totalCapacidad - (100 * 0.2);
+                // Verificar si la capacidad total está dentro del margen permitido
+                if ($totalPeso > $totalCapacidad) {
+                    return back()->with('error', "La capacidad total de los vehículos seleccionados ($totalCapacidad t.) no es suficiente.");
+                }
+
+                if ($totalPeso < $capacidadMinimaRequerida) {
+                    return back()->with('error', "El peso de la carga es demasiado bajo. Se requiere al menos $capacidadMinimaRequerida t.");
+                }
+            } else {
+                $totalCapacidad = $vehicleSchedules->sum(fn($v) => $v->vehicle->capacidad_carga);
+
+                if ($totalPeso > $totalCapacidad) {
+                    return back()->with('error', "El peso de carga no puede ser mayor a la capacidad total del camión: $totalCapacidad t.");
                 }
             }
-
-            // 2. Verificar si la capacidad total acumulada es suficiente
-            if ($totalCapacidad < $totalPeso) {
-                return back()->with('error', 'La capacidad total de los vehículos seleccionados no es suficiente para el peso de la carga. Se requieren al menos ' . $totalPeso . ' kg de capacidad.');
-            }
-            //dd('todo bien');
-            /*$totalCapacidad = $vehicleSchedules->sum(fn($v) => $v->vehicle->capacidad_carga);
-
-            if ($totalPeso > $totalCapacidad) {
-                return back()->with('error', 'El peso de carga no puede ser mayor a la capacidad total de los camiones: ' . $totalCapacidad);
-            }*/
 
             // **1️⃣ Restaurar el estado de los vehículos anteriores antes de actualizar**
             if ($isEditing && !empty($item->programming)) {

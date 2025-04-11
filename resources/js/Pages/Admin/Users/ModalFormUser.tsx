@@ -75,7 +75,7 @@ const ModalFormUser: React.FC<Props> = ({
         <Modal show={show} onClose={onClose}>
             <form className="p-6" onSubmit={handleSubmit}>
                 <h2 className="text-lg font-bold text-gray-900">
-                    {isEditing ? "Edit User Information" : "Create New User"}
+                    {isEditing ? "Editar información de usuario" : "Crear nuevo usuario"}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
                     <div>
@@ -215,8 +215,8 @@ const ModalFormUser: React.FC<Props> = ({
                         {processing
                             ? "Processing..."
                             : isEditing
-                            ? "Save Changes"
-                            : "Create User"}
+                            ? "Guardar cambios"
+                            : "Crear usuario"}
                     </PrimaryButton>
                 </div>
             </form>

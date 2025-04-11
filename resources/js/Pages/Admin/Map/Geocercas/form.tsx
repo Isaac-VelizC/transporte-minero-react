@@ -200,8 +200,8 @@ export default function form({ isEditing, geocerca }: Props) {
                             {processing
                                 ? "Processing..."
                                 : isEditing
-                                ? "Save Changes"
-                                : "Create Geocerca"}
+                                ? "Guardar cambios"
+                                : "Crear Geocerca"}
                         </PrimaryButton>
                     </div>
                 </form>

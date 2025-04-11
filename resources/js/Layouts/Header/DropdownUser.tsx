@@ -47,7 +47,7 @@ const DropdownUser = () => {
                                 className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
                             >
                                 <i className="bi bi-person"></i>
-                                My Profile
+                                Mi perfil
                             </Link>
                         </li>
                     </ul>
@@ -57,7 +57,7 @@ const DropdownUser = () => {
                         className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
                     >
                         <i className="bi bi-box-arrow-left"></i>
-                        Log Out
+                        Salir
                     </Link>
                 </div>
             )}

@@ -291,8 +291,10 @@ class VehiclesController extends Controller
         // Obtener los IDs de los vehículos que tienen mantenimientos pendientes
         $vehiclesWithPendingMaintenance = VehiculoMantenimiento::whereIn('estado', ['pendiente', 'proceso'])
             ->pluck('vehicle_id');
-        // Obtener todos los vehículos que no están en la lista anterior
-        $vehicles = Vehicle::whereNotIn('id', $vehiclesWithPendingMaintenance)->get();
+        $vehiclesNotFree = VehicleSchedule::where('status', '!=', 'libre')->pluck('car_id');
+        $vehiclesForMaintenance = $vehiclesWithPendingMaintenance->merge($vehiclesNotFree)->unique();
+        $vehicles = Vehicle::whereNotIn('id', $vehiclesForMaintenance)->get();
+
         $list = VehiculoMantenimiento::with(['vehicle', 'tipo'])->get();
         $tipos = TipoMantenimiento::all();
         return Inertia::render('Admin/Vehicle/Mantenimientos/index', [

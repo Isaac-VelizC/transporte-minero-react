@@ -5,7 +5,7 @@ import Card from "@/Components/Cards/Card";
 import Modal from "@/Components/Modal/Modal";
 import { AltercationReportInterface } from "@/interfaces/AltercationReport";
 import { ShipmentInterface } from "@/interfaces/Shipment";
-import { Head, Link, router, usePage } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ModalEnvioAccept from "./ModalEnvioAccept";

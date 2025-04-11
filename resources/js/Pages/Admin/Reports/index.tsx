@@ -12,6 +12,9 @@ import { ReportsInterface } from "@/interfaces/Reports";
 import { VehicleInterface } from "@/interfaces/Vehicle";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
+import Papa from "papaparse";
+import axios from "axios";
+import { useState } from "react";
 
 // Define Props interface
 interface Props {
@@ -21,10 +24,8 @@ interface Props {
     results: ReportsInterface[];
 }
 
-export default function Index({
-    clientes,
-    results,
-}: Props) {
+export default function Index({ clientes, results }: Props) {
+    const [filteredResults, setFilteredResults] = useState(results);
     const { data, setData, errors, post, reset } = useForm({
         vehiculo: "",
         cliente: "",
@@ -33,9 +34,43 @@ export default function Index({
         fecha: "",
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        post(route("admin.resports.filter"));
+
+        try {
+            const response = await axios.post(
+                route("admin.reports.filter"),
+                data
+            );
+            setFilteredResults(response.data.results); // Actualizar los resultados filtrados
+        } catch (error) {
+            console.error("Error al filtrar:", error);
+        }
+    };
+
+    // Función para exportar a CSV
+    const exportToCSV = () => {
+        const csvData = filteredResults.map((item) => ({
+            Codigo: item.id,
+            Cliente: item.client
+                ? `${item.client.nombre} ${item.client.ap_pat ?? ""} ${
+                      item.client.ap_mat ?? ""
+                  }`.trim()
+                : "N/A",
+            "Cantidad Camiones": item.vehicle_schedules.length ?? "N/A",
+            Estado: item.status,
+            Fecha: item.fecha_envio,
+            Destino: item.destino,
+        }));
+
+        const csv = Papa.unparse(csvData);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", "reportes.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     return (
@@ -50,34 +85,6 @@ export default function Index({
             <Card>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {/*<div>
-                            <InputLabel htmlFor="vehiculo" value="Vehículo" />
-                            <SelectInput
-                                isFocused
-                                className="mt-1 block w-full"
-                                onChange={(e) =>
-                                    setData("vehiculo", e.target.value)
-                                }
-                                value={data.vehiculo || ''}
-                            >
-                                <option value="" disabled>
-                                    {vehiculos && vehiculos.length > 0
-                                        ? "Selecciona vehiculo"
-                                        : "No hay datos disponibles"}
-                                </option>
-                                {vehiculos && vehiculos.length > 0
-                                    ? vehiculos.map((item, index) => (
-                                          <option key={index} value={item.id}>
-                                              {item.matricula}
-                                          </option>
-                                      ))
-                                    : null}
-                            </SelectInput>
-                            <InputError
-                                message={errors.vehiculo}
-                                className="mt-2"
-                            />
-                        </div>*/}
                         <div>
                             <InputLabel htmlFor="cliente" value="Cliente" />
                             <SelectInput
@@ -94,9 +101,11 @@ export default function Index({
                                         : "No hay datos disponibles"}
                                 </option>
                                 {clientes && clientes.length > 0
-                                    ? clientes.map((item, index) => (
-                                          <option key={index} value={item.id}>
-                                              {item.nombre + " " + item.ap_pat}
+                                    ? clientes.map((item) => (
+                                          <option key={item.id} value={item.id}>
+                                              {`${item.nombre || ""} ${
+                                                  item.ap_pat || ""
+                                              } ${item.ap_mat || ""}`.trim()}
                                           </option>
                                       ))
                                     : null}
@@ -106,34 +115,6 @@ export default function Index({
                                 className="mt-2"
                             />
                         </div>
-                        {/*<div>
-                            <InputLabel htmlFor="conductor" value="Conductor" />
-                            <SelectInput
-                                id="conductor"
-                                className="mt-1 block w-full"
-                                value={data.conductor || ''}
-                                onChange={(e) =>
-                                    setData("conductor", e.target.value)
-                                }
-                            >
-                                <option value="" disabled>
-                                    {drivers && drivers.length > 0
-                                        ? "Selecciona conductor"
-                                        : "No hay datos disponibles"}
-                                </option>
-                                {drivers && drivers.length > 0
-                                    ? drivers.map((item, index) => (
-                                          <option key={index} value={item.persona.id}>
-                                              {item.persona.nombre +' '+item.persona.ap_pat}
-                                          </option>
-                                      ))
-                                    : null}
-                            </SelectInput>
-                            <InputError
-                                message={errors.conductor}
-                                className="mt-2"
-                            />
-                        </div>*/}
                         <div>
                             <InputLabel htmlFor="mes" value="Mes" />
                             <SelectInput
@@ -195,99 +176,92 @@ export default function Index({
             <hr className="my-6" />
             <Card>
                 <h1 className="text-lg font-semibold mb-4">Resultados</h1>
-                {results && results.length > 0 ? (
-                    <div className="overflow-x-auto">
-                        <table className="table-auto w-full border-collapse border border-gray-300">
-                            <thead>
-                                <tr className="bg-gray-200">
-                                    <th className="border border-gray-300 px-4 py-2">
-                                        Codigo
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                        Cliente
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                        Cantidad Camiones
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                        Conductor
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                        Estado
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                        Fecha
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                        Destino
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {results.map(
-                                    (item: ReportsInterface, index: number) => (
-                                        <tr
-                                            key={index}
-                                            className="hover:bg-gray-100"
-                                        >
-                                            <td className="border border-gray-300 px-4 py-2">
-                                                {item.id}
-                                            </td>
-                                            <td className="border border-gray-300 px-4 py-2">
-                                                {item.client ? (
-                                                    <>
-                                                        {`${
-                                                            item.client
-                                                                .nombre || "N/A"
-                                                        } ${
-                                                            item.client
-                                                                .ap_pat || ""
-                                                        } ${
-                                                            item.client
-                                                                .ap_mat || ""
-                                                        }`.trim() || "N/A"}
-                                                    </>
-                                                ) : (
-                                                    "N/A"
-                                                )}
-                                            </td>
-                                            <td className="border border-gray-300 px-4 py-2">
-                                                {item.vehicle_schedules.length ||
-                                                    "N/A"}
-                                            </td>
-                                            {/*<td className="border border-gray-300 px-4 py-2">
-                                            {item.conductor ? (
-                                                    <>
-                                                        {`${
-                                                            item.conductor
-                                                                .nombre || "N/A"
-                                                        } ${
-                                                            item.conductor
-                                                                .ap_pat || ""
-                                                        } ${
-                                                            item.conductor
-                                                                .ap_mat || ""
-                                                        }`.trim() || "N/A"}
-                                                    </>
-                                                ) : (
-                                                    "N/A"
-                                                )}
-                                            </td>*/}
-                                            <td className="border border-gray-300 px-4 py-2">
-                                                {item.status}
-                                            </td>
-                                            <td className="border border-gray-300 px-4 py-2">
-                                                {item.fecha_envio}
-                                            </td>
-                                            <td className="border border-gray-300 px-4 py-2">
-                                                {item.destino}
-                                            </td>
-                                        </tr>
-                                    )
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                {filteredResults && filteredResults.length > 0 ? (
+                    <>
+                        <button
+                            onClick={exportToCSV}
+                            className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
+                        >
+                            Exportar CSV
+                        </button>
+                        <div className="overflow-x-auto">
+                            <table className="table-auto w-full border-collapse border border-gray-300">
+                                <thead>
+                                    <tr className="bg-gray-200">
+                                        <th className="border border-gray-300 px-4 py-2">
+                                            Codigo
+                                        </th>
+                                        <th className="border border-gray-300 px-4 py-2">
+                                            Cliente
+                                        </th>
+                                        <th className="border border-gray-300 px-4 py-2">
+                                            Cantidad Camiones
+                                        </th>
+                                        <th className="border border-gray-300 px-4 py-2">
+                                            Estado
+                                        </th>
+                                        <th className="border border-gray-300 px-4 py-2">
+                                            Fecha
+                                        </th>
+                                        <th className="border border-gray-300 px-4 py-2">
+                                            Destino
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredResults.map(
+                                        (
+                                            item: ReportsInterface,
+                                            index: number
+                                        ) => (
+                                            <tr
+                                                key={index}
+                                                className="hover:bg-gray-100"
+                                            >
+                                                <td className="border border-gray-300 px-4 py-2">
+                                                    {item.id}
+                                                </td>
+                                                <td className="border border-gray-300 px-4 py-2">
+                                                    {item.client ? (
+                                                        <>
+                                                            {`${
+                                                                item.client
+                                                                    .nombre ||
+                                                                "N/A"
+                                                            } ${
+                                                                item.client
+                                                                    .ap_pat ||
+                                                                ""
+                                                            } ${
+                                                                item.client
+                                                                    .ap_mat ||
+                                                                ""
+                                                            }`.trim() || "N/A"}
+                                                        </>
+                                                    ) : (
+                                                        "N/A"
+                                                    )}
+                                                </td>
+                                                <td className="border border-gray-300 px-4 py-2">
+                                                    {item.vehicle_schedules
+                                                        .length || "N/A"}
+                                                </td>
+                                                <td className="border border-gray-300 px-4 py-2">
+                                                    {item.status}
+                                                </td>
+                                                <td className="border border-gray-300 px-4 py-2">
+                                                    {item.fecha_envio}
+                                                </td>
+                                                <td className="border border-gray-300 px-4 py-2">
+                                                    {item.destino}
+                                                </td>
+                                            </tr>
+                                        )
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 ) : (
                     <p className="text-gray-600">
                         No se encontraron resultados para los filtros aplicados.
