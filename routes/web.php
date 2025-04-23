@@ -30,7 +30,10 @@ Route::get('/dashboard', [HomeController::class, 'dashboardPage'])->middleware([
 
 
 Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->group(function () {
-    Route::get('/backup/download', [BackupController::class, 'downloadBackup'])->name('backup.download');
+    Route::get('/admin/copias-de-seguridad', [BackupController::class, 'pageCopiasSeguridad'])->name('admin.page.packups');
+    Route::post('/backups/run', [BackupController::class, 'runBackup'])->name('backup.run');
+    Route::get('/backups/download/{file}', [BackupController::class, 'downloadBackup'])->name('backup.download');
+    Route::get('/backup/delete/{name}', [BackupController::class, 'deleteBackup'])->name('backup.delete');
     ///Users
     Route::get('/users', [UsersController::class, 'index'])->name('user.list');
     Route::post('/users', [UsersController::class, 'store'])->name('user.create');
@@ -56,7 +59,7 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::get('/vehicle/form/{id}', [VehiclesController::class, 'edit'])->name('vehicle.edit');
     Route::patch('/vehicle/update/{id}', [VehiclesController::class, 'update'])->name('vehicle.update');
     Route::delete('/vehicle/{id}', [VehiclesController::class, 'destroy'])->name('vehicle.destroy');
-    
+
     Route::get('/vehicle/programmings', [VehiclesController::class, 'listSchedules'])->name('schedule.list');
     Route::post('/vehicle/programming', [VehiclesController::class, 'registerConductorVehicle'])->name('vehicle.programming');
     Route::patch('/vehicle/programming/{id}', [VehiclesController::class, 'updateConductorVehicle'])->name('vehicle.programming.update');
@@ -67,9 +70,9 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::get('/all/envios/map', [VehiclesController::class, 'viewMapEnviosAll'])->name('all.map.envios');
     // Mantenimientos
     Route::get('/vehicle/mantenimientos', [VehiclesController::class, 'listMantenimientos'])->name('mantenimiento.list');
-    Route::post('/vehicle/mantenimiento',[VehiclesController::class, 'storeMantenimientoVehicle'])->name('mantenimiento.store');
-    Route::patch('/vehicle/mantenimiento/{id}',[VehiclesController::class, 'updateMantenimientoVehicle'])->name('mantenimiento.update');
-    Route::delete('/vehicle/mantenimiento/{id}',[VehiclesController::class, 'destroyMantenimientoVehicle'])->name('mantenimiento.delete');
+    Route::post('/vehicle/mantenimiento', [VehiclesController::class, 'storeMantenimientoVehicle'])->name('mantenimiento.store');
+    Route::patch('/vehicle/mantenimiento/{id}', [VehiclesController::class, 'updateMantenimientoVehicle'])->name('mantenimiento.update');
+    Route::delete('/vehicle/mantenimiento/{id}', [VehiclesController::class, 'destroyMantenimientoVehicle'])->name('mantenimiento.delete');
     //envios
     Route::get('/envios', [ShipmentsController::class, 'index'])->name('envios.list');
     Route::get('/envios/{id}', [ShipmentsController::class, 'show'])->name('envios.show');
@@ -103,7 +106,7 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::get('/altercados/{id}', [ShipmentsController::class, 'altercationsListControler'])->name('altercados.list');
     Route::post('/message/send/control', [HomeController::class, 'sendMessageControl'])->name('send.message.control');
     Route::get('/messages', [HomeController::class, 'viewMessage'])->name('view.message');
-    
+
     // Notification
     Route::get('/notification/{id}', [NotificationController::class, 'show'])->name('admin.notification');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('all.notification');
@@ -119,7 +122,7 @@ Route::middleware(['auth', 'checkRole:Conductor'])->group(function () {
     Route::get('/driver/show/map', [ClientDriverController::class, 'showMapMonitoreo'])->name('driver.show.map');
     Route::get('/driver/mantenimientos/', [ClientDriverController::class, 'mantenimientosVehiculosList'])->name('driver.mantenimientos.list');
     Route::post('/devices/{id}/location/{envio_id}', [ClientDriverController::class, 'updateLocationDevice']);
-    Route::patch('/driver/mantenimiento/{id}/confirm',[ClientDriverController::class, 'updateEstatusMantenimiento'])->name('driver.confirm.status');
+    Route::patch('/driver/mantenimiento/{id}/confirm', [ClientDriverController::class, 'updateEstatusMantenimiento'])->name('driver.confirm.status');
     Route::get('/driver/create/form/altercado/{id}', [ClientDriverController::class, 'createAltercado'])->name('create.altercation');
     Route::post('driver/store/artercado', [ClientDriverController::class, 'storeReporteAltercados'])->name('driver.store.altercado');
     Route::patch('/driver/envios/{id}/confirm', [ClientDriverController::class, 'confirmEntrega'])->name('client.envios.status');
@@ -143,4 +146,4 @@ Route::middleware(['auth', 'checkRole:Cliente'])->group(function () {
 Route::post('/update-devices-ruta', [DeviceController::class, 'updateDevicesRutaMap'])->name('device.monitoreo.post');
 Route::get('/list/devices/actives', [DeviceController::class, 'listDevicesActive'])->name('list.device.active');
 Route::get('error', [HomeController::class, 'errorPage'])->name('error.page');
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

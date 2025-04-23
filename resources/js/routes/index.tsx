@@ -32,6 +32,11 @@ export const roleNavItems: Record<
             href: "envios.list",
             icon: <i className="bi bi-geo-fill"></i>,
             label: "Envios",
+        },
+        {
+            href: "admin.page.packups",
+            icon: <i className="bi bi-shield-lock"></i>,
+            label: "Copias de Seguridad",
         }
     ],
     Secretaria: [

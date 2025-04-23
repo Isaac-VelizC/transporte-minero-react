@@ -72,7 +72,6 @@ export default function Authenticated({
     return (
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
             <Toaster position="top-center" reverseOrder={false} />
-            <FloatingBackupButton />
             {/* <!-- ===== Page Wrapper Start ===== --> */}
             {!devicePermiso ? (
                 <div className="h-screen w-screen flex justify-center items-center">
