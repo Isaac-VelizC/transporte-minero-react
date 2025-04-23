@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Symfony\Component\Console\Command\Command;
+use Illuminate\Console\Command;
 
 class BackupDatabase extends Command
 {
     protected $signature = 'backup:run';
     protected $description = 'Run a database backup';
-
+    
     public function __construct()
     {
         parent::__construct();
@@ -27,7 +27,7 @@ class BackupDatabase extends Command
 
             // Crear el nombre del archivo de respaldo
             $backupPath = storage_path('app/backups/' . date('Y-m-d_H-i-s') . '_backup.sql');
-
+            
             // Construir el comando mysqldump
             $command = sprintf(
                 'mysqldump --user=%s --password=%s --host=%s --port=%d %s > %s',
