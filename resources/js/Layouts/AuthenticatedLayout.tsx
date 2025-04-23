@@ -5,7 +5,6 @@ import { Toaster } from "react-hot-toast";
 import { router, usePage } from "@inertiajs/react";
 import { DeviceInterface } from "@/interfaces/Device";
 import axios from "axios";
-import FloatingBackupButton from "@/Components/Buttons/FloatButton";
 
 export default function Authenticated({
     children,
