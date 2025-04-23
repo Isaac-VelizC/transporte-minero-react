@@ -10,7 +10,7 @@ class BackupController extends Controller
 {
     public function downloadBackup()
     {
-        Artisan::call('backup:database');
+        Artisan::call('backup:run');
         $filename = 'database_backup_' . date('YmdHis') . '.sql';
         $filePath = 'backups/' . $filename;
         $disk = Storage::disk('local');
