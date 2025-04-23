@@ -101,7 +101,7 @@ const showVehicle: React.FC<Props> = ({
                     </h2>
                     <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                            <InputLabel htmlFor="matricula" value="Matricula" />
+                            <InputLabel htmlFor="matricula" value="Matricula" required/>
                             <TextInput
                                 id="matricula"
                                 className="mt-1 block w-full uppercase"
@@ -123,6 +123,7 @@ const showVehicle: React.FC<Props> = ({
                             <InputLabel
                                 htmlFor="marca"
                                 value="Marca de Vehiculo"
+                                required
                             />
                             <SelectInput
                                 isFocused
@@ -155,6 +156,7 @@ const showVehicle: React.FC<Props> = ({
                             <InputLabel
                                 htmlFor="type"
                                 value="Tipo de Vehiculo"
+                                required
                             />
                             <SelectInput
                                 isFocused
@@ -187,6 +189,7 @@ const showVehicle: React.FC<Props> = ({
                             <InputLabel
                                 htmlFor="modelo"
                                 value="Modelo de Vehiculo"
+                                required
                             />
                             <TextInput
                                 id="modelo"
@@ -206,6 +209,7 @@ const showVehicle: React.FC<Props> = ({
                             <InputLabel
                                 htmlFor="color"
                                 value="Color de Vehiculo"
+                                required
                             />
                             <SelectorDeColor
                                 colores={coloresDisponibles}
@@ -224,6 +228,7 @@ const showVehicle: React.FC<Props> = ({
                             <InputLabel
                                 htmlFor="capacidad_carga"
                                 value="Capacidad de Carga (Toneladas)"
+                                required
                             />
                             <TextInput
                                 id="capacidad_carga"
@@ -284,6 +289,7 @@ const showVehicle: React.FC<Props> = ({
                             <InputLabel
                                 htmlFor="fecha_compra"
                                 value="Fecha de registro"
+                                required
                             />
                             <TextInput
                                 id="fecha_compra"
@@ -305,6 +311,7 @@ const showVehicle: React.FC<Props> = ({
                             <InputLabel
                                 htmlFor="kilometrage"
                                 value="Kilometrage"
+                                required
                             />
                             <TextInput
                                 id="kilometrage"
@@ -327,7 +334,7 @@ const showVehicle: React.FC<Props> = ({
                             />
                         </div>
                         <div>
-                            <InputLabel htmlFor="status" value="Estado" />
+                            <InputLabel htmlFor="status" value="Estado" required />
                             <SelectInput
                                 isFocused
                                 className="mt-1 block w-full"

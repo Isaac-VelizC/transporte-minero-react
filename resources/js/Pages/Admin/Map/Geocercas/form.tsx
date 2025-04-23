@@ -86,6 +86,7 @@ export default function form({ isEditing, geocerca }: Props) {
                             <InputLabel
                                 htmlFor="name"
                                 value="Nombre de la Geocerca"
+                                required
                             />
                             <TextInput
                                 id="name"
@@ -105,6 +106,7 @@ export default function form({ isEditing, geocerca }: Props) {
                             <InputLabel
                                 htmlFor="type"
                                 value="Tipo"
+                                required
                             />
                             <SelectInput
                                 id="type"
@@ -136,6 +138,7 @@ export default function form({ isEditing, geocerca }: Props) {
                                 <InputLabel
                                     htmlFor="color"
                                     value="Color de la Geocerca"
+                                    required
                                 />
                                 <TextInput
                                     id="color"
@@ -156,6 +159,7 @@ export default function form({ isEditing, geocerca }: Props) {
                                 <InputLabel
                                     htmlFor="is_active"
                                     value="Estado de la Geocerca"
+                                    required
                                 />
                                 <Checkbox
                                     id="is_active"

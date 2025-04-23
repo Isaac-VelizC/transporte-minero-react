@@ -173,6 +173,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="client_id"
                                     value="Seleccionar Cliente"
+                                    required
                                 />
                                 <SelectInput
                                     isFocused
@@ -215,6 +216,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="origen"
                                     value="Origen de entrega"
+                                    required
                                 />
                                 <TextInput
                                     id="origen"
@@ -235,6 +237,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="destino"
                                     value="Destino de entrega"
+                                    required
                                 />
                                 <TextInput
                                     id="destino"
@@ -255,6 +258,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="fecha_envio"
                                     value="Fecha de Envio"
+                                    required
                                 />
                                 <TextInput
                                     id="fecha_envio"
@@ -277,6 +281,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="fecha_entrega"
                                     value="Fecha de Entrega"
+                                    required
                                 />
                                 <TextInput
                                     id="fecha_entrega"
@@ -300,6 +305,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="mineral_id"
                                     value="Seleccionar tipo mineral"
+                                    required
                                 />
                                 <SelectInput
                                     isFocused
@@ -333,6 +339,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="sub_total"
                                     value="Costo por Tonelada"
+                                    required
                                 />
                                 <TextInput
                                     id="sub_total"
@@ -362,6 +369,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="peso"
                                     value="Peso de carga"
+                                    required
                                 />
                                 <TextInput
                                     id="peso"
@@ -398,6 +406,7 @@ export default function form({
                                 <InputLabel
                                     htmlFor="programming"
                                     value="Vehiculo mas capacidad de Carga"
+                                    required
                                 />
                                 <SelectMultiple
                                     options={options}

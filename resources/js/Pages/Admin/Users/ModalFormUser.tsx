@@ -79,7 +79,7 @@ const ModalFormUser: React.FC<Props> = ({
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
                     <div>
-                        <InputLabel htmlFor="nombre" value="Nombre" />
+                        <InputLabel htmlFor="nombre" value="Nombre" required />
                         <TextInput
                             id="nombre"
                             className="mt-1 block w-full"
@@ -115,6 +115,7 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputLabel
                             htmlFor="email"
                             value="Correo Electronico"
+                            required
                         />
                         <TextInput
                             id="email"
@@ -127,7 +128,7 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputError className="mt-2" message={errors.email} />
                     </div>
                     <div>
-                        <InputLabel htmlFor="ci" value="Cedula de Identidad" />
+                        <InputLabel htmlFor="ci" value="Cedula de Identidad" required/>
                         <TextInput
                             id="ci"
                             value={data.ci}
@@ -139,7 +140,7 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputError className="mt-2" message={errors.ci} />
                     </div>
                     <div>
-                        <InputLabel htmlFor="numero" value="Teléfono" />
+                        <InputLabel htmlFor="numero" value="Teléfono" required/>
                         <TextInput
                             id="numero"
                             value={data.numero || ""}
@@ -151,7 +152,7 @@ const ModalFormUser: React.FC<Props> = ({
                         <InputError className="mt-2" message={errors.numero} />
                     </div>
                     <div>
-                        <InputLabel htmlFor="genero" value="Genero" />
+                        <InputLabel htmlFor="genero" value="Genero" required/>
                         <SelectInput
                             isFocused
                             required
@@ -176,7 +177,7 @@ const ModalFormUser: React.FC<Props> = ({
                     </div>
                     {roles && roles.length > 0 ? (
                         <div>
-                            <InputLabel htmlFor="rol" value="Rol" />
+                            <InputLabel htmlFor="rol" value="Rol" required/>
                             <SelectInput
                                 isFocused
                                 required

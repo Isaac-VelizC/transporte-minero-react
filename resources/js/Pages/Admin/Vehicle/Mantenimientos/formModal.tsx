@@ -77,7 +77,7 @@ function FormModalMantenimieto({
                         : "Programar Mantenimiento"}
                 </h2>
                 <div>
-                    <InputLabel htmlFor="taller" value="Nombre del Taller" />
+                    <InputLabel htmlFor="taller" value="Nombre del Taller" required/>
                     <TextInput
                         id="taller"
                         type="text"
@@ -93,6 +93,7 @@ function FormModalMantenimieto({
                         <InputLabel
                             htmlFor="fecha_inicio"
                             value="Fecha de mantenimiento"
+                            required
                         />
                         <TextInput
                             id="fecha_inicio"
@@ -113,6 +114,7 @@ function FormModalMantenimieto({
                         <InputLabel
                             htmlFor="fecha_fin"
                             value="Fecha fin de mantenimiento"
+                            required
                         />
                         <TextInput
                             id="fecha_fin"
@@ -135,6 +137,7 @@ function FormModalMantenimieto({
                         <InputLabel
                             htmlFor="vehicle_id"
                             value="Seleccionar Vehiculo"
+                            required
                         />
                         <SelectInput
                             isFocused
@@ -166,7 +169,7 @@ function FormModalMantenimieto({
                 ) : null}
 
                 <div>
-                    <InputLabel htmlFor="tipo" value="Tipo de mantenimiento" />
+                    <InputLabel htmlFor="tipo" value="Tipo de mantenimiento" required/>
                     <SelectInput
                         isFocused
                         required
@@ -192,7 +195,7 @@ function FormModalMantenimieto({
                     <InputError className="mt-2" message={errors.tipo} />
                 </div>
                 <div>
-                    <InputLabel htmlFor="observaciones" value="Observaciones" />
+                    <InputLabel htmlFor="observaciones" value="Observaciones" required/>
                     <textarea
                         id="observaciones"
                         rows={4}

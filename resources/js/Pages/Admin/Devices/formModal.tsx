@@ -103,6 +103,7 @@ const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
                         <InputLabel
                             htmlFor="num_serial"
                             value="Numero Serial"
+                            required
                         />
                         <TextInput
                             id="num_serial"
@@ -122,6 +123,7 @@ const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
                         <InputLabel
                             htmlFor="name_device"
                             value="Nombre del Dispositivo"
+                            required
                         />
                         <TextInput
                             id="name_device"
@@ -139,7 +141,7 @@ const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
                         />
                     </div>
                     <div>
-                        <InputLabel htmlFor="type" value="Tipo de SO" />
+                        <InputLabel htmlFor="type" value="Tipo de SO" required />
                         <SelectInput
                             required
                             className="mt-1 block w-full"
@@ -158,6 +160,7 @@ const FormModal: React.FC<Props> = ({ show, onClose, device, isEditing }) => {
                         <InputLabel
                             htmlFor="status"
                             value="Estado del Dispositivo"
+                            required
                         />
                         <SelectInput
                             isFocused

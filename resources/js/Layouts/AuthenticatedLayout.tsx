@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { router, usePage } from "@inertiajs/react";
 import { DeviceInterface } from "@/interfaces/Device";
 import axios from "axios";
+import FloatingBackupButton from "@/Components/Buttons/FloatButton";
 
 export default function Authenticated({
     children,
@@ -34,7 +35,7 @@ export default function Authenticated({
     const loadFingerprint = async () => {
         if (rol === "Conductor") {
             try {
-                const storedDeviceId = localStorage.getItem('deviceId');
+                const storedDeviceId = localStorage.getItem("deviceId");
 
                 if (!devices) {
                     console.error("No devices available to compare.");
@@ -71,6 +72,7 @@ export default function Authenticated({
     return (
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
             <Toaster position="top-center" reverseOrder={false} />
+            <FloatingBackupButton />
             {/* <!-- ===== Page Wrapper Start ===== --> */}
             {!devicePermiso ? (
                 <div className="h-screen w-screen flex justify-center items-center">

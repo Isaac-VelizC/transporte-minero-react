@@ -5,7 +5,7 @@ export default function InputLabel({
     className = '',
     children,
     ...props
-}: LabelHTMLAttributes<HTMLLabelElement> & { value?: string }) {
+}: LabelHTMLAttributes<HTMLLabelElement> & { value?: string, required?: boolean }) {
     return (
         <label
             {...props}
@@ -14,7 +14,7 @@ export default function InputLabel({
                 className
             }
         >
-            {value ? value : children}
+            {value ? value : children} {props.required && <span className="text-red-600">*</span>}
         </label>
     );
 }

@@ -107,7 +107,7 @@ export default function drivers({ isEditing, driver }: Props) {
                     <br />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
-                            <InputLabel htmlFor="nombre" value="Nombre" />
+                            <InputLabel htmlFor="nombre" value="Nombre" required/>
                             <TextInput
                                 id="nombre"
                                 className="mt-1 block w-full"
@@ -164,6 +164,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputLabel
                                 htmlFor="email"
                                 value="Correo Electronico"
+                                required
                             />
                             <TextInput
                                 id="email"
@@ -184,6 +185,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputLabel
                                 htmlFor="ci"
                                 value="Cedula de Identidad"
+                                required
                             />
                             <TextInput
                                 id="ci"
@@ -196,7 +198,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputError className="mt-2" message={errors.ci} />
                         </div>
                         <div>
-                            <InputLabel htmlFor="genero" value="Genero" />
+                            <InputLabel htmlFor="genero" value="Genero" required/>
                             <SelectInput
                                 className="mt-1 block w-full"
                                 required
@@ -227,7 +229,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             />
                         </div>
                         <div>
-                            <InputLabel htmlFor="numero" value="Teléfono" />
+                            <InputLabel htmlFor="numero" value="Teléfono" required />
                             <TextInput
                                 id="numero"
                                 className="mt-1 block w-full"
@@ -247,6 +249,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputLabel
                                 htmlFor="experiencia"
                                 value="Años de experiencia"
+                                required
                             />
                             <TextInput
                                 id="experiencia"
@@ -268,6 +271,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputLabel
                                 htmlFor="direccion"
                                 value="Dirección"
+                                required
                             />
                             <TextInput
                                 id="direccion"
@@ -288,6 +292,7 @@ export default function drivers({ isEditing, driver }: Props) {
                             <InputLabel
                                 htmlFor="hiring_date"
                                 value="Fecha de Contratacion"
+                                required
                             />
                             <TextInput
                                 type="date"

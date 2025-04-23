@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ShipmentsController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\VehiclesController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ClientDriverController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
@@ -29,6 +30,7 @@ Route::get('/dashboard', [HomeController::class, 'dashboardPage'])->middleware([
 
 
 Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->group(function () {
+    Route::get('/backup/download', [BackupController::class, 'downloadBackup'])->name('backup.download');
     ///Users
     Route::get('/users', [UsersController::class, 'index'])->name('user.list');
     Route::post('/users', [UsersController::class, 'store'])->name('user.create');

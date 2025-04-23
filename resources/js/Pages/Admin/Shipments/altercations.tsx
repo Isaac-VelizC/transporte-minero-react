@@ -19,8 +19,6 @@ export default function altercations({ altercations }: Props) {
         [openIndex]
     );
 
-    console.log(altercations);
-
     return (
         <Authenticated>
             <Head title="Altercados" />

@@ -95,7 +95,7 @@ function ModalFormSchedule({
                 <div>
                     <InputLabel
                         htmlFor="driver_id"
-                        value="Conductores disponibles"
+                        value="Conductores disponibles" required
                     />
                     <SelectInput
                         isFocused
