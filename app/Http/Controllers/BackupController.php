@@ -12,20 +12,25 @@ class BackupController extends Controller
     public function pageCopiasSeguridad()
     {
         $disk = Storage::disk('local');
-
+        // Obtener los archivos en la carpeta 'backups'
         $files = $disk->files('backups');
         $backups = [];
-        
+
         foreach ($files as $file) {
+            // Recolectamos los datos de cada archivo
             $backups[] = [
-                'code' => $file,
-                'nombre' => basename($file),
-                'fecha' => date('Y-m-d H:i:s', $disk->lastModified($file)),
+                'code' => basename($file), // Se pasa solo el nombre del archivo
+                'nombre' => basename($file), // Nombre del archivo (sin ruta)
+                'fecha' => date('Y-m-d H:i:s', $disk->lastModified($file)), // Fecha de última modificación
+                'size' => $disk->size($file), // Tamaño del archivo (opcional)
+                'url' => Storage::url($file), // La URL pública del archivo (opcional, para descarga)
             ];
         }
 
+        // Pasamos la información de los backups a la vista de Inertia
         return Inertia::render('Admin/backup/index', ['backups' => $backups]);
     }
+
     // Método para ejecutar el backup
     public function runBackup()
     {
