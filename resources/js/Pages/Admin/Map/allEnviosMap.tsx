@@ -4,6 +4,7 @@ import {
     deviceIcon,
     HomeIcon,
 } from "@/Components/IconMap";
+import LocateButton from "@/Components/Maps/LocateButton";
 import Map from "@/Components/Maps/Map";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
@@ -250,6 +251,7 @@ export default function allEnviosMap({ envios }: Props) {
                             )}
                         </React.Fragment>
                     ))}
+                    <LocateButton />
                 </Map>
             </div>
         </Authenticated>

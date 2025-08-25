@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class VehiclesController extends Controller
@@ -285,6 +286,39 @@ class VehiclesController extends Controller
         }
     }
 
+    public function uploadFileVehicle(Request $request, $id)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $vehicle = Vehicle::findOrFail($id);
+
+            // Si ya tiene imagen, eliminarla
+            if ($vehicle->image && Storage::disk('public')->exists($vehicle->image)) {
+                Storage::disk('public')->delete($vehicle->image);
+            }
+
+            // Guardar la nueva imagen en 'public/vehicles'
+            $path = $request->file('image')->store('vehicles', 'public');
+
+            // Actualizar campo en el modelo
+            $vehicle->image = $path;
+            $vehicle->save();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Imagen del vehículo actualizada con éxito.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Error al actualizar imagen del vehículo: ' . $th->getMessage());
+
+            return redirect()->back()->with('error', 'No se pudo actualizar la imagen. Inténtalo nuevamente.');
+        }
+    }
+
     /** Mantenimientos */
     public function listMantenimientos()
     {
@@ -353,7 +387,7 @@ class VehiclesController extends Controller
     public function viewMapEnviosAll()
     {
         $envios = CargoShipment::with(['mineral', 'altercadoReports', 'vehicleSchedules.vehicle.device', 'vehicleSchedules.vehicle.driver'])->where('status', 'en_transito')->get();
-        
+
         return Inertia::render('Admin/Map/allEnviosMap', [
             'envios' => $envios
         ]);

@@ -7,6 +7,7 @@ import { Head } from "@inertiajs/react";
 import React from "react";
 import Card from "@/Components/Cards/Card";
 import { MantenimientoInterface } from "@/interfaces/Mantenimiento";
+import UploadFile from "@/Pages/Admin/Vehicle/uploadFile";
 
 type Props = {
     vehicle: VehicleInterface;
@@ -159,6 +160,8 @@ const showVehicle: React.FC<Props> = ({
                     </div>
                 </div>
             </Card>
+
+            <UploadFile vehicleId={vehicle.id} currentImage={vehicle.image} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>

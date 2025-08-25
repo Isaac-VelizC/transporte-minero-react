@@ -25,6 +25,7 @@ class VehicleCreateResquest extends FormRequest
             'matricula' => 'required|string|min:6|max:8|unique:vehicles,matricula|regex:/^(?=.*[a-zA-Z])(?=.*[0-9]).+$/',
             'mark_id' => 'required|exists:marks,id',
             'device_id' => 'nullable|exists:devices,id',
+            'image' => "nullable|image|max:2048",
             'color' => 'required|string|max:15',
             'modelo' => 'required|string|max:50',
             'type_id' => 'required|exists:type_vehicles,id',

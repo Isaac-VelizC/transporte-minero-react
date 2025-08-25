@@ -18,32 +18,33 @@ type Props = {
 
 export default function index({ backups }: Props) {
     const columns = useMemo(
-        () => [
-            {
-                name: "Número",
-                cell: (row: FilesBackups) => row.code,
-            },
-            {
-                name: "Nombre",
-                cell: (row: FilesBackups) => row.nombre,
-                sortable: true,
-            },
-            {
-                name: "Fecha",
-                cell: (row: FilesBackups) => row.fecha,
-            },
-            {
-                name: "Acciones",
-                cell: (row: FilesBackups) => (
-                    <button onClick={() => handleDownload(row.code)}>
-                        <i className="bi bi-cloud-download"></i>
-                    </button>
-                ),
-                ignoreRowClick: true,
-            }
-        ],
-        []
-    );
+    () => [
+        {
+            name: "Número",
+            cell: (row: FilesBackups) => row.code,
+        },
+        {
+            name: "Nombre",
+            cell: (row: FilesBackups) => row.nombre,
+            sortable: true,
+        },
+        {
+            name: "Fecha",
+            cell: (row: FilesBackups) => row.fecha,
+        },
+        {
+            name: "Acciones",
+            cell: (row: FilesBackups) => (
+                <button onClick={() => handleDownload(row.nombre)}>
+                    <i className="bi bi-cloud-download"></i>
+                </button>
+            ),
+            ignoreRowClick: true,
+        }
+    ],
+    []
+);
+
 
     const handleDownload = async (file: string) => {
         try {

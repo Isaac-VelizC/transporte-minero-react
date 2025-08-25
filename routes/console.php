@@ -7,11 +7,7 @@ use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
+})->purpose('Display an inspiring quote');
 
-/*Artisan::command('backup:run', function () {
-    $this->call('backup:run');
-})->purpose('Run a database backup')->hourly();
-*/
 
 Schedule::command('backup:run')->dailyAt('02:00');

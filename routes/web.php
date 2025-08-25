@@ -59,6 +59,7 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::get('/vehicle/form/{id}', [VehiclesController::class, 'edit'])->name('vehicle.edit');
     Route::patch('/vehicle/update/{id}', [VehiclesController::class, 'update'])->name('vehicle.update');
     Route::delete('/vehicle/{id}', [VehiclesController::class, 'destroy'])->name('vehicle.destroy');
+    Route::post('/vehicle/image/{id}', [VehiclesController::class, 'uploadFileVehicle'])->name('vehicle.upload.file');
 
     Route::get('/vehicle/programmings', [VehiclesController::class, 'listSchedules'])->name('schedule.list');
     Route::post('/vehicle/programming', [VehiclesController::class, 'registerConductorVehicle'])->name('vehicle.programming');

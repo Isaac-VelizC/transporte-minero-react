@@ -11,6 +11,7 @@ export interface VehicleInterface {
     marca: MarksInterface;
     color: string;
     fecha_compra: string;
+    image?: string;
     status: string;
     driver?: PersonaInterface;
     responsable_id: number;
@@ -32,5 +33,5 @@ export type FormVehicleType = {
     status: string;
     kilometrage: number;
     capacidad_carga: number;
-    [key: string]: unknown;
+    image?: File;
 }

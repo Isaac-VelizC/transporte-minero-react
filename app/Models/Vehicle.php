@@ -16,6 +16,7 @@ class Vehicle extends Model
         'mark_id',
         'type_id',
         'device_id',
+        'image',
         'modelo',
         'color',
         'fecha_compra',

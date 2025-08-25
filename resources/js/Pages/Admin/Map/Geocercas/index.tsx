@@ -14,6 +14,7 @@ import {
     GeocercaIconPeligro,
     GeocercaIconSeguridad,
 } from "@/Components/IconMap";
+import LocateButton from "@/Components/Maps/LocateButton";
 
 // Mapeo de tipos de geocerca a iconos
 const geocercaIconMap: { [key: string]: L.Icon } = {
@@ -117,6 +118,7 @@ const Index: React.FC<Props> = ({ geocercas }) => {
                                 </React.Fragment>
                             );
                         })}
+                        <LocateButton />
                     </Map>
                 </div>
             </div>

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreign('device_id')->references('id')->on('devices')->onDelete('set null');
             
             // Nuevos campos relevantes
+            $table->string('image')->nullable(); // Imagen del Vehiculo
             $table->string('modelo', 50); // Marca del vehículo
             $table->string('color', 30)->nullable(); // Color del vehículo
             $table->date('fecha_compra'); // Año de fabricación

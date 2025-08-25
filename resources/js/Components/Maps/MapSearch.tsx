@@ -7,6 +7,7 @@ import GooglePlacesAutocomplete, {
 } from "react-google-places-autocomplete";
 
 import "leaflet/dist/leaflet.css";
+import LocateButton from "./LocateButton";
 
 type Props = {
     center: [number, number]; // Coordenadas del centro del mapa
@@ -62,6 +63,7 @@ const MapSeach: React.FC<Props> = ({ center, zoom, children }) => {
                     />
                     <ChangeMapView position={position} />
                     {children}
+                    <LocateButton />
                 </MapContainer>
             </div>
         </div>
