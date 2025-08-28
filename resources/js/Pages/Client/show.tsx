@@ -32,7 +32,6 @@ export default function Show({ envio, altercados, schedules }: Props) {
 
     const deviceLocations: [number, number][] = schedules
         .map((schedule) => {
-            
             if (
                 schedule.vehicle.device?.last_latitude &&
                 schedule.vehicle.device?.last_longitude
@@ -45,71 +44,112 @@ export default function Show({ envio, altercados, schedules }: Props) {
             return null;
         })
         .filter((coords): coords is [number, number] => coords !== null);
-    
+
     return (
         <Authenticated>
             <Head title="Show Envio" />
             <Card>
-                <div className="px-4 py-2 border-b">
-                    <h1 className="font-semibold text-sm md:text-lg pb-3">
-                        Información del envio de carga
+                {/* Header */}
+                <div className="px-6 py-4 border-b bg-gray-50">
+                    <h1 className="font-semibold text-base md:text-lg text-gray-800">
+                        📦 Información del Envío de Carga
                     </h1>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2">
-                    <div className="pl-4 space-y-1">
+
+                {/* Body */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+                    {/* Datos del envío */}
+                    <div className="space-y-3 text-sm text-gray-700">
                         <p>
-                            <strong>Cliente: </strong>
+                            <span className="font-medium text-gray-900">
+                                Cliente:
+                            </span>{" "}
                             {envio.client.nombre + " " + envio.client.ap_pat}
                         </p>
                         <p>
-                            <strong>Peso en toneldas: </strong>
+                            <span className="font-medium text-gray-900">
+                                Peso en toneladas:
+                            </span>{" "}
                             {envio.peso} t.
                         </p>
                         <p>
-                            <strong>Destino: </strong>
+                            <span className="font-medium text-gray-900">
+                                Destino:
+                            </span>{" "}
                             {envio.destino}
                         </p>
                         <p>
-                            <strong>Fecha de envio: </strong>
+                            <span className="font-medium text-gray-900">
+                                Fecha de envío:
+                            </span>{" "}
                             {envio.fecha_envio}
                         </p>
                         <p>
-                            <strong>Fecha de Entrega: </strong>
+                            <span className="font-medium text-gray-900">
+                                Fecha de entrega:
+                            </span>{" "}
                             {envio.fecha_entrega}
                         </p>
                         <p>
-                            <strong>Notas: </strong>
-                            {envio.notas}
+                            <span className="font-medium text-gray-900">
+                                Notas:
+                            </span>{" "}
+                            {envio.notas || "—"}
                         </p>
                     </div>
-                    <div className="pl-4 space-y-1">
+
+                    {/* Vehículos + costos */}
+                    <div className="space-y-5 text-sm text-gray-700">
                         {schedules.map((item, index) => (
-                            <div key={index}>
+                            <div
+                                key={index}
+                                className="p-3 rounded-xl border border-gray-200 shadow-sm bg-white"
+                            >
+                                <div className="w-full h-32 rounded-lg overflow-hidden mb-3">
+                                    <img
+                                        src={`${
+                                            import.meta.env.VITE_URL_STORAGE
+                                        }/${item.vehicle.image}`}
+                                        alt="Vehiculo"
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
                                 <p>
-                                    <strong>Matricula de Vehiculo: </strong>
+                                    <span className="font-medium text-gray-900">
+                                        Matrícula:
+                                    </span>{" "}
                                     {item.vehicle.matricula}
                                 </p>
                                 <p>
-                                    <strong>Color: </strong>
+                                    <span className="font-medium text-gray-900">
+                                        Color:
+                                    </span>{" "}
                                     {item.vehicle.color}
                                 </p>
                                 <p>
-                                    <strong>Capacidad de Carga: </strong>
-                                    {item.vehicle.capacidad_carga}
+                                    <span className="font-medium text-gray-900">
+                                        Capacidad de carga:
+                                    </span>{" "}
+                                    {item.vehicle.capacidad_carga} t.
                                 </p>
                             </div>
                         ))}
-                        <p>
-                            <strong>Sub Total por tonelada: </strong>
-                            {envio.sub_total}bs.
-                        </p>
-                        <p>
-                            <strong>Total costo: </strong>
-                            {envio.total}bs.
-                        </p>
+
+                        <div className="pt-2 border-t space-y-2">
+                            <p>
+                                <span className="font-medium text-gray-900">
+                                    💰 Sub Total por tonelada:
+                                </span>{" "}
+                                {envio.sub_total} Bs.
+                            </p>
+                            <p className="text-lg font-semibold text-gray-900">
+                                🔥 Total: {envio.total} Bs.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </Card>
+
             <br />
             <Card>
                 <div className="py-4 text-center">
@@ -133,7 +173,10 @@ export default function Show({ envio, altercados, schedules }: Props) {
                                     >
                                         <Popup>
                                             <div className="flex flex-col">
-                                                <h1>Matricula: {item.vehiculo.matricula}</h1>
+                                                <h1>
+                                                    Matricula:{" "}
+                                                    {item.vehiculo.matricula}
+                                                </h1>
                                                 <span>{item.fecha}</span>
                                                 <p>{item.description}</p>
                                             </div>
@@ -149,9 +192,24 @@ export default function Show({ envio, altercados, schedules }: Props) {
                                 >
                                     <Popup>
                                         <div className="flex flex-col">
-                                            <h1 className="text-sm font-bold">Matricula: {schedules[index].vehicle.matricula}</h1>
-                                            <span>Modelos: {schedules[index].vehicle.modelo}</span>
-                                            <span>Color: {schedules[index].vehicle.color}</span>
+                                            <h1 className="text-sm font-bold">
+                                                Matricula:{" "}
+                                                {
+                                                    schedules[index].vehicle
+                                                        .matricula
+                                                }
+                                            </h1>
+                                            <span>
+                                                Modelos:{" "}
+                                                {
+                                                    schedules[index].vehicle
+                                                        .modelo
+                                                }
+                                            </span>
+                                            <span>
+                                                Color:{" "}
+                                                {schedules[index].vehicle.color}
+                                            </span>
                                         </div>
                                     </Popup>
                                 </Marker>

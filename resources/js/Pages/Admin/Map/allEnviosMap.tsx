@@ -6,6 +6,7 @@ import {
 } from "@/Components/IconMap";
 import LocateButton from "@/Components/Maps/LocateButton";
 import Map from "@/Components/Maps/Map";
+import PopupMat from "@/Components/Popup/PopupMat";
 import { ShipmentInterface } from "@/interfaces/Shipment";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
@@ -66,7 +67,7 @@ export default function allEnviosMap({ envios }: Props) {
     const fetchTravelTime = async (origin: string, destination: string) => {
         //const origin = "40.712776,-74.005974"; // Coordenadas de origen
         //const destination = "34.052235,-118.243683"; // Coordenadas de destino
-        setTime('');
+        setTime("");
         try {
             const response = await axios.get(`/api/travel-time`, {
                 params: { origin, destination },
@@ -132,40 +133,15 @@ export default function allEnviosMap({ envios }: Props) {
                                         }}
                                     >
                                         <Popup>
-                                            <div>
-                                                <h1 className="text-sm font-bold">
-                                                    Matricula{" "}
-                                                    {location.vehicle.matricula}
-                                                </h1>
-                                                <span>
-                                                    Llega en :{" "}
-                                                    {time == '' ? <small className="text-red">Calculando</small> : time}
-                                                </span>
-                                                <br />
-                                                <span>
-                                                    Conductor:{" "}
-                                                    {
-                                                        location.vehicle?.driver
-                                                            ?.nombre
-                                                    }{" "}
-                                                    {
-                                                        location.vehicle?.driver
-                                                            ?.ap_pat
-                                                    }{" "}
-                                                    {
-                                                        location.vehicle?.driver
-                                                            ?.ap_mat
-                                                    }
-                                                </span>
-                                                <br />
-                                                <span>
-                                                    Carga:{" "}
-                                                    {envio.mineral.nombre +
-                                                        " " +
-                                                        envio.peso +
-                                                        "t."}
-                                                </span>
-                                            </div>
+                                            <PopupMat
+                                                time={time}
+                                                vehicle={location.vehicle}
+                                                envio={{
+                                                    mineral:
+                                                        envio.mineral.nombre,
+                                                    peso: envio.peso,
+                                                }}
+                                            />
                                         </Popup>
                                     </Marker>
                                 );
