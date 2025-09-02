@@ -68,13 +68,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         >
             {/* Header del sidebar */}
             <div className="flex items-center justify-between gap-2 px-6 py-2 lg:py-4">
-                <Link href="/" className="flex items-center overflow-hidden">
+                <Link href="/" className="flex items-center overflow-hidden gap-6">
                     <img
                         src={Logo}
                         alt="Transporte Minero"
-                        className="h-16 w-16"
+                        className="h-14 w-14"
                     />
-                    <h1 className="font-bold text-sm text-white">Transportes Benjamin</h1>
+                    <h1 className="font-bold text-2xl text-white">TransFrank</h1>
                 </Link>
                 <button
                     ref={trigger}

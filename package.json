@@ -33,6 +33,7 @@
         "@react-google-maps/api": "^2.20.6",
         "@turf/turf": "^7.2.0",
         "leaflet": "^1.9.4",
+        "lucide-react": "^0.542.0",
         "papaparse": "^5.5.2",
         "react-data-table-component": "^7.6.2",
         "react-google-places-autocomplete": "^4.1.0",
