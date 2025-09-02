@@ -28,6 +28,12 @@ Route::get('/', function () {
 
 Route::get('/dashboard', [HomeController::class, 'dashboardPage'])->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::middleware(['auth'])->group(function () {
+///Perfil
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
 Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->group(function () {
     Route::get('/admin/copias-de-seguridad', [BackupController::class, 'pageCopiasSeguridad'])->name('admin.page.packups');
@@ -82,10 +88,6 @@ Route::middleware(['auth', 'checkRole:Admin|Secretaria|Encargado_Control'])->gro
     Route::get('/envios/edit/{id}', [ShipmentsController::class, 'edit'])->name('envios.edit');
     Route::patch('/envios/update/{id}', [ShipmentsController::class, 'update'])->name('envios.update.form');
     Route::patch('/envios/delete/{id}', [ShipmentsController::class, 'changeStatus'])->name('envios.delete');
-    ///Perfil
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     //Map
     Route::get('/map/{id}/envio', [GeocercasController::class, 'showMap'])->name('view.map');
     Route::get('/geocerca', [GeocercasController::class, 'index'])->name('geocerca.list');
