@@ -1,6 +1,7 @@
 import { useMap } from "react-leaflet";
 import { useEffect } from "react";
 import L from "leaflet";
+import { peopleIcon } from "../IconMap";
 
 const LocateButton = () => {
   const map = useMap();
@@ -11,7 +12,7 @@ const LocateButton = () => {
 
   useEffect(() => {
     map.on("locationfound", (e) => {
-      L.marker(e.latlng)
+      L.marker(e.latlng, { icon: peopleIcon })
         .addTo(map)
         .bindPopup("📍 Estás aquí")
         .openPopup();

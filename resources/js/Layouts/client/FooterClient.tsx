@@ -97,7 +97,7 @@ export default function FooterClient() {
                   <div className="bg-slate-700/50 p-2 rounded-lg group-hover:bg-amber-500/20 transition-colors duration-300 mt-1">
                     <MapPin className="w-4 h-4" />
                   </div>
-                  <span>Av. Camacho #1234<br />La Paz, Bolivia</span>
+                  <span>Av. Camacho #1234<br />Potosí, Bolivia</span>
                 </div>
               </div>
             </div>

@@ -30,7 +30,7 @@ export default function ContactSection() {
     {
       icon: MapPin,
       title: "Dirección",
-      info: ["Av. Camacho #1234, Edificio Central", "La Paz, Bolivia"],
+      info: ["Av. Camacho #1234, Edificio Central", "Potosí, Bolivia"],
       color: "from-blue-500 to-blue-600"
     },
     {

@@ -6,7 +6,7 @@ export default function Preloader() {
             {/* Texto del logo */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent mb-2">
-                TransFrant
+                TransFrank
               </h1>
               <p className="text-slate-400 text-sm">Cargando sistema...</p>
             </div>

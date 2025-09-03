@@ -88,7 +88,7 @@ export default function HeaderClient({ authStatus }: PropsHeader) {
                             </div>
                             <div className="text-white">
                                 <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
-                                    TransFrant
+                                    TransFrank
                                 </h1>
                             </div>
                         </div>

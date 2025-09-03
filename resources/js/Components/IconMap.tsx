@@ -16,6 +16,13 @@ export const customIcon = L.icon({
     popupAnchor: [0, -32],
 });
 
+export const peopleIcon = L.icon({
+    iconUrl: "https://maps.google.com/mapfiles/kml/shapes/man.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+});
+
 export const deviceIcon = L.icon({
     iconUrl: "https://maps.google.com/mapfiles/kml/pal4/icon15.png",
     iconSize: [40, 40],
