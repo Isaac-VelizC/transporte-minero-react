@@ -21,8 +21,13 @@ class BackupDatabase extends Command
             $tables = DB::select("SHOW TABLES");
             $data = [];
 
+            // foreach ($tables as $table) {
+            //     $tableName = $table->{"Tables_in_$database"};
+            //     $data[$tableName] = DB::table($tableName)->get();
+            // }
             foreach ($tables as $table) {
-                $tableName = $table->{"Tables_in_$database"};
+                $tableArray = (array) $table;
+                $tableName = $tableArray[array_key_first($tableArray)];
                 $data[$tableName] = DB::table($tableName)->get();
             }
 
